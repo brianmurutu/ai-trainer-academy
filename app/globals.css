@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-display: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --navy: #0D1B2A;
+  --navy-800: #1A2E42;
+  --navy-700: #243D54;
+  --ink: #1C2B3A;
+  --slate: #4A6174;
+  --muted: #7A93A8;
+  --line: #E2EAF0;
+  --surface: #F5F8FB;
+  --white: #FFFFFF;
+  --accent: #1A6FBF;
+  --accent-light: #EBF3FC;
+  --accent-dark: #0F4C8A;
+  --green: #1A7A4A;
+  --green-light: #E8F5EE;
+  --amber: #B05C0E;
+  --amber-light: #FDF0E4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-display);
+  background: var(--white);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}

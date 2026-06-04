@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+
+/**
+ * GET /auth/callback
+ *
+ * Handles:
+ *  - OAuth provider redirects (Google, GitHub)
+ *  - Magic-link / password-reset email links
+ *
+ * Supabase sends the user here with a `code` query param.
+ * We exchange it for a session and redirect to the intended destination.
+ */
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = request.nextUrl;
+  const code = searchParams.get("code");
+  // `next` is set by password-reset and can be any protected path
+  const next = searchParams.get("next") ?? "/dashboard";
+
+  if (!code) {
+    // No code — bad link or expired, redirect to login with error
+    return NextResponse.redirect(
+      new URL("/login?error=invalid_link", origin)
+    );
+  }
+
+  const response = NextResponse.redirect(new URL(next, origin));
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    console.error("Auth callback error:", error.message);
+    return NextResponse.redirect(
+      new URL("/login?error=auth_callback_failed", origin)
+    );
+  }
+
+  // Determine role-based redirect if going to default /dashboard
+  if (next === "/dashboard") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const role = (user?.user_metadata?.role as string) ?? "learner";
+    if (role === "trainer") {
+      return NextResponse.redirect(new URL("/trainer", origin));
+    }
+  }
+
+  return response;
+}

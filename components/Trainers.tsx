@@ -54,11 +54,15 @@ export default function Trainers() {
                 <div style={{ fontSize: 12, color: "var(--muted)" }}>{spec}</div>
               </div>
               <div style={{
+                display: "flex", alignItems: "center", gap: 5,
                 fontSize: 10, fontWeight: 600,
                 color: available ? "var(--green)" : "var(--muted)",
                 background: available ? "var(--green-light)" : "var(--surface)",
-                padding: "3px 8px", borderRadius: 20, flexShrink: 0,
-              }}>{available ? "● Available" : "● Busy"}</div>
+                padding: "4px 9px", borderRadius: 20, flexShrink: 0,
+              }}>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: available ? "var(--green)" : "var(--muted)" }} />
+                <span>{available ? "Available" : "Busy"}</span>
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>

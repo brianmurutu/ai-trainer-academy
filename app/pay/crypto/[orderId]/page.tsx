@@ -162,7 +162,7 @@ export default function CryptoPayPage({
       ? "CANCELED"
       : (orderInfo?.status ?? "loading");
 
-  // ── Paid ──
+  // Paid status page
   if (effectiveStatus === "PAID") {
     return (
       <div style={{ minHeight: "100vh", background: "#F5F7FA", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -199,7 +199,7 @@ export default function CryptoPayPage({
     );
   }
 
-  // ── Cancelled / Expired ──
+  // Cancelled or Expired status page
   if (effectiveStatus === "CANCELED" || effectiveStatus === "EXPIRED") {
     return (
       <div style={{ minHeight: "100vh", background: "#F5F7FA", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -235,7 +235,7 @@ export default function CryptoPayPage({
     );
   }
 
-  // ── Pending (default) ──
+  // Pending status page (default)
   return (
     <div style={{ minHeight: "100vh", background: "#F5F7FA", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{

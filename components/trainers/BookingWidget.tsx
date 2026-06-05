@@ -60,7 +60,7 @@ export default function BookingWidget({
   const totalAmount = selectedSlot ? rate * selectedSlot.durationHrs : 0;
   const totalUsd = selectedSlot ? rateUsd * selectedSlot.durationHrs : 0;
 
-  // ── Card payment via Paystack ──
+  // Card payment via Paystack
   const handleCardPayment = async () => {
     if (!selectedSlot) return;
     setLoading(true);
@@ -96,7 +96,7 @@ export default function BookingWidget({
     }
   };
 
-  // ── Crypto payment via Binance Pay ──
+  // Crypto payment via Binance Pay
   const handleCryptoPayment = async () => {
     if (!selectedSlot) return;
     setLoading(true);

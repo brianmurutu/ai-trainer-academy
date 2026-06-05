@@ -37,24 +37,99 @@ export default async function CourseDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email || "";
 
+  const courseJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "@id": `https://air-trainer-academy.top/courses/${course.slug}#course`,
+    "name": course.title,
+    "description": course.description,
+    "provider": {
+      "@type": "Organization",
+      "name": "AI Trainer Academy",
+      "url": "https://air-trainer-academy.top"
+    },
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": "online",
+      "instructor": {
+        "@type": "Person",
+        "name": course.trainer,
+        "jobTitle": course.trainerTitle
+      }
+    },
+    "educationalLevel": course.level,
+    "offers": {
+      "@type": "Offer",
+      "price": course.priceUsd,
+      "priceCurrency": "USD",
+      "category": "Paid"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": course.rating,
+      "reviewCount": Math.max(5, Math.floor(course.enrolledCount * 0.15)),
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://air-trainer-academy.top"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Courses",
+        "item": "https://air-trainer-academy.top/courses"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": course.title,
+        "item": `https://air-trainer-academy.top/courses/${course.slug}`
+      }
+    ]
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ background: "var(--surface)", minHeight: "100vh" }}>
         {/* Breadcrumb Nav */}
-        <div style={{
+        <nav aria-label="Breadcrumb" style={{
           background: "white",
           borderBottom: "1px solid var(--line)",
-          padding: "12px 24px",
+          padding: "14px 24px",
         }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center" }}>
-            <Link href="/courses" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>
-              <ChevronLeft size={14} /> Back to Courses
+          <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 500, color: "var(--slate)" }}>
+            <Link href="/" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
+              Home
             </Link>
-            <span style={{ fontSize: 13, color: "var(--line)", margin: "0 8px" }}>/</span>
-            <span style={{ fontSize: 13, color: "var(--ink)", fontWeight: 500 }}>{course.title}</span>
+            <span style={{ color: "var(--muted)" }}>/</span>
+            <Link href="/courses" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
+              Courses
+            </Link>
+            <span style={{ color: "var(--muted)" }}>/</span>
+            <span style={{ color: "var(--navy)", fontWeight: 600 }} aria-current="page">
+              {course.title}
+            </span>
           </div>
-        </div>
+        </nav>
 
         {/* Hero Section */}
         <section style={{

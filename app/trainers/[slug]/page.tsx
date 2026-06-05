@@ -28,7 +28,6 @@ const TRAINERS: Record<string, {
   tagline: string;
   bio: string;
   country: string;
-  flag: string;
   specialities: string[];
   experience: string;
   rateKsh: number;
@@ -50,7 +49,6 @@ const TRAINERS: Record<string, {
     tagline: "LLM Fine-tuning Specialist · PhD in ML from UCT",
     bio: "I've spent the last 8 years working at the intersection of academic research and industry AI. After completing my PhD at the University of Cape Town and doing two years of postdoctoral work at DeepMind, I joined Andela as Principal ML Engineer before moving to independent training full-time.\n\nI specialize in parameter-efficient fine-tuning techniques (LoRA, QLoRA, DoRA), RLHF pipelines, and dataset curation for African-language NLP. My teaching style is hands-on — every session involves writing real code, and I provide code reviews after each session.",
     country: "Ghana",
-    flag: "🇬🇭",
     specialities: ["Fine-tuning (LoRA / QLoRA)", "RLHF & RLAIF", "Dataset Curation & Annotation", "Model Evaluation & Benchmarking", "NLP & Text Models"],
     experience: "8+ years",
     rateKsh: 3500,
@@ -85,7 +83,6 @@ const TRAINERS: Record<string, {
     tagline: "AI Safety Researcher & RLHF Engineer",
     bio: "I'm a researcher and practitioner focused on making AI systems safer and more aligned with human values. I spent three years at Anthropic working on Constitutional AI before returning to Africa to help build the continent's AI safety ecosystem.\n\nMy sessions cover RLHF from first principles, reward modeling, Constitutional AI techniques, and evaluation frameworks for alignment. I also work extensively with multimodal models and can help you navigate the fast-moving safety literature.",
     country: "South Africa",
-    flag: "🇿🇦",
     specialities: ["RLHF & RLAIF", "AI Safety & Alignment", "Model Evaluation & Benchmarking", "Multimodal Models", "Prompt Engineering"],
     experience: "6 years",
     rateKsh: 4200,
@@ -157,26 +154,85 @@ export default async function TrainerProfilePage({
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email;
 
+  const trainerJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `https://air-trainer-academy.top/trainers/${trainer.slug}#trainer`,
+    "name": trainer.name,
+    "jobTitle": "AI Model Trainer & Engineering Consultant",
+    "description": trainer.tagline,
+    "homeLocation": {
+      "@type": "Place",
+      "name": trainer.country
+    },
+    "sameAs": trainer.linkedinUrl ? [trainer.linkedinUrl] : [],
+    "knowsAbout": trainer.specialities,
+    "worksFor": {
+      "@type": "Organization",
+      "name": "AI Trainer Academy"
+    }
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://air-trainer-academy.top"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Trainers",
+        "item": "https://air-trainer-academy.top/trainers"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": trainer.name,
+        "item": `https://air-trainer-academy.top/trainers/${trainer.slug}`
+      }
+    ]
+  };
+
   return (
-    <div style={{ background: "#F5F7FA", minHeight: "100vh" }}>
-      {/* ── Nav breadcrumb ───────────────────────────────────── */}
-      <div style={{
-        background: "white", borderBottom: "1px solid var(--line)",
-        padding: "0 32px",
-      }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", height: 52 }}>
-          <Link href="/trainers" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>
-            <ChevronLeft size={14} /> All Trainers
-          </Link>
-          <span style={{ fontSize: 13, color: "var(--line)", margin: "0 8px" }}>/</span>
-          <span style={{ fontSize: 13, color: "var(--ink)" }}>{trainer.name}</span>
-        </div>
-      </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(trainerJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <div style={{ background: "#F5F7FA", minHeight: "100vh" }}>
+        {/* Nav breadcrumb */}
+        <nav aria-label="Breadcrumb" style={{
+          background: "white", borderBottom: "1px solid var(--line)",
+          padding: "16px 32px",
+        }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 500, color: "var(--slate)" }}>
+            <Link href="/" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
+              Home
+            </Link>
+            <span style={{ color: "var(--muted)" }}>/</span>
+            <Link href="/trainers" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
+              Trainers
+            </Link>
+            <span style={{ color: "var(--muted)" }}>/</span>
+            <span style={{ color: "var(--navy)", fontWeight: 600 }} aria-current="page">
+              {trainer.name}
+            </span>
+          </div>
+        </nav>
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 32px 64px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 28, alignItems: "start" }}>
 
-          {/* ── Left: main profile ──────────────────────────── */}
+          {/* Left: main profile */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
             {/* Hero card */}
@@ -204,7 +260,7 @@ export default async function TrainerProfilePage({
                       <p style={{ fontSize: 14, color: "var(--slate)", lineHeight: 1.5, marginBottom: 8 }}>{trainer.tagline}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <MapPin size={13} color="var(--muted)" />
-                        <span style={{ fontSize: 13, color: "var(--muted)" }}>{trainer.flag} {trainer.country}</span>
+                        <span style={{ fontSize: 13, color: "var(--muted)" }}>{trainer.country}</span>
                         <span style={{ color: "var(--line)", margin: "0 4px" }}>·</span>
                         <Clock size={13} color="var(--muted)" />
                         <span style={{ fontSize: 13, color: "var(--muted)" }}>{trainer.experience} experience</span>
@@ -243,7 +299,7 @@ export default async function TrainerProfilePage({
                 borderTop: "1px solid var(--line)",
               }}>
                 {[
-                   { label: "Rating", value: `${trainer.rating}★`, sub: `${trainer.reviewCount} reviews` },
+                    { label: "Rating", value: <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "center" }}>{trainer.rating}<Star size={15} fill="#F59E0B" color="#F59E0B" style={{ display: "inline" }} /></span>, sub: `${trainer.reviewCount} reviews` },
                   { label: "Sessions", value: trainer.sessionsCompleted.toString(), sub: "completed" },
                   { label: "Learners", value: trainer.learnersHelped.toString(), sub: "helped" },
                   { label: "Rate", value: <TrainerRateDisplay rateKsh={trainer.rateKsh} rateUsd={trainer.rateUsd} />, sub: "per hour" },
@@ -402,7 +458,7 @@ export default async function TrainerProfilePage({
             </div>
           </div>
 
-          {/* ── Right: booking widget (sticky) ─────────────── */}
+          {/* Right: booking widget (sticky) */}
           <div>
             <BookingWidget
               trainerName={trainer.name}
@@ -416,5 +472,6 @@ export default async function TrainerProfilePage({
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

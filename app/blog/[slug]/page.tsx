@@ -30,21 +30,85 @@ export default async function BlogPostPage({
 
   if (!post) notFound();
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `https://air-trainer-academy.top/blog/${post.slug}#post`,
+    "headline": post.title,
+    "description": post.excerpt,
+    "datePublished": post.date,
+    "author": {
+      "@type": "Person",
+      "name": post.author,
+      "jobTitle": post.authorTitle
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "AI Trainer Academy",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://air-trainer-academy.top/favicon.ico"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://air-trainer-academy.top/blog/${post.slug}`
+    }
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://air-trainer-academy.top"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://air-trainer-academy.top/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.title,
+        "item": `https://air-trainer-academy.top/blog/${post.slug}`
+      }
+    ]
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ background: "var(--surface)", minHeight: "100vh", padding: "40px 24px 100px" }}>
         {/* Breadcrumb nav */}
-        <div style={{ maxWidth: 700, margin: "0 auto 32px" }}>
-          <Link href="/blog" style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            fontSize: 13, color: "var(--muted)", textDecoration: "none"
-          }}
-            className="hover-link"
-          >
-            <ChevronLeft size={16} /> Back to Blog
-          </Link>
-        </div>
+        <nav aria-label="Breadcrumb" style={{ maxWidth: 700, margin: "0 auto 32px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 500, color: "var(--slate)" }}>
+            <Link href="/" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
+              Home
+            </Link>
+            <span style={{ color: "var(--muted)" }}>/</span>
+            <Link href="/blog" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
+              Blog
+            </Link>
+            <span style={{ color: "var(--muted)" }}>/</span>
+            <span style={{ color: "var(--navy)", fontWeight: 600 }} aria-current="page">
+              Article
+            </span>
+          </div>
+        </nav>
 
         {/* Article block */}
         <article style={{

@@ -229,11 +229,11 @@ export default async function DashboardPage() {
 
   return (
     <div style={{ padding: "32px 32px 48px" }}>
-      {/* ── Header ──────────────────────────────────────────── */}
+      {/* Header section */}
       <div style={{ marginBottom: 32, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 600, color: "var(--navy)", letterSpacing: "-0.5px", marginBottom: 4 }}>
-            {greeting}, {firstName} 👋
+            {greeting}, {firstName}
           </h1>
           <p style={{ fontSize: 14, color: "var(--slate)" }}>
             {now.toLocaleDateString("en-KE", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
@@ -252,7 +252,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Stats row ───────────────────────────────────────── */}
+      {/* Stats row section */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -264,7 +264,7 @@ export default async function DashboardPage() {
         <StatCard label="Upcoming Sessions" value={MOCK_SESSIONS.length} sub="Next 7 days" Icon={CalendarDays} iconColor="#059669" iconBg="#D1FAE5" />
       </div>
 
-      {/* ── Main grid ───────────────────────────────────────── */}
+      {/* Main grid section */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
 
         {/* Left column */}
@@ -402,7 +402,7 @@ export default async function DashboardPage() {
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)" }}>Top pick for you</span>
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)", marginBottom: 4 }}>Naledi Dlamini</div>
-            <div style={{ fontSize: 12, color: "var(--slate)", marginBottom: 10 }}>AI Safety & RLHF specialist · 4.9★ · 142 sessions</div>
+            <div style={{ fontSize: 12, color: "var(--slate)", marginBottom: 10 }}>AI Safety & RLHF specialist · 4.9 rating · 142 sessions</div>
             <Link href="/trainers/naledi-dlamini" style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               fontSize: 13, color: "var(--accent)", textDecoration: "none", fontWeight: 500,

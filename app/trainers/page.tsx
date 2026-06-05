@@ -17,7 +17,7 @@ const TRAINERS: (TrainerCardData & { featured: boolean })[] = [
     slug: "dr-amara-osei",
     name: "Dr. Amara Osei",
     tagline: "LLM Fine-tuning Specialist · PhD in ML from UCT",
-    country: "Ghana 🇬🇭",
+    country: "Ghana",
     specialities: ["Fine-tuning", "LoRA / QLoRA", "RLHF", "Dataset Curation"],
     rating: 4.9,
     reviewCount: 143,
@@ -30,7 +30,7 @@ const TRAINERS: (TrainerCardData & { featured: boolean })[] = [
     slug: "naledi-dlamini",
     name: "Naledi Dlamini",
     tagline: "AI Safety Researcher & RLHF Engineer",
-    country: "South Africa 🇿🇦",
+    country: "South Africa",
     specialities: ["AI Safety", "RLHF", "Model Evaluation", "Multimodal"],
     rating: 4.9,
     reviewCount: 98,
@@ -43,7 +43,7 @@ const TRAINERS: (TrainerCardData & { featured: boolean })[] = [
     slug: "james-kariuki",
     name: "James Kariuki",
     tagline: "RAG Systems & Vector Database Architect",
-    country: "Kenya 🇰🇪",
+    country: "Kenya",
     specialities: ["RAG Systems", "Vector DBs", "LangChain", "Production ML"],
     rating: 4.8,
     reviewCount: 76,
@@ -56,7 +56,7 @@ const TRAINERS: (TrainerCardData & { featured: boolean })[] = [
     slug: "sana-malik",
     name: "Sana Malik",
     tagline: "Prompt Engineer & LLM Application Developer",
-    country: "Nigeria 🇳🇬",
+    country: "Nigeria",
     specialities: ["Prompt Engineering", "LLM APIs", "Agents & Tools", "OpenAI"],
     rating: 4.8,
     reviewCount: 112,
@@ -69,7 +69,7 @@ const TRAINERS: (TrainerCardData & { featured: boolean })[] = [
     slug: "tafadzwa-moyo",
     name: "Tafadzwa Moyo",
     tagline: "Computer Vision & Multimodal ML Expert",
-    country: "Zimbabwe 🇿🇼",
+    country: "Zimbabwe",
     specialities: ["Computer Vision", "Diffusion Models", "Vision-Language", "PyTorch"],
     rating: 4.7,
     reviewCount: 54,
@@ -82,7 +82,7 @@ const TRAINERS: (TrainerCardData & { featured: boolean })[] = [
     slug: "chioma-eze",
     name: "Chioma Eze",
     tagline: "MLOps & Production AI Infrastructure",
-    country: "Nigeria 🇳🇬",
+    country: "Nigeria",
     specialities: ["MLOps", "Model Deployment", "Kubernetes", "Monitoring"],
     rating: 4.8,
     reviewCount: 67,
@@ -114,7 +114,7 @@ export default function TrainersPage() {
 
   return (
     <div style={{ background: "#F5F7FA", minHeight: "100vh" }}>
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* Hero section */}
       <div style={{
         background: "linear-gradient(135deg, var(--navy) 0%, #1a3a5c 100%)",
         padding: "56px 32px 48px",
@@ -169,7 +169,7 @@ export default function TrainersPage() {
         </div>
       </div>
 
-      {/* ── Filters ──────────────────────────────────────────── */}
+      {/* Filters section */}
       <div style={{ background: "white", borderBottom: "1px solid var(--line)", padding: "0 32px" }}>
         <div style={{
           maxWidth: 1100, margin: "0 auto",
@@ -195,7 +195,7 @@ export default function TrainersPage() {
         </div>
       </div>
 
-      {/* ── Trainer grid ─────────────────────────────────────── */}
+      {/* Trainer grid section */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 32px 64px" }}>
 
         {/* Featured */}

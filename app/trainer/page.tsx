@@ -146,11 +146,11 @@ export default async function TrainerPage() {
 
   return (
     <div style={{ padding: "32px 32px 48px" }}>
-      {/* ── Header ──────────────────────────────────────────── */}
+      {/* Header section */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 32 }}>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 600, color: "var(--navy)", letterSpacing: "-0.5px", marginBottom: 4 }}>
-            {greeting}, {firstName} 👋
+            {greeting}, {firstName}
           </h1>
           <p style={{ fontSize: 14, color: "var(--slate)" }}>
             {now.toLocaleDateString("en-KE", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
@@ -168,7 +168,7 @@ export default async function TrainerPage() {
         </div>
       </div>
 
-      {/* ── Earnings Overview ───────────────────────────────── */}
+      {/* Earnings Overview section */}
       <section style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
           <TrendingUp size={15} color="var(--muted)" />
@@ -186,7 +186,7 @@ export default async function TrainerPage() {
         </div>
       </section>
 
-      {/* ── Main grid ───────────────────────────────────────── */}
+      {/* Main grid section */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
 
         {/* Left column */}
@@ -311,7 +311,7 @@ export default async function TrainerPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {[
               { label: "Total Learners", value: "94", Icon: Users, iconColor: "#6366F1", iconBg: "#EEF2FF" },
-              { label: "Avg. Rating", value: "4.9★", Icon: Star, iconColor: "#D97706", iconBg: "#FEF3C7" },
+              { label: "Avg. Rating", value: "4.9", Icon: Star, iconColor: "#D97706", iconBg: "#FEF3C7" },
               { label: "Sessions Done", value: "218", Icon: CalendarDays, iconColor: "#0EA5E9", iconBg: "#E0F2FE" },
               { label: "Courses Live", value: "2", Icon: BookOpen, iconColor: "#059669", iconBg: "#D1FAE5" },
             ].map(({ label, value, Icon, iconColor, iconBg }) => (

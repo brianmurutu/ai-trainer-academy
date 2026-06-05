@@ -22,7 +22,7 @@ type TrainerProfile = {
 const DEFAULT_PROFILE: TrainerProfile = {
   name: "Dr. Amara Osei",
   tagline: "LLM Fine-tuning Specialist · PhD in ML from UCT",
-  country: "Ghana 🇬🇭",
+  country: "Ghana",
   bio: "Amara holds a PhD in NLP and has spent 8+ years developing model architectures. She has helped open-source several African language models.",
   specialities: ["Fine-tuning", "LoRA / QLoRA", "RLHF", "Dataset Curation"],
   hourlyRateKsh: 3500,
@@ -120,7 +120,7 @@ export default function TrainerProfilePage() {
           }}>
             <div>
               <span style={{ display: "block", fontSize: 11, color: "var(--muted)", textTransform: "uppercase" }}>Rating</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: "var(--navy)" }}>{profile.rating}★</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 16, fontWeight: 700, color: "var(--navy)" }}>{profile.rating} <Star size={14} fill="#F59E0B" color="#F59E0B" /></span>
             </div>
             <div>
               <span style={{ display: "block", fontSize: 11, color: "var(--muted)", textTransform: "uppercase" }}>Sessions</span>

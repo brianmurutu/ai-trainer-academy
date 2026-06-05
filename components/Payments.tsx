@@ -1,10 +1,10 @@
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Smartphone, CreditCard, Lock, Coins } from "lucide-react";
 
 const methods = [
-  { label: "M-Pesa", sub: "KSH payments", icon: "📱" },
-  { label: "Visa / Mastercard", sub: "KSH & USD", icon: "💳" },
-  { label: "Paystack", sub: "Secure gateway", icon: "🔒" },
-  { label: "Binance Pay", sub: "Crypto (USDT, BTC, BNB)", icon: "₿" },
+  { label: "M-Pesa", sub: "KSH payments", Icon: Smartphone, iconColor: "#22C55E" },
+  { label: "Visa / Mastercard", sub: "KSH & USD", Icon: CreditCard, iconColor: "#3B82F6" },
+  { label: "Paystack", sub: "Secure gateway", Icon: Lock, iconColor: "#EC4899" },
+  { label: "Binance Pay", sub: "Crypto (USDT, BTC, BNB)", Icon: Coins, iconColor: "#F59E0B" },
 ];
 
 export default function Payments() {
@@ -28,15 +28,25 @@ export default function Payments() {
         </div>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {methods.map(({ label, sub, icon }) => (
+          {methods.map(({ label, sub, Icon, iconColor }) => (
             <div key={label} style={{
               background: "var(--surface)", border: "1px solid var(--line)",
-              borderRadius: 14, padding: "16px 20px",
-              minWidth: 150, display: "flex", flexDirection: "column", gap: 6,
+              borderRadius: 14, padding: "20px",
+              minWidth: 160, display: "flex", flexDirection: "column", gap: 10,
+              alignItems: "flex-start"
             }}>
-              <span style={{ fontSize: 24 }}>{icon}</span>
-              <div style={{ fontSize: 14, fontWeight: 500, color: "var(--navy)" }}>{label}</div>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>{sub}</div>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: "white", border: "1px solid var(--line)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: iconColor
+              }}>
+                <Icon size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)", marginBottom: 2 }}>{label}</div>
+                <div style={{ fontSize: 12, color: "var(--muted)" }}>{sub}</div>
+              </div>
             </div>
           ))}
         </div>

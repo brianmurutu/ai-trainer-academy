@@ -17,7 +17,7 @@ const sidePanelContent = (
         { stat: "340+", label: "Verified AI trainers across 40 countries" },
         { stat: "12K+", label: "Learners who've earned certifications" },
         { stat: "80%", label: "Trainer earnings kept — highest in the industry" },
-        { stat: "4.9★", label: "Average trainer rating from verified reviews" },
+        { stat: "4.9", label: "Average trainer rating from verified reviews" },
       ].map(({ stat, label }) => (
         <div key={stat} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 24 }}>
           <div style={{ fontSize: 22, fontWeight: 600, color: "white", minWidth: 52, letterSpacing: "-0.5px" }}>{stat}</div>

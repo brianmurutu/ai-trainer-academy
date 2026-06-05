@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Play, CheckCircle2, Star } from "lucide-react";
 import { useCurrency } from "@/components/CurrencyProvider";
 
 export default function Hero() {
@@ -95,7 +95,7 @@ export default function Hero() {
               { num: "340+", label: "Verified trainers", color: "var(--accent-light)", text: "var(--accent)" },
               { num: "12K+", label: "Learners enrolled", color: "var(--green-light)", text: "var(--green)" },
               { num: "98%", label: "Satisfaction rate", color: "var(--amber-light)", text: "var(--amber)" },
-              { num: "4.9★", label: "Avg. trainer rating", color: "var(--accent-light)", text: "var(--accent)" },
+              { num: "4.9", label: "Avg. trainer rating", color: "var(--accent-light)", text: "var(--accent)" },
             ].map(({ num, label, color, text }) => (
               <div key={label} style={{
                 background: color, borderRadius: 12, padding: "16px 18px",
@@ -125,8 +125,12 @@ export default function Hero() {
               <div style={{
                 marginLeft: "auto", background: "var(--green-light)",
                 color: "var(--green)", fontSize: 11, fontWeight: 500,
-                padding: "3px 10px", borderRadius: 20,
-              }}>● Available</div>
+                padding: "4px 10px", borderRadius: 20,
+                display: "flex", alignItems: "center", gap: 5,
+              }}>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)" }} />
+                <span>Available</span>
+              </div>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {["Fine-tuning", "RLHF", "LLaMA", "GPT-4"].map(tag => (
@@ -142,7 +146,9 @@ export default function Hero() {
               alignItems: "center", marginTop: 14, paddingTop: 12,
               borderTop: "1px solid var(--line)",
             }}>
-              <span style={{ fontSize: 13, color: "var(--muted)" }}>128 sessions · 4.9 ★</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "var(--muted)" }}>
+                128 sessions · 4.9 <Star size={13} fill="#F59E0B" color="#F59E0B" />
+              </span>
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>{formatPrice(2500, 20)}/hr</span>
             </div>
           </div>

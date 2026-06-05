@@ -2,9 +2,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Brain } from "lucide-react";
+import { useCurrency, Currency } from "@/components/CurrencyProvider";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { currency, setCurrency } = useCurrency();
 
   return (
     <header style={{
@@ -46,7 +48,32 @@ export default function Navbar() {
         </div>
 
         {/* CTA buttons */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }} className="desktop-nav">
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }} className="desktop-nav">
+          {/* Currency Selector */}
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as Currency)}
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              borderRadius: 6,
+              padding: "5px 8px",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--navy)",
+              cursor: "pointer",
+              outline: "none",
+              transition: "border-color 0.15s",
+            }}
+            onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
+            onBlur={(e) => e.target.style.borderColor = "var(--line)"}
+          >
+            <option value="USD">USD ($)</option>
+            <option value="KES">KES (KSh)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+
           <Link href="/login" style={{
             fontSize: 14, color: "var(--slate)", textDecoration: "none",
             padding: "8px 16px", borderRadius: 8, fontWeight: 400,
@@ -80,6 +107,30 @@ export default function Navbar() {
             }}>{label}</Link>
           ))}
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            {/* Mobile Currency Selector */}
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as Currency)}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                padding: "10px",
+                fontSize: 14,
+                fontWeight: 500,
+                color: "var(--navy)",
+                cursor: "pointer",
+                outline: "none",
+                width: 100,
+                textAlign: "center"
+              }}
+            >
+              <option value="USD">USD ($)</option>
+              <option value="KES">KES (KSh)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+
             <Link href="/login" style={{
               flex: 1, textAlign: "center", padding: "10px",
               border: "1px solid var(--line)", borderRadius: 8,

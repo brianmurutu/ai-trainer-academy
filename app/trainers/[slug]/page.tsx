@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BookingWidget from "@/components/trainers/BookingWidget";
+import TrainerRateDisplay from "@/components/trainers/TrainerRateDisplay";
 import {
   Star,
   MapPin,
@@ -242,10 +243,10 @@ export default async function TrainerProfilePage({
                 borderTop: "1px solid var(--line)",
               }}>
                 {[
-                  { label: "Rating", value: `${trainer.rating}★`, sub: `${trainer.reviewCount} reviews` },
+                   { label: "Rating", value: `${trainer.rating}★`, sub: `${trainer.reviewCount} reviews` },
                   { label: "Sessions", value: trainer.sessionsCompleted.toString(), sub: "completed" },
                   { label: "Learners", value: trainer.learnersHelped.toString(), sub: "helped" },
-                  { label: "Rate", value: `KSH ${trainer.rateKsh.toLocaleString()}`, sub: "per hour" },
+                  { label: "Rate", value: <TrainerRateDisplay rateKsh={trainer.rateKsh} rateUsd={trainer.rateUsd} />, sub: "per hour" },
                 ].map(({ label, value, sub }, i, arr) => (
                   <div key={label} style={{
                     textAlign: "center",

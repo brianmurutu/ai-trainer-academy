@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Star, MapPin, CalendarDays, ChevronRight } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 export type TrainerCardData = {
   slug: string;
@@ -13,6 +14,7 @@ export type TrainerCardData = {
   sessionsCompleted: number;
   rateKsh: number;
   available: boolean;
+  rateUsd?: number;
 };
 
 export default function TrainerCard({
@@ -22,6 +24,8 @@ export default function TrainerCard({
   trainer: TrainerCardData;
   featured?: boolean;
 }) {
+  const { formatPrice } = useCurrency();
+  const rateUsd = trainer.rateUsd || Math.round(trainer.rateKsh / 130);
   return (
     <Link href={`/trainers/${trainer.slug}`} style={{ textDecoration: "none", display: "block", height: "100%" }}>
       <div
@@ -108,7 +112,7 @@ export default function TrainerCard({
                 <span style={{ fontSize: 11, color: "var(--muted)" }}>{trainer.sessionsCompleted} sessions</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--navy)", fontWeight: 600, marginTop: 4 }}>
-                KSH {trainer.rateKsh.toLocaleString()} <span style={{ fontWeight: 400, color: "var(--muted)" }}>/ hr</span>
+                {formatPrice(trainer.rateKsh, rateUsd)} <span style={{ fontWeight: 400, color: "var(--muted)" }}>/ hr</span>
               </div>
             </div>
             <div style={{

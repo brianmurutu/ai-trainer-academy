@@ -182,3 +182,46 @@ export async function sendBusinessQuoteRequest({
   });
 }
 
+// ---------------------------------------------------------------------------
+// Email the admin when a general contact form inquiry is submitted
+// ---------------------------------------------------------------------------
+export async function sendContactMessage({
+  name,
+  email,
+  subject,
+  message,
+}: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return;
+
+  await getResend().emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `Contact Inquiry: ${subject}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:16px;border-bottom:1px solid #E2EAF0;padding-bottom:12px">New Contact Form Submission</h2>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>From Name:</strong> ${name}
+        </p>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>From Email:</strong> ${email}
+        </p>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>Subject:</strong> ${subject}
+        </p>
+        <div style="margin-top:20px;padding:16px;background:#F5F8FB;border-radius:8px;border-left:4px solid #1A6FBF">
+          <h4 style="margin:0 0 8px;color:#0D1B2A">Message Body:</h4>
+          <p style="margin:0;color:#4A6174;font-size:14px;white-space:pre-wrap">${message}</p>
+        </div>
+      </div>
+    `,
+  });
+}
+
+

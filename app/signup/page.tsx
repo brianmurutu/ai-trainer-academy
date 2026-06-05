@@ -17,7 +17,7 @@ const sidePanelContent = (
       "Access 1 free learning resource per month",
       "Join the community forum",
       "Earn certificates on completion",
-      "Pay in KSH, USD, or crypto",
+      "Pay in KES, USD, EUR, GBP, or crypto",
     ].map(item => (
       <div key={item} style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 18 }}>
         <div style={{

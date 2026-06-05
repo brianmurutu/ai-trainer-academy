@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, DollarSign, Loader2, CreditCard, Wallet, AlertCircle } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 type CourseEnrollmentWidgetProps = {
   courseId: string;
@@ -21,6 +22,7 @@ export default function CourseEnrollmentWidget({
   const [payMethod, setPayMethod] = useState<"card" | "crypto">("card");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { formatPrice, currency } = useCurrency();
 
   const handleCardPayment = async () => {
     setLoading(true);
@@ -123,11 +125,8 @@ export default function CourseEnrollmentWidget({
       {/* Price Display */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-          <span style={{ fontSize: 32, fontWeight: 700, color: "var(--navy)" }}>${priceUsd}</span>
-          <span style={{ fontSize: 13, color: "var(--muted)" }}>USD</span>
-        </div>
-        <div style={{ fontSize: 13, color: "var(--slate)", marginTop: 4 }}>
-          KES {priceKsh.toLocaleString()} (approx.)
+          <span style={{ fontSize: 32, fontWeight: 700, color: "var(--navy)" }}>{formatPrice(priceKsh, priceUsd)}</span>
+          <span style={{ fontSize: 13, color: "var(--muted)" }}>{currency}</span>
         </div>
       </div>
 

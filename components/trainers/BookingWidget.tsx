@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CalendarDays,
   Clock,
@@ -11,6 +11,7 @@ import {
   CreditCard,
   Bitcoin,
 } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 type Slot = {
   id: string;
@@ -45,6 +46,15 @@ export default function BookingWidget({
   const [payMethod, setPayMethod] = useState<PaymentMethod>("card");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { formatPrice, currency: globalCurrency } = useCurrency();
+
+  useEffect(() => {
+    if (globalCurrency === "KES") {
+      setCurrency("KES");
+    } else {
+      setCurrency("USD");
+    }
+  }, [globalCurrency]);
 
   const rate = currency === "KES" ? rateKsh : rateUsd;
   const totalAmount = selectedSlot ? rate * selectedSlot.durationHrs : 0;
@@ -158,11 +168,10 @@ export default function BookingWidget({
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
           <span style={{ fontSize: 26, fontWeight: 700, color: "var(--navy)", letterSpacing: "-0.5px" }}>
-            KSH {rateKsh.toLocaleString()}
+            {formatPrice(rateKsh, rateUsd)}
           </span>
           <span style={{ fontSize: 13, color: "var(--muted)" }}>/ hour</span>
         </div>
-        <div style={{ fontSize: 13, color: "var(--muted)" }}>≈ USD {rateUsd} · Paystack & Binance Pay</div>
       </div>
 
       {/* Payment method toggle */}

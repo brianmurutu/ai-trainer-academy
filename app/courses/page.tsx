@@ -6,11 +6,13 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { COURSES, type Course } from "@/lib/courses-data";
 import { Search, Star, Clock, BookOpen, User, DollarSign, Filter, ArrowRight } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 export default function CoursesPage() {
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [tagFilter, setTagFilter] = useState<string>("all");
+  const { formatPrice } = useCurrency();
 
   const tags = ["all", ...Array.from(new Set(COURSES.map(c => c.tag)))];
 
@@ -270,10 +272,7 @@ export default function CoursesPage() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div>
                         <div style={{ fontSize: 16, fontWeight: 700, color: "var(--navy)" }}>
-                          ${course.priceUsd}
-                        </div>
-                        <div style={{ fontSize: 10, color: "var(--muted)" }}>
-                          (KES {course.priceKsh.toLocaleString()})
+                          {formatPrice(course.priceKsh, course.priceUsd)}
                         </div>
                       </div>
                       <Link href={`/courses/${course.slug}`} style={{

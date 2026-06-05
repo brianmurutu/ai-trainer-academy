@@ -135,7 +135,7 @@ export default function TrainersPage() {
           </h1>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.55)", lineHeight: 1.7, marginBottom: 28 }}>
             Book live sessions with verified trainers specialising in LLM fine-tuning, RLHF, RAG systems, and more.
-            Pay in KSH, USD, or crypto.
+            Pay in KES, USD, EUR, GBP, or crypto.
           </p>
           {/* Search bar — visual placeholder; interactive version to follow */}
           <div style={{

@@ -5,9 +5,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { Check, HelpCircle, ChevronDown, ChevronUp, User, Users, GraduationCap } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 export default function PricingPage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const { formatPrice } = useCurrency();
 
   const faqs = [
     {
@@ -149,9 +151,9 @@ export default function PricingPage() {
             <div style={{ flex: 1, marginBottom: 32 }}>
               {[
                 "Keep 80% of bookings & course sales",
-                "One-time KSH 2,000 activation fee",
+                `One-time ${formatPrice(2000, 15)} activation fee`,
                 "Set your own schedule & rates",
-                "Accept payments in KSH, USD & USDT",
+                "Accept global payments (Card, M-Pesa, USDT)",
                 "Get payouts straight to M-Pesa / Bank",
               ].map((item, idx) => (
                 <div key={idx} style={{ display: "flex", alignItems: "start", gap: 10, marginBottom: 12 }}>

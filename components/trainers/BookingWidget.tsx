@@ -106,11 +106,20 @@ export default function BookingWidget({
 
       const data = await res.json();
       if (!res.ok || data.error) {
-        setError(data.error || "Failed to create Binance Pay order.");
+        // Distinguish credential errors from general failures
+        const isCredError =
+          data.error?.toLowerCase().includes("credential") ||
+          data.error?.toLowerCase().includes("configured") ||
+          data.code === 400201 || data.code === 400301;
+        setError(
+          isCredError
+            ? "Crypto payments are temporarily unavailable. Please use Card / M-Pesa instead."
+            : data.error || "Failed to create Binance Pay order."
+        );
         return;
       }
 
-      // Navigate to the QR page, passing order info as search params
+      // Navigate to the QR page
       const params = new URLSearchParams({
         qrContent: data.qrContent ?? "",
         checkoutUrl: data.checkoutUrl ?? "",

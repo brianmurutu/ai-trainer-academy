@@ -134,3 +134,51 @@ export async function sendRejectionEmail({
     `,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Email the admin when a business custom quote is requested
+// ---------------------------------------------------------------------------
+export async function sendBusinessQuoteRequest({
+  contactName,
+  contactEmail,
+  companyName,
+  teamSize,
+  needs,
+}: {
+  contactName: string;
+  contactEmail: string;
+  companyName: string;
+  teamSize: string;
+  needs: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return;
+
+  await getResend().emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `Business Quote Request — ${companyName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:16px;border-bottom:1px solid #E2EAF0;padding-bottom:12px">New Business Quote Request</h2>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>Contact Name:</strong> ${contactName}
+        </p>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>Contact Email:</strong> ${contactEmail}
+        </p>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>Company Name:</strong> ${companyName}
+        </p>
+        <p style="color:#1C2B3A;font-size:15px;margin-bottom:8px">
+          <strong>Team Size:</strong> ${teamSize}
+        </p>
+        <div style="margin-top:20px;padding:16px;background:#F5F8FB;border-radius:8px;border-left:4px solid #1A6FBF">
+          <h4 style="margin:0 0 8px;color:#0D1B2A">Custom Training Needs:</h4>
+          <p style="margin:0;color:#4A6174;font-size:14px;white-space:pre-wrap">${needs}</p>
+        </div>
+      </div>
+    `,
+  });
+}
+

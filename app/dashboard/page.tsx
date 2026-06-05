@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import CourseCard, { type CourseCardData } from "@/components/dashboard/CourseCard";
+import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
 import {
   BookOpen,
   Clock,
@@ -238,14 +239,17 @@ export default async function DashboardPage() {
             {now.toLocaleDateString("en-KE", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
-        <Link href="/trainers" style={{
-          display: "inline-flex", alignItems: "center", gap: 7,
-          background: "var(--navy)", color: "white", textDecoration: "none",
-          padding: "10px 18px", borderRadius: 10, fontSize: 13.5, fontWeight: 500,
-        }}>
-          <Zap size={15} />
-          Book a session
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <NotificationsPanel />
+          <Link href="/trainers" style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            background: "var(--navy)", color: "white", textDecoration: "none",
+            padding: "10px 18px", borderRadius: 10, fontSize: 13.5, fontWeight: 500,
+          }}>
+            <Zap size={15} />
+            Book a session
+          </Link>
+        </div>
       </div>
 
       {/* ── Stats row ───────────────────────────────────────── */}

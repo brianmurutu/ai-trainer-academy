@@ -107,10 +107,17 @@ export default function BookingWidget({
       const data = await res.json();
       if (!res.ok || data.error) {
         // Distinguish credential errors from general failures
+        const errorMsg = String(data.error || "").toLowerCase();
         const isCredError =
-          data.error?.toLowerCase().includes("credential") ||
-          data.error?.toLowerCase().includes("configured") ||
-          data.code === 400201 || data.code === 400301;
+          errorMsg.includes("credential") ||
+          errorMsg.includes("configured") ||
+          errorMsg.includes("api-key") ||
+          errorMsg.includes("permission") ||
+          errorMsg.includes("ip") ||
+          data.code === 400201 ||
+          data.code === 400301 ||
+          data.code === 400004 ||
+          data.code === "400004";
         setError(
           isCredError
             ? "Crypto payments are temporarily unavailable. Please use Card / M-Pesa instead."

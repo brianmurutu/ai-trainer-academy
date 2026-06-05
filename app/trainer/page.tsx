@@ -19,6 +19,7 @@ import {
   Bitcoin,
 } from "lucide-react";
 import type { Metadata } from "next";
+import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
 
 export const metadata: Metadata = {
   title: "Trainer Overview — AI Trainer Academy",
@@ -155,13 +156,16 @@ export default async function TrainerPage() {
             {now.toLocaleDateString("en-KE", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
-        <Link href="/trainer/courses/new" style={{
-          display: "inline-flex", alignItems: "center", gap: 7,
-          background: "var(--navy)", color: "white", textDecoration: "none",
-          padding: "10px 18px", borderRadius: 10, fontSize: 13.5, fontWeight: 500,
-        }}>
-          <Plus size={15} /> New Course
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <NotificationsPanel />
+          <Link href="/trainer/courses/new" style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            background: "var(--navy)", color: "white", textDecoration: "none",
+            padding: "10px 18px", borderRadius: 10, fontSize: 13.5, fontWeight: 500,
+          }}>
+            <Plus size={15} /> New Course
+          </Link>
+        </div>
       </div>
 
       {/* ── Earnings Overview ───────────────────────────────── */}

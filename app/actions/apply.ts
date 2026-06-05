@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { sendNewApplicationNotification } from "@/lib/email";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -106,9 +107,25 @@ export async function submitApplicationAction(
     });
 
   if (insertError) {
-    // Auth account was created but the DB insert failed — log but don't fail hard.
-    // The admin can still review the account.
     console.error("trainer_applications insert error:", insertError.message);
+  } else {
+    // Notify admin inbox (non-blocking)
+    try {
+      const { data: inserted } = await supabase
+        .from("trainer_applications")
+        .select("id")
+        .eq("user_id", userId)
+        .single();
+      if (inserted?.id) {
+        await sendNewApplicationNotification({
+          applicantName: fullName,
+          applicantEmail: email,
+          applicationId: inserted.id,
+        });
+      }
+    } catch (notifyErr) {
+      console.error("Admin notification email failed:", notifyErr);
+    }
   }
 
   return { success: true, applicantName: fullName, applicantEmail: email };

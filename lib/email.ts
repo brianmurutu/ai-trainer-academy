@@ -1,0 +1,138 @@
+/**
+ * lib/email.ts
+ * Thin wrapper around Resend for transactional email.
+ * All outgoing mail goes through this module.
+ */
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const FROM = process.env.EMAIL_FROM ?? "AI Trainer Academy <noreply@aitraineracademy.com>";
+
+// ---------------------------------------------------------------------------
+// Send admin notification when a new trainer applies
+// ---------------------------------------------------------------------------
+export async function sendNewApplicationNotification({
+  applicantName,
+  applicantEmail,
+  applicationId,
+}: {
+  applicantName: string;
+  applicantEmail: string;
+  applicationId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return; // Silently skip if not configured
+
+  const reviewUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/admin/applications/${applicationId}`;
+
+  await resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `New trainer application — ${applicantName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">New trainer application</h2>
+        <p style="color:#4A6174;margin-bottom:20px">
+          <strong>${applicantName}</strong> (${applicantEmail}) just applied to become a trainer on AI Trainer Academy.
+        </p>
+        <a href="${reviewUrl}"
+           style="display:inline-block;background:#1A6FBF;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Review application →
+        </a>
+        <p style="color:#7A93A8;font-size:12px;margin-top:24px">
+          Application ID: ${applicationId}
+        </p>
+      </div>
+    `,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Email the trainer when their application is approved
+// ---------------------------------------------------------------------------
+export async function sendApprovalEmail({
+  trainerName,
+  trainerEmail,
+  message,
+}: {
+  trainerName: string;
+  trainerEmail: string;
+  message?: string;
+}) {
+  const loginUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/login`;
+
+  await resend.emails.send({
+    from: FROM,
+    to: trainerEmail,
+    subject: "🎉 Your AI Trainer Academy application is approved!",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">Welcome aboard, ${trainerName}!</h2>
+        <p style="color:#4A6174;margin-bottom:12px">
+          Your application to join AI Trainer Academy as a trainer has been <strong style="color:#059669">approved</strong>.
+        </p>
+        ${message ? `<blockquote style="border-left:3px solid #1A6FBF;padding:8px 16px;color:#4A6174;margin:16px 0">${message}</blockquote>` : ""}
+        <p style="color:#4A6174;margin-bottom:20px">
+          <strong>Next steps:</strong><br/>
+          1. Log in to your account<br/>
+          2. Pay the one-time KSH 2,000 activation fee to publish your profile<br/>
+          3. Set up your trainer profile and start earning
+        </p>
+        <a href="${loginUrl}"
+           style="display:inline-block;background:#1A6FBF;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Log in to your account →
+        </a>
+        <p style="color:#7A93A8;font-size:12px;margin-top:24px">
+          Questions? Reply to this email and our team will help.
+        </p>
+      </div>
+    `,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Email the trainer when their application is rejected
+// ---------------------------------------------------------------------------
+export async function sendRejectionEmail({
+  trainerName,
+  trainerEmail,
+  reason,
+}: {
+  trainerName: string;
+  trainerEmail: string;
+  reason: string;
+}) {
+  const reapplyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/apply`;
+
+  await resend.emails.send({
+    from: FROM,
+    to: trainerEmail,
+    subject: "Update on your AI Trainer Academy application",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">Application update, ${trainerName}</h2>
+        <p style="color:#4A6174;margin-bottom:12px">
+          Thank you for applying to AI Trainer Academy. After reviewing your application,
+          we are unable to proceed at this time.
+        </p>
+        <blockquote style="border-left:3px solid #DC2626;padding:8px 16px;color:#4A6174;margin:16px 0">
+          ${reason}
+        </blockquote>
+        <p style="color:#4A6174;margin-bottom:20px">
+          You are welcome to strengthen your portfolio and reapply in 90 days.
+        </p>
+        <a href="${reapplyUrl}"
+           style="display:inline-block;background:#0D1B2A;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Reapply later →
+        </a>
+        <p style="color:#7A93A8;font-size:12px;margin-top:24px">
+          Questions? Reply to this email.
+        </p>
+      </div>
+    `,
+  });
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ai-trainer-academy.top"),
@@ -46,6 +47,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        {/* Google tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-PLSXQKST7Y"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-PLSXQKST7Y');
+          `}
+        </Script>
         <CurrencyProvider>
           {children}
         </CurrencyProvider>

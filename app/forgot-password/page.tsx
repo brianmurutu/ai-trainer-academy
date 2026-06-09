@@ -18,7 +18,7 @@ const sidePanelContent = (
     </div>
     <div style={{ padding: "16px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}>
       <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>Need help?</p>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>If you're having trouble, contact us at <span style={{ color: "white" }}>support@ai-trainer-academy.com</span></p>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>If you're having trouble, contact us at <span style={{ color: "white" }}>support@ai-trainer-academy.top</span></p>
     </div>
   </div>
 );

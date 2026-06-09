@@ -107,7 +107,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <span style={{ display: "block", fontSize: 12, color: "var(--muted)", fontWeight: 500 }}>Email support</span>
-                  <span style={{ fontSize: 14, color: "var(--ink)", fontWeight: 600 }}>support@aitraineracademy.com</span>
+                  <span style={{ fontSize: 14, color: "var(--ink)", fontWeight: 600 }}>support@ai-trainer-academy.top</span>
                 </div>
               </div>
 
@@ -120,7 +120,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <span style={{ display: "block", fontSize: 12, color: "var(--muted)", fontWeight: 500 }}>Call us</span>
-                  <span style={{ fontSize: 14, color: "var(--ink)", fontWeight: 600 }}>+254 (0) 700 000 000</span>
+                  <span style={{ fontSize: 14, color: "var(--ink)", fontWeight: 600 }}>+254 792 710 951</span>
                 </div>
               </div>
 

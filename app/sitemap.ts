@@ -3,7 +3,7 @@ import { COURSES } from "@/lib/courses-data";
 import { BLOG_POSTS } from "@/lib/blog-data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://air-trainer-academy.top";
+  const baseUrl = "https://ai-trainer-academy.top";
 
   // Static routes
   const staticRoutes = [

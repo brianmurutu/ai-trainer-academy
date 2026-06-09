@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — AI Trainer Academy",
+  title: "Cookie Policy | AI Trainer Academy",
   description: "Learn how AI Trainer Academy uses cookies and tracking technologies.",
 };
 

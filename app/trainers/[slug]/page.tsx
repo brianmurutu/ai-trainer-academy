@@ -116,9 +116,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const trainer = TRAINERS[slug];
-  if (!trainer) return { title: "Trainer Not Found — AI Trainer Academy" };
+  if (!trainer) return { title: "Trainer Not Found | AI Trainer Academy" };
   return {
-    title: `${trainer.name} — AI Trainer Academy`,
+    title: `${trainer.name} | AI Trainer Academy`,
     description: trainer.tagline,
   };
 }
@@ -157,7 +157,7 @@ export default async function TrainerProfilePage({
   const trainerJsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
-    "@id": `https://air-trainer-academy.top/trainers/${trainer.slug}#trainer`,
+    "@id": `https://ai-trainer-academy.top/trainers/${trainer.slug}#trainer`,
     "name": trainer.name,
     "jobTitle": "AI Model Trainer & Engineering Consultant",
     "description": trainer.tagline,
@@ -181,19 +181,19 @@ export default async function TrainerProfilePage({
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://air-trainer-academy.top"
+        "item": "https://ai-trainer-academy.top"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Trainers",
-        "item": "https://air-trainer-academy.top/trainers"
+        "item": "https://ai-trainer-academy.top/trainers"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": trainer.name,
-        "item": `https://air-trainer-academy.top/trainers/${trainer.slug}`
+        "item": `https://ai-trainer-academy.top/trainers/${trainer.slug}`
       }
     ]
   };

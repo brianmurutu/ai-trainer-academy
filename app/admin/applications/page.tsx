@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Applications — Admin" };
+export const metadata: Metadata = { title: "Applications | Admin" };
 
 const STAT_STATUSES = [
   { key: "pending",  label: "Pending",  bg: "#FEF3C7", color: "#D97706", Icon: Clock },

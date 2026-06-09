@@ -4,7 +4,7 @@ import TrainerCard, { type TrainerCardData } from "@/components/trainers/Trainer
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Find a Trainer — AI Trainer Academy",
+  title: "Find a Trainer | AI Trainer Academy",
   description:
     "Browse verified AI trainers specialising in LLM fine-tuning, RLHF, RAG systems, prompt engineering, and more.",
 };

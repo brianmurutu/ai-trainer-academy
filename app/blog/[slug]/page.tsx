@@ -13,9 +13,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post) return { title: "Article Not Found — AI Trainer Academy" };
+  if (!post) return { title: "Article Not Found | AI Trainer Academy" };
   return {
-    title: `${post.title} — AI Trainer Academy Blog`,
+    title: `${post.title} | AI Trainer Academy Blog`,
     description: post.excerpt,
   };
 }
@@ -33,7 +33,7 @@ export default async function BlogPostPage({
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "@id": `https://air-trainer-academy.top/blog/${post.slug}#post`,
+    "@id": `https://ai-trainer-academy.top/blog/${post.slug}#post`,
     "headline": post.title,
     "description": post.excerpt,
     "datePublished": post.date,
@@ -47,12 +47,12 @@ export default async function BlogPostPage({
       "name": "AI Trainer Academy",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://air-trainer-academy.top/favicon.ico"
+        "url": "https://ai-trainer-academy.top/favicon.ico"
       }
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://air-trainer-academy.top/blog/${post.slug}`
+      "@id": `https://ai-trainer-academy.top/blog/${post.slug}`
     }
   };
 
@@ -64,19 +64,19 @@ export default async function BlogPostPage({
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://air-trainer-academy.top"
+        "item": "https://ai-trainer-academy.top"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Blog",
-        "item": "https://air-trainer-academy.top/blog"
+        "item": "https://ai-trainer-academy.top/blog"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": post.title,
-        "item": `https://air-trainer-academy.top/blog/${post.slug}`
+        "item": `https://ai-trainer-academy.top/blog/${post.slug}`
       }
     ]
   };

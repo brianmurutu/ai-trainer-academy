@@ -3,8 +3,8 @@ import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://air-trainer-academy.top"),
-  title: "AI Trainer Academy — Learn to Train AI Models",
+  metadataBase: new URL("https://ai-trainer-academy.top"),
+  title: "AI Trainer Academy | Learn to Train AI Models",
   description: "Connect with verified AI training experts. Learn fine-tuning, prompt engineering, RLHF, and dataset curation from real practitioners. Pay in KSH, USD, or crypto.",
   keywords: "AI model training, fine-tuning, prompt engineering, RLHF, AI courses, machine learning training, AI education Kenya",
   openGraph: {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description: "The #1 platform for AI model training education. Learn from verified experts.",
     type: "website",
     siteName: "AI Trainer Academy",
-    url: "https://air-trainer-academy.top",
+    url: "https://ai-trainer-academy.top",
   },
   twitter: {
     card: "summary_large_image",
@@ -26,12 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": "https://air-trainer-academy.top/#organization",
+    "@id": "https://ai-trainer-academy.top/#organization",
     "name": "AI Trainer Academy",
-    "url": "https://air-trainer-academy.top",
+    "url": "https://ai-trainer-academy.top",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://air-trainer-academy.top/favicon.ico",
+      "url": "https://ai-trainer-academy.top/favicon.ico",
       "caption": "AI Trainer Academy Logo"
     },
     "description": "Connect with verified AI training experts. Learn fine-tuning, prompt engineering, RLHF, and dataset curation from real practitioners."

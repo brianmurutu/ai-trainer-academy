@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Certifications — AI Trainer Academy",
+  title: "Certifications | AI Trainer Academy",
   description: "Learn about the verified certification framework of AI Trainer Academy.",
 };
 

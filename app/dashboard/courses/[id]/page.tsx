@@ -11,9 +11,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const course = getCourseById(id);
-  if (!course) return { title: "Course Player — AI Trainer Academy" };
+  if (!course) return { title: "Course Player | AI Trainer Academy" };
   return {
-    title: `Learning: ${course.title} — AI Trainer Academy`,
+    title: `Learning: ${course.title} | AI Trainer Academy`,
   };
 }
 

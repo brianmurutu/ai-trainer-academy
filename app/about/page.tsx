@@ -5,7 +5,7 @@ import { Award, Brain, Users, Globe, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us — AI Trainer Academy",
+  title: "About Us | AI Trainer Academy",
   description: "Learn about the mission, values, and founders of AI Trainer Academy.",
 };
 

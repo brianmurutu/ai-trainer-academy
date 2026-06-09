@@ -5,7 +5,7 @@ import { Briefcase, MapPin, Clock, Brain, Globe, Award } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Careers — AI Trainer Academy",
+  title: "Careers | AI Trainer Academy",
   description: "Explore career opportunities at AI Trainer Academy. Build the future of AI engineering education.",
 };
 

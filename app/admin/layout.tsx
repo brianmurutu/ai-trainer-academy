@@ -5,7 +5,7 @@ import { Brain, LayoutList, Users, Settings, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Admin — AI Trainer Academy",
+  title: "Admin | AI Trainer Academy",
 };
 
 const NAV = [

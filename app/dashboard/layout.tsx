@@ -4,7 +4,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard — AI Trainer Academy",
+  title: "Dashboard | AI Trainer Academy",
   description: "Track your learning progress, upcoming sessions, and earned certificates.",
 };
 

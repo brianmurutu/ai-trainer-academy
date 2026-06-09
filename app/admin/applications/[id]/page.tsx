@@ -5,7 +5,7 @@ import ReviewActions from "@/components/admin/ReviewActions";
 import { ChevronLeft, MapPin, Star, Clock, ExternalLink, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Review Application — Admin" };
+export const metadata: Metadata = { title: "Review Application | Admin" };
 
 const STATUS_CONFIG = {
   pending:  { label: "Pending review", bg: "#FEF3C7", color: "#D97706", Icon: Clock },

@@ -2,7 +2,7 @@ import CourseEditor from "@/components/trainer/CourseEditor";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Edit Course — Trainer Portal",
+  title: "Edit Course | Trainer Portal",
 };
 
 export default async function EditCoursePage({

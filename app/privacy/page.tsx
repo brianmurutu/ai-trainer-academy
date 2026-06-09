@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — AI Trainer Academy",
+  title: "Privacy Policy | AI Trainer Academy",
   description: "Learn how AI Trainer Academy collects, uses, and protects your personal data.",
 };
 

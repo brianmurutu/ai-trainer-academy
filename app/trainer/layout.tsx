@@ -4,7 +4,7 @@ import TrainerSidebar from "@/components/dashboard/TrainerSidebar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Trainer Portal — AI Trainer Academy",
+  title: "Trainer Portal | AI Trainer Academy",
   description: "Manage your bookings, courses, earnings, and payout settings.",
 };
 

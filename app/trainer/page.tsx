@@ -22,7 +22,7 @@ import type { Metadata } from "next";
 import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
 
 export const metadata: Metadata = {
-  title: "Trainer Overview — AI Trainer Academy",
+  title: "Trainer Overview | AI Trainer Academy",
 };
 
 // ---------------------------------------------------------------------------

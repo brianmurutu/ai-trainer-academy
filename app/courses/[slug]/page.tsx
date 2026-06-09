@@ -15,9 +15,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const course = getCourseBySlug(slug);
-  if (!course) return { title: "Course Not Found — AI Trainer Academy" };
+  if (!course) return { title: "Course Not Found | AI Trainer Academy" };
   return {
-    title: `${course.title} — AI Trainer Academy`,
+    title: `${course.title} | AI Trainer Academy`,
     description: course.description,
   };
 }
@@ -40,13 +40,13 @@ export default async function CourseDetailPage({
   const courseJsonLd = {
     "@context": "https://schema.org",
     "@type": "Course",
-    "@id": `https://air-trainer-academy.top/courses/${course.slug}#course`,
+    "@id": `https://ai-trainer-academy.top/courses/${course.slug}#course`,
     "name": course.title,
     "description": course.description,
     "provider": {
       "@type": "Organization",
       "name": "AI Trainer Academy",
-      "url": "https://air-trainer-academy.top"
+      "url": "https://ai-trainer-academy.top"
     },
     "hasCourseInstance": {
       "@type": "CourseInstance",
@@ -81,19 +81,19 @@ export default async function CourseDetailPage({
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://air-trainer-academy.top"
+        "item": "https://ai-trainer-academy.top"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Courses",
-        "item": "https://air-trainer-academy.top/courses"
+        "item": "https://ai-trainer-academy.top/courses"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": course.title,
-        "item": `https://air-trainer-academy.top/courses/${course.slug}`
+        "item": `https://ai-trainer-academy.top/courses/${course.slug}`
       }
     ]
   };

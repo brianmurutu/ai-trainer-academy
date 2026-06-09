@@ -27,6 +27,6 @@ export default function robots(): MetadataRoute.Robots {
         "/forgot-password",
       ],
     },
-    sitemap: "https://air-trainer-academy.top/sitemap.xml",
+    sitemap: "https://ai-trainer-academy.top/sitemap.xml",
   };
 }

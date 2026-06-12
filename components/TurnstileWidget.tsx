@@ -40,10 +40,13 @@ const TurnstileWidget = forwardRef<TurnstileInstance, TurnstileWidgetProps>(
       isExpired: () => internalRef.current?.isExpired() ?? false,
     }));
 
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    // The site key is a PUBLIC credential (like a reCAPTCHA public key) — it is
+    // intentionally visible in page HTML to all users. Hardcoding it as a fallback
+    // ensures the widget always loads even when the NEXT_PUBLIC_ env var is absent
+    // from the production client bundle (e.g. env var not set in hosting dashboard).
+    const siteKey =
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAADjgT5WKDh8qp6ux";
 
-    // If site key not configured, render nothing (dev fallback).
-    // Forms must still check if token is empty and show a warning.
     if (!siteKey) return null;
 
     return (

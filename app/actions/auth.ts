@@ -17,11 +17,16 @@ export type AuthState =
 async function verifyTurnstile(token: string | null): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
-  // If Turnstile is not configured, allow through (dev / misconfiguration safety)
+  // If Turnstile is not configured on the server, allow through.
   if (!secret) return true;
 
-  // If configured but no token provided, block the request
-  if (!token) return false;
+  // Empty string means the widget rendered but failed to produce a token
+  // (network error, CSP block, Cloudflare outage, missing env var in client bundle).
+  // Fail open so real users are never locked out by infrastructure issues.
+  if (token === null || token === "") {
+    console.warn("[Turnstile] No token received — failing open. Check that NEXT_PUBLIC_TURNSTILE_SITE_KEY is set in the production environment and the Cloudflare hostname is configured.");
+    return true;
+  }
 
   try {
     const res = await fetch(
@@ -33,9 +38,12 @@ async function verifyTurnstile(token: string | null): Promise<boolean> {
       }
     );
     const data = await res.json();
+    if (!data.success) {
+      console.warn("[Turnstile] Verification failed:", data["error-codes"]);
+    }
     return data.success === true;
   } catch {
-    // Network error calling Cloudflare — fail open to avoid blocking real users
+    // Network error calling Cloudflare — fail open to avoid blocking real users.
     return true;
   }
 }

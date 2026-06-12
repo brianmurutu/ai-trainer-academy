@@ -14,18 +14,21 @@ export type AuthState =
 // ---------------------------------------------------------------------------
 // Turnstile server-side verification helper
 // ---------------------------------------------------------------------------
-async function verifyTurnstile(token: string | null): Promise<boolean> {
+type TurnstileResult =
+  | { ok: true }
+  | { ok: false; reason: string };
+
+async function verifyTurnstile(token: string | null): Promise<TurnstileResult> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
   // If Turnstile is not configured on the server, allow through.
-  if (!secret) return true;
+  if (!secret) return { ok: true };
 
-  // Empty string means the widget rendered but failed to produce a token
-  // (network error, CSP block, Cloudflare outage, missing env var in client bundle).
-  // Fail open so real users are never locked out by infrastructure issues.
-  if (token === null || token === "") {
-    console.warn("[Turnstile] No token received — failing open. Check that NEXT_PUBLIC_TURNSTILE_SITE_KEY is set in the production environment and the Cloudflare hostname is configured.");
-    return true;
+  // Empty / missing token means the widget failed to load or produce a token.
+  // Fail open so real users are not locked out by infrastructure issues.
+  if (!token) {
+    console.warn("[Turnstile] No token — failing open.");
+    return { ok: true };
   }
 
   try {
@@ -38,13 +41,18 @@ async function verifyTurnstile(token: string | null): Promise<boolean> {
       }
     );
     const data = await res.json();
+
     if (!data.success) {
-      console.warn("[Turnstile] Verification failed:", data["error-codes"]);
+      const codes: string = (data["error-codes"] ?? []).join(", ") || "unknown";
+      console.warn("[Turnstile] Verification failed:", codes);
+      return { ok: false, reason: codes };
     }
-    return data.success === true;
-  } catch {
+
+    return { ok: true };
+  } catch (err) {
     // Network error calling Cloudflare — fail open to avoid blocking real users.
-    return true;
+    console.warn("[Turnstile] Network error:", err);
+    return { ok: true };
   }
 }
 
@@ -63,9 +71,9 @@ export async function loginAction(
     return { error: "Please fill in all fields." };
   }
 
-  const isHuman = await verifyTurnstile(turnstileToken);
-  if (!isHuman) {
-    return { error: "Security check failed. Please refresh and try again." };
+  const check = await verifyTurnstile(turnstileToken);
+  if (!check.ok) {
+    return { error: `Security check failed (${check.reason}). Please refresh and try again.` };
   }
 
   const supabase = await createClient();
@@ -104,9 +112,9 @@ export async function signupAction(
     return { error: "Password must be at least 8 characters." };
   }
 
-  const isHuman = await verifyTurnstile(turnstileToken);
-  if (!isHuman) {
-    return { error: "Security check failed. Please refresh and try again." };
+  const check = await verifyTurnstile(turnstileToken);
+  if (!check.ok) {
+    return { error: `Security check failed (${check.reason}). Please refresh and try again.` };
   }
 
   const supabase = await createClient();

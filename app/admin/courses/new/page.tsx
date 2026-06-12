@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCourse } from "@/app/actions/courses";
-import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon, Link2 } from "lucide-react";
 import Link from "next/link";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
@@ -56,10 +56,11 @@ export default function NewCoursePage() {
   const router = useRouter();
   const [state, action, pending] = useActionState(createCourse, undefined);
   const [autoKsh, setAutoKsh] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [imagePreviewError, setImagePreviewError] = useState(false);
 
-  // Auto-redirect on success
   useEffect(() => {
-    if (state?.success) {
+    if (state && "success" in state && state.success) {
       setTimeout(() => router.push("/admin/courses"), 1200);
     }
   }, [state, router]);
@@ -94,7 +95,7 @@ export default function NewCoursePage() {
       </div>
 
       {/* Success banner */}
-      {state?.success && (
+      {state && "success" in state && state.success && (
         <div style={{
           display: "flex", alignItems: "center", gap: 12,
           padding: "14px 18px", background: "#D1FAE5",
@@ -108,7 +109,7 @@ export default function NewCoursePage() {
       )}
 
       {/* Error banner */}
-      {state?.error && (
+      {state && "error" in state && (
         <div style={{
           display: "flex", alignItems: "center", gap: 12,
           padding: "14px 18px", background: "#FEE2E2",
@@ -230,6 +231,57 @@ export default function NewCoursePage() {
             </div>
           </Section>
 
+          {/* ── Media & Enrolment ───────────────────────────── */}
+          <Section title="Media & Enrolment Link">
+            <div>
+              <Label hint="Paste a direct image link from your Telegram files bot">
+                <ImageIcon size={13} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
+                Featured Image URL
+              </Label>
+              <input
+                name="image_url"
+                type="url"
+                value={imageUrl}
+                onChange={(e) => { setImageUrl(e.target.value); setImagePreviewError(false); }}
+                placeholder="https://t.me/very_special_link_bot/… or any direct image URL"
+                style={input}
+                onFocus={focusStyle} onBlur={blurStyle}
+              />
+              {imageUrl && !imagePreviewError && (
+                <div style={{ marginTop: 10, borderRadius: 10, overflow: "hidden", border: "1px solid var(--line)", maxHeight: 200 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageUrl}
+                    alt="Featured image preview"
+                    onError={() => setImagePreviewError(true)}
+                    style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }}
+                  />
+                </div>
+              )}
+              {imageUrl && imagePreviewError && (
+                <p style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
+                  ⚠ Could not load preview — make sure the URL is a direct image link.
+                </p>
+              )}
+            </div>
+            <div>
+              <Label hint="Where learners go when they click Enrol Now">
+                <Link2 size={13} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
+                Enrolment / CTA Button URL
+              </Label>
+              <input
+                name="button_url"
+                type="url"
+                placeholder="https://t.me/very_special_link_bot/… or Stripe / Calendly link"
+                style={input}
+                onFocus={focusStyle} onBlur={blurStyle}
+              />
+              <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
+                This link appears behind the &quot;Enrol Now&quot; button on the course detail page.
+              </p>
+            </div>
+          </Section>
+
           {/* ── Trainer Info ───────────────────────────────────── */}
           <Section title="Trainer">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 12 }}>
@@ -313,7 +365,7 @@ export default function NewCoursePage() {
             </Link>
             <button
               type="submit"
-              disabled={pending || state?.success}
+              disabled={pending || (state !== undefined && "success" in state && state.success)}
               style={{
                 padding: "11px 28px", background: pending ? "var(--muted)" : "var(--accent)",
                 color: "white", border: "none", borderRadius: 10,
@@ -324,7 +376,7 @@ export default function NewCoursePage() {
               }}
             >
               {pending && <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />}
-              {pending ? "Creating..." : state?.success ? "Done!" : "Create Course"}
+              {pending ? "Creating..." : (state && "success" in state && state.success) ? "Done!" : "Create Course"}
             </button>
           </div>
         </div>

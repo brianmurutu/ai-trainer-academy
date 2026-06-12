@@ -1,6 +1,6 @@
 import { getAdminCourseList } from "@/app/actions/courses";
 import Link from "next/link";
-import { BookOpen, Plus, Trash2, ExternalLink } from "lucide-react";
+import { BookOpen, Plus, Trash2, ExternalLink, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Courses | Admin" };
@@ -57,7 +57,7 @@ export default async function AdminCoursesPage() {
           {/* Table head */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "2fr 140px 120px 100px 80px 90px",
+            gridTemplateColumns: "2fr 140px 120px 100px 80px 120px",
             padding: "10px 20px", background: "#F8F9FB",
             borderBottom: "1px solid var(--line)",
             fontSize: 11, fontWeight: 600, color: "var(--muted)",
@@ -76,7 +76,7 @@ export default async function AdminCoursesPage() {
               key={course.id}
               style={{
                 display: "grid",
-                gridTemplateColumns: "2fr 140px 120px 100px 80px 90px",
+                gridTemplateColumns: "2fr 140px 120px 100px 80px 120px",
                 padding: "14px 20px", alignItems: "center",
                 borderBottom: i < courses.length - 1 ? "1px solid var(--line)" : "none",
               }}
@@ -115,6 +115,20 @@ export default async function AdminCoursesPage() {
 
               {/* Actions */}
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {/* Edit */}
+                <Link
+                  href={`/admin/courses/${course.id}/edit`}
+                  title="Edit course"
+                  style={{
+                    width: 30, height: 30, borderRadius: 7, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    background: "#EEF2FF", color: "#6366F1",
+                    border: "1px solid #C7D2FE", textDecoration: "none",
+                  }}
+                >
+                  <Pencil size={13} />
+                </Link>
+                {/* View */}
                 <Link
                   href={`/courses/${course.slug}`}
                   target="_blank"
@@ -123,11 +137,12 @@ export default async function AdminCoursesPage() {
                     width: 30, height: 30, borderRadius: 7, display: "flex",
                     alignItems: "center", justifyContent: "center",
                     background: "#F0F2F5", color: "var(--slate)",
-                    border: "1px solid var(--line)",
+                    border: "1px solid var(--line)", textDecoration: "none",
                   }}
                 >
                   <ExternalLink size={13} />
                 </Link>
+                {/* Delete */}
                 <form action={async (fd) => {
                   "use server";
                   const { deleteCourse } = await import("@/app/actions/courses");

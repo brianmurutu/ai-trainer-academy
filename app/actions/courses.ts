@@ -29,13 +29,22 @@ export type AdminCourse = {
   title: string;
   trainer_name: string | null;
   description: string | null;
+  long_description: string | null;
+  trainer_initials: string | null;
+  trainer_title: string | null;
+  trainer_bio: string | null;
   price_usd: number;
   price_ksh: number;
   level: string | null;
+  duration: string | null;
   tag: string | null;
   enrolled_count: number;
   rating: number;
   created_at: string;
+  what_youll_learn: string[];
+  prerequisites: string[];
+  image_url: string | null;
+  button_url: string | null;
 };
 
 // ─── List all courses ─────────────────────────────────────────────────────────
@@ -45,7 +54,7 @@ export async function getAdminCourseList(): Promise<AdminCourse[]> {
   const { data, error } = await db
     .from("courses")
     .select(
-      "id, slug, title, trainer_name, description, price_usd, price_ksh, level, tag, enrolled_count, rating, created_at"
+      "id, slug, title, trainer_name, description, long_description, trainer_initials, trainer_title, trainer_bio, price_usd, price_ksh, level, duration, tag, enrolled_count, rating, created_at, what_youll_learn, prerequisites, image_url, button_url"
     )
     .order("created_at", { ascending: false });
 
@@ -54,6 +63,25 @@ export async function getAdminCourseList(): Promise<AdminCourse[]> {
     return [];
   }
   return (data ?? []) as AdminCourse[];
+}
+
+// ─── Get single course by ID (for edit page) ──────────────────────────────────
+export async function getCourseById(id: string): Promise<AdminCourse | null> {
+  await requireAdmin();
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("courses")
+    .select(
+      "id, slug, title, trainer_name, description, long_description, trainer_initials, trainer_title, trainer_bio, price_usd, price_ksh, level, duration, tag, enrolled_count, rating, created_at, what_youll_learn, prerequisites, image_url, button_url"
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("[getCourseById]", error.message);
+    return null;
+  }
+  return data as AdminCourse;
 }
 
 // ─── Create course ────────────────────────────────────────────────────────────
@@ -120,6 +148,9 @@ export async function createCourse(
   };
   const tagStyle = TAG_COLORS[tag] ?? TAG_COLORS["Other"];
 
+  const imageUrl = (formData.get("image_url") as string)?.trim() || null;
+  const buttonUrl = (formData.get("button_url") as string)?.trim() || null;
+
   const { data, error } = await db
     .from("courses")
     .insert({
@@ -141,6 +172,8 @@ export async function createCourse(
       what_youll_learn: whatYoullLearn,
       prerequisites,
       curriculum: [],
+      image_url: imageUrl,
+      button_url: buttonUrl,
     })
     .select("id")
     .single();
@@ -150,6 +183,93 @@ export async function createCourse(
   revalidatePath("/admin/courses");
   revalidatePath("/courses");
   return { success: true, courseId: data.id };
+}
+
+// ─── Update course ────────────────────────────────────────────────────────────
+export type UpdateCourseFormState =
+  | { success: true; courseId: string }
+  | { error: string }
+  | undefined;
+
+export async function updateCourse(
+  _prev: UpdateCourseFormState,
+  formData: FormData
+): Promise<UpdateCourseFormState> {
+  await requireAdmin();
+
+  const id = formData.get("id") as string;
+  if (!id) return { error: "Missing course ID" };
+
+  const title = (formData.get("title") as string)?.trim();
+  const description = (formData.get("description") as string)?.trim();
+  const longDescription = (formData.get("long_description") as string)?.trim();
+  const trainerName = (formData.get("trainer_name") as string)?.trim();
+  const trainerInitials = (formData.get("trainer_initials") as string)?.trim();
+  const trainerTitle = (formData.get("trainer_title") as string)?.trim();
+  const trainerBio = (formData.get("trainer_bio") as string)?.trim();
+  const level = (formData.get("level") as string)?.trim();
+  const duration = (formData.get("duration") as string)?.trim();
+  const tag = (formData.get("tag") as string)?.trim();
+  const priceUsd = parseFloat((formData.get("price_usd") as string) || "0");
+  const priceKsh = parseFloat((formData.get("price_ksh") as string) || "0");
+  const imageUrl = (formData.get("image_url") as string)?.trim() || null;
+  const buttonUrl = (formData.get("button_url") as string)?.trim() || null;
+
+  const whatYoullLearn = ((formData.get("what_youll_learn") as string) || "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const prerequisites = ((formData.get("prerequisites") as string) || "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (!title) return { error: "Course title is required" };
+  if (!description) return { error: "Short description is required" };
+  if (!trainerName) return { error: "Trainer name is required" };
+
+  const TAG_COLORS: Record<string, { color: string; bg: string }> = {
+    "Fine-tuning": { color: "#6366F1", bg: "#EEF2FF" },
+    Prompting: { color: "#059669", bg: "#D1FAE5" },
+    "RAG / Dev": { color: "#3B82F6", bg: "#DBEAFE" },
+    "AI Safety": { color: "#7C3AED", bg: "#EDE9FE" },
+    MLOps: { color: "#B45309", bg: "#FEF3C7" },
+    "Computer Vision": { color: "#DC2626", bg: "#FEE2E2" },
+    Other: { color: "#4B5875", bg: "#F4F6FC" },
+  };
+  const tagStyle = TAG_COLORS[tag] ?? TAG_COLORS["Other"];
+
+  const db = createAdminClient();
+  const { error } = await db
+    .from("courses")
+    .update({
+      title,
+      description,
+      long_description: longDescription || null,
+      trainer_name: trainerName || null,
+      trainer_initials: trainerInitials || trainerName.split(" ").map((n) => n[0]).slice(0, 2).join(""),
+      trainer_title: trainerTitle || null,
+      trainer_bio: trainerBio || null,
+      level: level || null,
+      duration: duration || null,
+      tag: tag || null,
+      tag_color: tagStyle.color,
+      tag_bg: tagStyle.bg,
+      price_usd: priceUsd,
+      price_ksh: priceKsh,
+      what_youll_learn: whatYoullLearn,
+      prerequisites,
+      image_url: imageUrl,
+      button_url: buttonUrl,
+    })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/courses");
+  revalidatePath("/courses");
+  revalidatePath(`/admin/courses/${id}/edit`);
+  return { success: true, courseId: id };
 }
 
 // ─── Delete course ────────────────────────────────────────────────────────────

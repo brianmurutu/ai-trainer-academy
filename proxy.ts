@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 /**
  * proxy.ts — Next.js 16 route guard (replaces deprecated middleware.ts).
  *
- * Protected routes: /dashboard/** and /trainer/**
+ * Protected routes: /dashboard/**, /trainer/**, /admin/**
  * Auth routes (redirect away if already logged in): /login, /signup
  */
 export async function proxy(request: NextRequest) {
@@ -42,7 +42,9 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtectedRoute =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/trainer");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/trainer") ||
+    pathname.startsWith("/admin");
 
   const isAuthRoute = pathname === "/login" || pathname === "/signup";
 
@@ -56,7 +58,8 @@ export async function proxy(request: NextRequest) {
   // Authenticated user hitting login/signup → send to their dashboard
   if (isAuthRoute && user) {
     const role = (user.user_metadata?.role as string) ?? "learner";
-    const dest = role === "trainer" ? "/trainer" : "/dashboard";
+    const dest =
+      role === "admin" ? "/admin" : role === "trainer" ? "/trainer" : "/dashboard";
     return NextResponse.redirect(new URL(dest, request.nextUrl));
   }
 

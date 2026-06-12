@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendApprovalEmail, sendRejectionEmail } from "@/lib/email";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
 
 // ---------------------------------------------------------------------------
 // Guard — must be admin to call these actions
@@ -121,6 +123,9 @@ export async function approveApplication(
 
   if (updateError) return { error: updateError.message };
 
+  revalidatePath("/admin/applications");
+  revalidatePath("/admin");
+
   // Send approval email to trainer (non-blocking — don't fail the action if email fails)
   try {
     await sendApprovalEmail({
@@ -171,6 +176,9 @@ export async function rejectApplication(
     .eq("id", id);
 
   if (updateError) return { error: updateError.message };
+
+  revalidatePath("/admin/applications");
+  revalidatePath("/admin");
 
   try {
     await sendRejectionEmail({

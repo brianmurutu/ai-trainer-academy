@@ -50,6 +50,7 @@ export async function loginAction(
   } = await supabase.auth.getUser();
 
   const role = (user?.user_metadata?.role as string) ?? "learner";
+  if (role === "admin") redirect("/admin");
   redirect(role === "trainer" ? "/trainer" : "/dashboard");
 }
 

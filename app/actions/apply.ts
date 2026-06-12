@@ -1,6 +1,5 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendNewApplicationNotification } from "@/lib/email";
 
@@ -66,14 +65,14 @@ export async function submitApplicationAction(
     return { error: "A short bio is required for your profile." };
   }
 
-  const supabase = await createClient();
-  const adminSupabase = createAdminClient();
+  // Use the admin client (service role) for ALL operations so RLS never blocks us.
+  // The trainer's auth account is created first, then the application row is inserted.
+  const db = createAdminClient();
 
-  // Use the admin API to create the trainer account.
+  // Step 1: Create the Supabase auth account with trainer role.
   // email_confirm: true marks the email as already verified so Supabase
-  // never attempts to send a confirmation email. Trainers go through a
-  // manual approval process, so email confirmation is redundant at this stage.
-  const { data: authData, error: signUpError } = await adminSupabase.auth.admin.createUser({
+  // never tries to send a confirmation email. Trainers need admin approval first.
+  const { data: authData, error: signUpError } = await db.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
@@ -88,13 +87,14 @@ export async function submitApplicationAction(
   }
 
   const userId = authData.user?.id;
-
   if (!userId) {
     return { error: "Account creation failed. Please try again." };
   }
 
   // Step 2: Insert the application record into trainer_applications
-  const { error: insertError } = await supabase
+  // Use adminSupabase (service role) — the applicant is not signed in yet so
+  // RLS would block any insert made with the anon client.
+  const { data: inserted, error: insertError } = await db
     .from("trainer_applications")
     .insert({
       user_id: userId,
@@ -110,28 +110,26 @@ export async function submitApplicationAction(
       github_url: github || null,
       sample_work_url: sampleWork || null,
       status: "pending",
-    });
+    })
+    .select("id")
+    .single();
 
   if (insertError) {
     console.error("trainer_applications insert error:", insertError.message);
-  } else {
-    // Notify admin inbox (non-blocking)
-    try {
-      const { data: inserted } = await supabase
-        .from("trainer_applications")
-        .select("id")
-        .eq("user_id", userId)
-        .single();
-      if (inserted?.id) {
-        await sendNewApplicationNotification({
-          applicantName: fullName,
-          applicantEmail: email,
-          applicationId: inserted.id,
-        });
-      }
-    } catch (notifyErr) {
-      console.error("Admin notification email failed:", notifyErr);
+    return { error: insertError.message };
+  }
+
+  // Notify admin inbox (non-blocking)
+  try {
+    if (inserted?.id) {
+      await sendNewApplicationNotification({
+        applicantName: fullName,
+        applicantEmail: email,
+        applicationId: inserted.id,
+      });
     }
+  } catch (notifyErr) {
+    console.error("Admin notification email failed:", notifyErr);
   }
 
   return { success: true, applicantName: fullName, applicantEmail: email };

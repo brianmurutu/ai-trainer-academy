@@ -59,10 +59,10 @@ export default function SignupPage() {
 
   const handleSubmit = (formData: FormData) => {
     action(formData);
-    if (state?.error) {
-      turnstileRef.current?.reset();
-      setTurnstileToken("");
-    }
+    // Always reset the widget after submit so the one-time token can't be reused.
+    // The widget will auto-issue a new token before the user can resubmit.
+    turnstileRef.current?.reset();
+    setTurnstileToken("");
   };
 
   const siteKeyConfigured = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -123,6 +123,8 @@ export default function SignupPage() {
 
         <form action={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <input type="hidden" name="role" value={role} />
+          {/* Hidden field so the Turnstile token is included in the FormData the server action receives */}
+          <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
           <div>
             <label htmlFor="signup-name" style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--ink)", marginBottom: 6 }}>Full name</label>

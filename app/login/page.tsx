@@ -71,10 +71,9 @@ export default function LoginPage() {
   // Reset Turnstile after a failed submission so the user can retry
   const handleSubmit = (formData: FormData) => {
     action(formData);
-    if (state?.error) {
-      turnstileRef.current?.reset();
-      setTurnstileToken("");
-    }
+    // Always reset so the one-time token can't be reused across submissions.
+    turnstileRef.current?.reset();
+    setTurnstileToken("");
   };
 
   const siteKeyConfigured = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -103,6 +102,8 @@ export default function LoginPage() {
         )}
 
         <form action={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Hidden field so the Turnstile token is included in the FormData the server action receives */}
+          <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
           <div>
             <label htmlFor="login-email" style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--ink)", marginBottom: 6 }}>
               Email address

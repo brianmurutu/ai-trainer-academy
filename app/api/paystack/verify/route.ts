@@ -1,27 +1,26 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 /**
- * GET /api/paystack/verify?reference=xxx
+ * GET /api/paystack/verify?reference=xxx[&courseId=xxx]
  *
- * Called after Paystack redirects the user back to the site.
- * Verifies the transaction with Paystack, inserts a confirmed booking
- * in Supabase, then redirects to the dashboard sessions page.
+ * Verifies the transaction, then either:
+ *   - Course purchase: upserts enrollment, redirects to /dashboard/courses
+ *   - Trainer booking: upserts booking, redirects to /dashboard/sessions
  */
 export async function GET(request: NextRequest) {
-  const reference = request.nextUrl.searchParams.get("reference");
+  const { searchParams, origin } = request.nextUrl;
+  const reference = searchParams.get("reference");
+  const courseId = searchParams.get("courseId");
 
   if (!reference) {
-    return NextResponse.redirect(
-      new URL("/trainers?error=missing_reference", request.nextUrl.origin)
-    );
+    return NextResponse.redirect(new URL("/courses?error=missing_reference", origin));
   }
 
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   if (!secretKey) {
-    return NextResponse.redirect(
-      new URL("/trainers?error=config_error", request.nextUrl.origin)
-    );
+    return NextResponse.redirect(new URL("/courses?error=config_error", origin));
   }
 
   try {
@@ -36,53 +35,83 @@ export async function GET(request: NextRequest) {
     const body = await paystackRes.json();
 
     if (!body.status || body.data?.status !== "success") {
-      return NextResponse.redirect(
-        new URL(
-          `/trainers?error=payment_failed&ref=${reference}`,
-          request.nextUrl.origin
-        )
-      );
+      const dest = courseId ? `/courses?error=payment_failed` : `/trainers?error=payment_failed`;
+      return NextResponse.redirect(new URL(dest, origin));
     }
 
     const tx = body.data;
     const metadata = tx.metadata ?? {};
+    const resolvedCourseId = courseId || metadata.courseId || null;
 
-    // Amount comes in lowest unit (kobo/pesewas); convert to base currency
     const amountKsh = Math.round((tx.amount ?? 0) / 100);
     const amountUsd = metadata.amount_usd ? parseFloat(metadata.amount_usd) : 0;
 
-    // Write confirmed booking to Supabase
     const db = createAdminClient();
-    const { error } = await db.from("bookings").upsert(
-      {
-        paystack_reference: reference,
-        trainer_id: metadata.trainer_id ?? null,
-        session_topic: metadata.session_topic ?? null,
-        amount_ksh: amountKsh,
-        amount_usd: amountUsd,
-        payment_method: "paystack",
-        status: "confirmed",
-      },
-      { onConflict: "paystack_reference" }
-    );
 
-    if (error) {
-      // Log but still redirect — the payment was successful
-      console.error("[Paystack verify] bookings upsert error:", error.message);
+    if (resolvedCourseId) {
+      // Course purchase - create enrollment
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { error: enrollErr } = await db
+          .from("enrollments")
+          .upsert(
+            {
+              user_id: user.id,
+              course_id: resolvedCourseId,
+              progress_pct: 0,
+              completed_lessons: [],
+            },
+            { onConflict: "user_id,course_id" }
+          );
+        if (enrollErr) {
+          console.error("[Paystack verify] enrollment upsert error:", enrollErr.message);
+        }
+      }
+
+      // Also write to bookings for admin visibility
+      await db.from("bookings").upsert(
+        {
+          paystack_reference: reference,
+          course_id: resolvedCourseId,
+          session_topic: metadata.courseTitle || metadata.session_topic || null,
+          amount_ksh: amountKsh,
+          amount_usd: amountUsd,
+          payment_method: "paystack",
+          status: "confirmed",
+        },
+        { onConflict: "paystack_reference" }
+      );
+
+      return NextResponse.redirect(
+        new URL(`/dashboard/courses?enrolled=${resolvedCourseId}`, origin)
+      );
     } else {
-      console.log(`[Paystack verify] Booking confirmed: ${reference}`);
-    }
+      // Trainer session booking
+      const { error } = await db.from("bookings").upsert(
+        {
+          paystack_reference: reference,
+          trainer_id: metadata.trainer_id ?? null,
+          session_topic: metadata.session_topic ?? null,
+          amount_ksh: amountKsh,
+          amount_usd: amountUsd,
+          payment_method: "paystack",
+          status: "confirmed",
+        },
+        { onConflict: "paystack_reference" }
+      );
 
-    return NextResponse.redirect(
-      new URL(
-        `/dashboard/sessions?booked=true&ref=${reference}`,
-        request.nextUrl.origin
-      )
-    );
+      if (error) {
+        console.error("[Paystack verify] bookings upsert error:", error.message);
+      }
+
+      return NextResponse.redirect(
+        new URL(`/dashboard/sessions?booked=true&ref=${reference}`, origin)
+      );
+    }
   } catch (err) {
     console.error("Paystack verify error:", err);
-    return NextResponse.redirect(
-      new URL("/trainers?error=verify_failed", request.nextUrl.origin)
-    );
+    return NextResponse.redirect(new URL("/courses?error=verify_failed", origin));
   }
 }

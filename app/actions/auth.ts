@@ -12,6 +12,35 @@ export type AuthState =
   | undefined;
 
 // ---------------------------------------------------------------------------
+// Turnstile server-side verification helper
+// ---------------------------------------------------------------------------
+async function verifyTurnstile(token: string | null): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+
+  // If Turnstile is not configured, allow through (dev / misconfiguration safety)
+  if (!secret) return true;
+
+  // If configured but no token provided, block the request
+  if (!token) return false;
+
+  try {
+    const res = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret, response: token }),
+      }
+    );
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    // Network error calling Cloudflare — fail open to avoid blocking real users
+    return true;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Login
 // ---------------------------------------------------------------------------
 export async function loginAction(
@@ -20,9 +49,15 @@ export async function loginAction(
 ): Promise<AuthState> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const turnstileToken = formData.get("cf-turnstile-response") as string | null;
 
   if (!email || !password) {
     return { error: "Please fill in all fields." };
+  }
+
+  const isHuman = await verifyTurnstile(turnstileToken);
+  if (!isHuman) {
+    return { error: "Security check failed. Please refresh and try again." };
   }
 
   const supabase = await createClient();
@@ -32,7 +67,6 @@ export async function loginAction(
     return { error: error.message };
   }
 
-  // Get user to determine role-based redirect
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -52,6 +86,7 @@ export async function signupAction(
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const role = (formData.get("role") as string) || "learner";
+  const turnstileToken = formData.get("cf-turnstile-response") as string | null;
 
   if (!name || !email || !password) {
     return { error: "Please fill in all fields." };
@@ -59,6 +94,11 @@ export async function signupAction(
 
   if (password.length < 8) {
     return { error: "Password must be at least 8 characters." };
+  }
+
+  const isHuman = await verifyTurnstile(turnstileToken);
+  if (!isHuman) {
+    return { error: "Security check failed. Please refresh and try again." };
   }
 
   const supabase = await createClient();
@@ -77,7 +117,6 @@ export async function signupAction(
     return { error: error.message };
   }
 
-  // Trainer role → head to the application form
   if (role === "trainer") {
     redirect("/apply");
   }
@@ -100,8 +139,6 @@ export async function forgotPasswordAction(
 
   const supabase = await createClient();
 
-  // redirectTo must be an absolute URL — use the env var in production,
-  // fall back to localhost in development.
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -117,7 +154,7 @@ export async function forgotPasswordAction(
 }
 
 // ---------------------------------------------------------------------------
-// Logout (can be called from any server action or route)
+// Logout
 // ---------------------------------------------------------------------------
 export async function logoutAction(): Promise<never> {
   const supabase = await createClient();

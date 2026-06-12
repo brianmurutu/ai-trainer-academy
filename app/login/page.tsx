@@ -1,10 +1,12 @@
 "use client";
-import { useState, useActionState } from "react";
+import { useState, useRef, useActionState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react";
 import AuthShell from "@/components/AuthShell";
 import { loginAction } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/client";
+import TurnstileWidget from "@/components/TurnstileWidget";
+import type { TurnstileInstance } from "@/components/TurnstileWidget";
 
 const sidePanelContent = (
   <div>
@@ -51,7 +53,10 @@ const sidePanelContent = (
 export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState(false);
   const [state, action, pending] = useActionState(loginAction, undefined);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const handleOAuth = async (provider: "google" | "github") => {
     const supabase = createClient();
@@ -62,6 +67,17 @@ export default function LoginPage() {
       },
     });
   };
+
+  // Reset Turnstile after a failed submission so the user can retry
+  const handleSubmit = (formData: FormData) => {
+    action(formData);
+    if (state?.error) {
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
+    }
+  };
+
+  const siteKeyConfigured = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   return (
     <AuthShell side={sidePanelContent}>
@@ -86,7 +102,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form action={action} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <form action={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <label htmlFor="login-email" style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--ink)", marginBottom: 6 }}>
               Email address
@@ -143,15 +159,43 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" disabled={pending} style={{
-            width: "100%", padding: "12px", marginTop: 4,
-            background: pending ? "var(--slate)" : "var(--navy)",
-            color: "white", border: "none", borderRadius: 10,
-            fontSize: 15, fontWeight: 500, cursor: pending ? "not-allowed" : "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            transition: "background 0.15s",
-          }}>
-            {pending ? "Signing in…" : <><span>Sign in</span><ArrowRight size={16} /></>}
+          {/* Cloudflare Turnstile — token posted as cf-turnstile-response */}
+          <div>
+            <TurnstileWidget
+              ref={turnstileRef}
+              onSuccess={(token) => { setTurnstileToken(token); setTurnstileError(false); }}
+              onError={() => { setTurnstileToken(""); setTurnstileError(true); }}
+              onExpire={() => setTurnstileToken("")}
+            />
+            {turnstileError && (
+              <p style={{ fontSize: 12, color: "#DC2626", marginTop: 6 }}>
+                Security check failed. Please refresh the page and try again.
+              </p>
+            )}
+          </div>
+
+          {/* Security badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: -4 }}>
+            <ShieldCheck size={13} color="var(--green)" />
+            <span style={{ fontSize: 11, color: "var(--muted)" }}>
+              Protected by Cloudflare Turnstile
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={pending || (siteKeyConfigured && !turnstileToken)}
+            style={{
+              width: "100%", padding: "12px", marginTop: 4,
+              background: (pending || (siteKeyConfigured && !turnstileToken)) ? "var(--slate)" : "var(--navy)",
+              color: "white", border: "none", borderRadius: 10,
+              fontSize: 15, fontWeight: 500,
+              cursor: (pending || (siteKeyConfigured && !turnstileToken)) ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "background 0.15s",
+            }}
+          >
+            {pending ? "Signing in..." : <><span>Sign in</span><ArrowRight size={16} /></>}
           </button>
         </form>
 
@@ -184,7 +228,7 @@ export default function LoginPage() {
         <div style={{ marginTop: 28, padding: 14, background: "var(--surface)", borderRadius: 10 }}>
           <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "center" }}>
             Are you a trainer?{" "}
-            <Link href="/apply" style={{ color: "var(--accent)", fontWeight: 500, textDecoration: "none" }}>Apply to teach on the platform →</Link>
+            <Link href="/apply" style={{ color: "var(--accent)", fontWeight: 500, textDecoration: "none" }}>Apply to teach on the platform</Link>
           </p>
         </div>
       </div>

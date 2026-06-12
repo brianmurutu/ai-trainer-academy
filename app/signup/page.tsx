@@ -1,9 +1,11 @@
 "use client";
-import { useState, useActionState } from "react";
+import { useState, useRef, useActionState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowRight, GraduationCap, Briefcase, Check, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, GraduationCap, Briefcase, Check, AlertCircle, ShieldCheck } from "lucide-react";
 import AuthShell from "@/components/AuthShell";
 import { signupAction } from "@/app/actions/auth";
+import TurnstileWidget from "@/components/TurnstileWidget";
+import type { TurnstileInstance } from "@/components/TurnstileWidget";
 
 const sidePanelContent = (
   <div>
@@ -50,7 +52,20 @@ export default function SignupPage() {
   const [role, setRole] = useState<"learner" | "trainer">("learner");
   const [showPwd, setShowPwd] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState(false);
   const [state, action, pending] = useActionState(signupAction, undefined);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+
+  const handleSubmit = (formData: FormData) => {
+    action(formData);
+    if (state?.error) {
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
+    }
+  };
+
+  const siteKeyConfigured = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   return (
     <AuthShell side={sidePanelContent}>
@@ -77,10 +92,10 @@ export default function SignupPage() {
 
         {/* Role selector */}
         <div style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", marginBottom: 10 }}>I want to join as a…</p>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", marginBottom: 10 }}>I want to join as a...</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {([
-              { key: "learner", label: "Learner", sub: "Access courses & trainers", Icon: GraduationCap },
+              { key: "learner", label: "Learner", sub: "Access courses and trainers", Icon: GraduationCap },
               { key: "trainer", label: "Trainer", sub: "Offer training services", Icon: Briefcase },
             ] as const).map(({ key, label, sub, Icon }) => (
               <button key={key} type="button" onClick={() => setRole(key)} style={{
@@ -106,8 +121,7 @@ export default function SignupPage() {
           )}
         </div>
 
-        <form action={action} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Hidden role field — passed to the server action */}
+        <form action={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <input type="hidden" name="role" value={role} />
 
           <div>
@@ -181,15 +195,43 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <button type="submit" disabled={pending} style={{
-            width: "100%", padding: "12px", marginTop: 6,
-            background: pending ? "var(--slate)" : "var(--navy)",
-            color: "white", border: "none", borderRadius: 10,
-            fontSize: 15, fontWeight: 500, cursor: pending ? "not-allowed" : "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            transition: "background 0.15s",
-          }}>
-            {pending ? "Creating account…" : (
+          {/* Cloudflare Turnstile */}
+          <div>
+            <TurnstileWidget
+              ref={turnstileRef}
+              onSuccess={(token) => { setTurnstileToken(token); setTurnstileError(false); }}
+              onError={() => { setTurnstileToken(""); setTurnstileError(true); }}
+              onExpire={() => setTurnstileToken("")}
+            />
+            {turnstileError && (
+              <p style={{ fontSize: 12, color: "#DC2626", marginTop: 6 }}>
+                Security check failed. Please refresh the page and try again.
+              </p>
+            )}
+          </div>
+
+          {/* Security badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: -4 }}>
+            <ShieldCheck size={13} color="var(--green)" />
+            <span style={{ fontSize: 11, color: "var(--muted)" }}>
+              Protected by Cloudflare Turnstile
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={pending || (siteKeyConfigured && !turnstileToken)}
+            style={{
+              width: "100%", padding: "12px", marginTop: 6,
+              background: (pending || (siteKeyConfigured && !turnstileToken)) ? "var(--slate)" : "var(--navy)",
+              color: "white", border: "none", borderRadius: 10,
+              fontSize: 15, fontWeight: 500,
+              cursor: (pending || (siteKeyConfigured && !turnstileToken)) ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "background 0.15s",
+            }}
+          >
+            {pending ? "Creating account..." : (
               role === "trainer"
                 ? <><span>Continue to application</span><ArrowRight size={16} /></>
                 : <><span>Create free account</span><ArrowRight size={16} /></>

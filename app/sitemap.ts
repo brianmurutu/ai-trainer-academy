@@ -1,8 +1,8 @@
 import { MetadataRoute } from "next";
-import { COURSES } from "@/lib/courses-data";
+import { getCourseRows, type CourseRow } from "@/lib/supabase/queries";
 import { BLOG_POSTS } from "@/lib/blog-data";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://ai-trainer-academy.top";
 
   // Static routes
@@ -24,7 +24,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Dynamic courses routes
-  const courseRoutes = COURSES.map((course) => ({
+  let dbCourses: CourseRow[] = [];
+  try {
+    dbCourses = await getCourseRows();
+  } catch (e) {
+    console.error("Failed to fetch courses for sitemap", e);
+  }
+
+  const courseRoutes = dbCourses.map((course) => ({
     url: `${baseUrl}/courses/${course.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

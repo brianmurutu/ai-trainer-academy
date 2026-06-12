@@ -36,6 +36,8 @@ export type CourseRow = {
   title: string;
   trainer_name: string | null;
   trainer_initials: string | null;
+  trainer_title: string | null;
+  trainer_bio: string | null;
   description: string | null;
   long_description: string | null;
   price_usd: number;
@@ -50,6 +52,8 @@ export type CourseRow = {
   what_youll_learn: string[];
   prerequisites: string[];
   curriculum: unknown;
+  image_url: string | null;
+  button_url: string | null;
 };
 
 export type BookingRow = {
@@ -149,7 +153,7 @@ export async function getCourseRows(
     let query = supabase
       .from("courses")
       .select(
-        "id, slug, title, trainer_name, trainer_initials, description, long_description, price_usd, price_ksh, rating, enrolled_count, level, duration, tag, tag_color, tag_bg, what_youll_learn, prerequisites, curriculum"
+        "id, slug, title, trainer_name, trainer_initials, trainer_title, trainer_bio, description, long_description, price_usd, price_ksh, rating, enrolled_count, level, duration, tag, tag_color, tag_bg, what_youll_learn, prerequisites, curriculum, image_url, button_url"
       )
       .order("rating", { ascending: false });
 
@@ -169,6 +173,32 @@ export async function getCourseRows(
   } catch (err) {
     console.error("[getCourseRows] Unexpected error:", err);
     return [];
+  }
+}
+
+// ============================================================
+// getCourseBySlug
+// ============================================================
+
+export async function getCourseBySlug(slug: string): Promise<CourseRow | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("courses")
+      .select(
+        "id, slug, title, trainer_name, trainer_initials, trainer_title, trainer_bio, description, long_description, price_usd, price_ksh, rating, enrolled_count, level, duration, tag, tag_color, tag_bg, what_youll_learn, prerequisites, curriculum, image_url, button_url"
+      )
+      .eq("slug", slug)
+      .single();
+
+    if (error) {
+      console.error("[getCourseBySlug] Supabase error:", error.message);
+      return null;
+    }
+    return (data as CourseRow) ?? null;
+  } catch (err) {
+    console.error("[getCourseBySlug] Unexpected error:", err);
+    return null;
   }
 }
 
@@ -194,10 +224,10 @@ export async function getDashboardData(userId: string): Promise<{
       .select(
         `id, course_id, progress_pct, completed_lessons, created_at,
          course:courses(
-           id, slug, title, trainer_name, trainer_initials,
+           id, slug, title, trainer_name, trainer_initials, trainer_title, trainer_bio,
            description, long_description, price_usd, price_ksh,
            rating, enrolled_count, level, duration,
-           tag, tag_color, tag_bg, what_youll_learn, prerequisites, curriculum
+           tag, tag_color, tag_bg, what_youll_learn, prerequisites, curriculum, image_url, button_url
          )`
       )
       .eq("learner_id", userId)
@@ -213,7 +243,7 @@ export async function getDashboardData(userId: string): Promise<{
       progress_pct: row.progress_pct as number,
       completed_lessons: (row.completed_lessons as string[]) ?? [],
       created_at: row.created_at as string,
-      course: row.course as CourseRow | null,
+      course: row.course as unknown as CourseRow | null,
     }));
 
     // Certificates = enrollments completed (progress_pct === 100)
@@ -240,3 +270,26 @@ export async function getDashboardData(userId: string): Promise<{
     return empty;
   }
 }
+
+export async function getCourseById(id: string): Promise<CourseRow | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("courses")
+      .select(
+        "id, slug, title, trainer_name, trainer_initials, trainer_title, trainer_bio, description, long_description, price_usd, price_ksh, rating, enrolled_count, level, duration, tag, tag_color, tag_bg, what_youll_learn, prerequisites, curriculum, image_url, button_url"
+      )
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("[getCourseById] Supabase error:", error.message);
+      return null;
+    }
+    return (data as CourseRow) ?? null;
+  } catch (err) {
+    console.error("[getCourseById] Unexpected error:", err);
+    return null;
+  }
+}
+

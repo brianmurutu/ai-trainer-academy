@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getCourseBySlug } from "@/lib/courses-data";
+import { getCourseBySlug } from "@/lib/supabase/queries";
+import { mapCourseRowToCourse } from "@/lib/courses-data";
 import { createClient } from "@/lib/supabase/server";
 import { ChevronLeft, Star, Clock, BookOpen, User, DollarSign, Check, Award, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
@@ -14,11 +15,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const course = getCourseBySlug(slug);
-  if (!course) return { title: "Course Not Found | AI Trainer Academy" };
+  const dbCourse = await getCourseBySlug(slug);
+  if (!dbCourse) return { title: "Course Not Found | AI Trainer Academy" };
   return {
-    title: `${course.title} | AI Trainer Academy`,
-    description: course.description,
+    title: `${dbCourse.title} | AI Trainer Academy`,
+    description: dbCourse.description || "",
   };
 }
 
@@ -28,9 +29,11 @@ export default async function CourseDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const course = getCourseBySlug(slug);
+  const dbCourse = await getCourseBySlug(slug);
 
-  if (!course) notFound();
+  if (!dbCourse) notFound();
+
+  const course = mapCourseRowToCourse(dbCourse);
 
   // Get the logged-in user
   const supabase = await createClient();
@@ -133,7 +136,9 @@ export default async function CourseDetailPage({
 
         {/* Hero Section */}
         <section style={{
-          background: "linear-gradient(135deg, var(--navy) 0%, #1A2E42 100%)",
+          background: course.image_url 
+            ? `linear-gradient(rgba(10,25,47,0.8), rgba(10,25,47,0.92)), url(${course.image_url}) center/cover no-repeat`
+            : "linear-gradient(135deg, var(--navy) 0%, #1A2E42 100%)",
           color: "white",
           padding: "60px 24px",
         }}>

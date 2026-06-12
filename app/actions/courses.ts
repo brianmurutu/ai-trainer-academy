@@ -138,6 +138,8 @@ export async function createCourse(
   const tag = (formData.get("tag") as string)?.trim();
   const priceUsd = parseFloat((formData.get("price_usd") as string) || "0");
   const priceKsh = parseFloat((formData.get("price_ksh") as string) || "0");
+  const rating = parseFloat((formData.get("rating") as string) || "4.8");
+  const enrolledCount = parseInt((formData.get("enrolled_count") as string) || "0", 10);
 
   // Multi-value fields (newline separated)
   const whatYoullLearn = (formData.get("what_youll_learn") as string)
@@ -179,6 +181,13 @@ export async function createCourse(
     "AI Safety": { color: "#7C3AED", bg: "#EDE9FE" },
     MLOps: { color: "#B45309", bg: "#FEF3C7" },
     "Computer Vision": { color: "#DC2626", bg: "#FEE2E2" },
+    "AI Agents": { color: "#0891B2", bg: "#ECFEFF" },
+    "Data Science": { color: "#D97706", bg: "#FEF3C7" },
+    "Machine Learning": { color: "#2563EB", bg: "#EFF6FF" },
+    NLP: { color: "#4F46E5", bg: "#EEF2FF" },
+    "Deep Learning": { color: "#9333EA", bg: "#F3E8FF" },
+    Robotics: { color: "#E11D48", bg: "#FFF1F2" },
+    "Generative AI": { color: "#059669", bg: "#ECFDF5" },
     Other: { color: "#4B5875", bg: "#F4F6FC" },
   };
   const tagStyle = TAG_COLORS[tag] ?? TAG_COLORS["Other"];
@@ -211,6 +220,8 @@ export async function createCourse(
       tag_bg: tagStyle.bg,
       price_usd: priceUsd,
       price_ksh: priceKsh,
+      rating: isNaN(rating) ? 4.8 : rating,
+      enrolled_count: isNaN(enrolledCount) ? 0 : enrolledCount,
       what_youll_learn: whatYoullLearn,
       prerequisites,
       curriculum: [],
@@ -254,6 +265,8 @@ export async function updateCourse(
   const tag = (formData.get("tag") as string)?.trim();
   const priceUsd = parseFloat((formData.get("price_usd") as string) || "0");
   const priceKsh = parseFloat((formData.get("price_ksh") as string) || "0");
+  const rating = parseFloat((formData.get("rating") as string) || "4.8");
+  const enrolledCount = parseInt((formData.get("enrolled_count") as string) || "0", 10);
   const buttonUrl = (formData.get("button_url") as string)?.trim() || null;
 
   // Keep existing image unless a new file is uploaded
@@ -286,6 +299,13 @@ export async function updateCourse(
     "AI Safety": { color: "#7C3AED", bg: "#EDE9FE" },
     MLOps: { color: "#B45309", bg: "#FEF3C7" },
     "Computer Vision": { color: "#DC2626", bg: "#FEE2E2" },
+    "AI Agents": { color: "#0891B2", bg: "#ECFEFF" },
+    "Data Science": { color: "#D97706", bg: "#FEF3C7" },
+    "Machine Learning": { color: "#2563EB", bg: "#EFF6FF" },
+    NLP: { color: "#4F46E5", bg: "#EEF2FF" },
+    "Deep Learning": { color: "#9333EA", bg: "#F3E8FF" },
+    Robotics: { color: "#E11D48", bg: "#FFF1F2" },
+    "Generative AI": { color: "#059669", bg: "#ECFDF5" },
     Other: { color: "#4B5875", bg: "#F4F6FC" },
   };
   const tagStyle = TAG_COLORS[tag] ?? TAG_COLORS["Other"];
@@ -307,6 +327,8 @@ export async function updateCourse(
       tag_bg: tagStyle.bg,
       price_usd: priceUsd,
       price_ksh: priceKsh,
+      rating: isNaN(rating) ? 4.8 : rating,
+      enrolled_count: isNaN(enrolledCount) ? 0 : enrolledCount,
       what_youll_learn: whatYoullLearn,
       prerequisites,
       image_url: imageUrl,

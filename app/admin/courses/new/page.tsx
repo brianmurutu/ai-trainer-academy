@@ -8,7 +8,7 @@ import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, Loader2, Link2 } from "
 import Link from "next/link";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
-const TAGS = ["Fine-tuning", "Prompting", "RAG / Dev", "AI Safety", "MLOps", "Computer Vision", "Other"];
+const TAGS = ["Fine-tuning", "Prompting", "RAG / Dev", "AI Safety", "MLOps", "Computer Vision", "AI Agents", "Data Science", "Machine Learning", "NLP", "Deep Learning", "Robotics", "Generative AI", "Other"];
 
 const input: React.CSSProperties = {
   width: "100%", padding: "11px 14px", fontSize: 14,
@@ -179,11 +179,18 @@ export default function NewCoursePage() {
                 />
               </div>
               <div>
-                <Label>Category Tag</Label>
-                <select name="tag" style={input} onFocus={focusStyle} onBlur={blurStyle}>
-                  <option value="">Select tag</option>
-                  {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <Label hint="(Select or type a custom category)">Category Tag</Label>
+                <input
+                  list="category-suggestions"
+                  name="tag"
+                  placeholder="e.g. Fine-tuning, Agents, NLP..."
+                  style={input}
+                  onFocus={focusStyle}
+                  onBlur={blurStyle}
+                />
+                <datalist id="category-suggestions">
+                  {TAGS.map(t => <option key={t} value={t} />)}
+                </datalist>
               </div>
             </div>
           </Section>
@@ -227,6 +234,38 @@ export default function NewCoursePage() {
               fontSize: 12, color: "var(--slate)",
             }}>
               Set both to 0 for a free course. Learners will see the KSH price by default.
+            </div>
+          </Section>
+
+          {/* ── Metrics & Display ───────────────────────────── */}
+          <Section title="Metrics & Display">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <Label hint="(shown on course cards, e.g. 4.8)">Initial Rating</Label>
+                <input
+                  name="rating"
+                  type="number"
+                  min="1.0"
+                  max="5.0"
+                  step="0.1"
+                  placeholder="e.g. 4.8"
+                  defaultValue="4.8"
+                  style={input}
+                  onFocus={focusStyle} onBlur={blurStyle}
+                />
+              </div>
+              <div>
+                <Label hint="(shown as 'X enrolled')">Manually Enrolled Learners</Label>
+                <input
+                  name="enrolled_count"
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 150"
+                  defaultValue="0"
+                  style={input}
+                  onFocus={focusStyle} onBlur={blurStyle}
+                />
+              </div>
             </div>
           </Section>
 

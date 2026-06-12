@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { getCourseById } from "@/lib/courses-data";
+import { getCourseById } from "@/lib/supabase/queries";
+import { mapCourseRowToCourse } from "@/lib/courses-data";
 import { createClient } from "@/lib/supabase/server";
 import CoursePlayerClient from "@/components/dashboard/CoursePlayerClient";
 import type { Metadata } from "next";
@@ -10,10 +11,10 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const course = getCourseById(id);
-  if (!course) return { title: "Course Player | AI Trainer Academy" };
+  const dbCourse = await getCourseById(id);
+  if (!dbCourse) return { title: "Course Player | AI Trainer Academy" };
   return {
-    title: `Learning: ${course.title} | AI Trainer Academy`,
+    title: `Learning: ${dbCourse.title} | AI Trainer Academy`,
   };
 }
 
@@ -23,9 +24,11 @@ export default async function CoursePlayerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const course = getCourseById(id);
+  const dbCourse = await getCourseById(id);
 
-  if (!course) notFound();
+  if (!dbCourse) notFound();
+
+  const course = mapCourseRowToCourse(dbCourse);
 
   // Get user info if authenticated
   const supabase = await createClient();

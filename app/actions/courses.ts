@@ -290,7 +290,6 @@ export async function updateCourse(
   };
   const tagStyle = TAG_COLORS[tag] ?? TAG_COLORS["Other"];
 
-  const db = createAdminClient();
   const { error } = await db
     .from("courses")
     .update({

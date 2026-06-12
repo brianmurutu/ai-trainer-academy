@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import AuthShell from "@/components/AuthShell";
 import { submitApplicationAction } from "@/app/actions/apply";
+import TurnstileWidget from "@/components/TurnstileWidget";
+import type { TurnstileInstance } from "@/components/TurnstileWidget";
 
 const SPECIALITIES = [
   "Fine-tuning (LoRA / QLoRA)", "RLHF & RLAIF", "Prompt Engineering",
@@ -62,6 +64,8 @@ export default function ApplyPage() {
     sampleWork: "", agreeTerms: false,
   });
   const formRef = useRef<HTMLFormElement>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const [state, action, pending] = useActionState(submitApplicationAction, undefined);
 
@@ -193,6 +197,8 @@ export default function ApplyPage() {
           <input type="hidden" name="hourlyRateKsh" value={form.hourlyRateKsh} />
           <input type="hidden" name="hourlyRateUsd" value={form.hourlyRateUsd} />
           <input type="hidden" name="sampleWork" value={form.sampleWork} />
+          {/* Turnstile token — required by Supabase CAPTCHA protection on signUp */}
+          <input type="hidden" name="cf-turnstile-response" value={captchaToken} />
 
           {/* Step 0: Account */}
           {step === 0 && (
@@ -350,6 +356,16 @@ export default function ApplyPage() {
                   I confirm that all information provided is accurate.
                 </span>
               </label>
+
+              {/* Cloudflare Turnstile — required by Supabase CAPTCHA protection */}
+              <div>
+                <TurnstileWidget
+                  ref={turnstileRef}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onError={() => setCaptchaToken("")}
+                  onExpire={() => setCaptchaToken("")}
+                />
+              </div>
             </div>
           )}
 
@@ -378,13 +394,13 @@ export default function ApplyPage() {
             ) : (
               <button
                 type="submit"
-                disabled={!form.agreeTerms || pending}
+                disabled={!form.agreeTerms || pending || !captchaToken}
                 style={{
                   flex: 1, padding: "11px",
-                  background: (!form.agreeTerms || pending) ? "var(--muted)" : "var(--navy)",
+                  background: (!form.agreeTerms || pending || !captchaToken) ? "var(--muted)" : "var(--navy)",
                   color: "white", border: "none", borderRadius: 10,
                   fontSize: 14, fontWeight: 500,
-                  cursor: (!form.agreeTerms || pending) ? "not-allowed" : "pointer",
+                  cursor: (!form.agreeTerms || pending || !captchaToken) ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   transition: "background 0.15s",
                 }}

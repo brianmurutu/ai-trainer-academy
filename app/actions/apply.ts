@@ -45,6 +45,7 @@ export async function submitApplicationAction(
   const hourlyRateKsh = formData.get("hourlyRateKsh") as string;
   const hourlyRateUsd = formData.get("hourlyRateUsd") as string;
   const sampleWork = formData.get("sampleWork") as string;
+  const captchaToken = (formData.get("cf-turnstile-response") as string) || undefined;
 
   // Basic validation
   if (!fullName || !email || !password) {
@@ -70,6 +71,7 @@ export async function submitApplicationAction(
     email,
     password,
     options: {
+      captchaToken,
       data: {
         full_name: fullName,
         role: "trainer",

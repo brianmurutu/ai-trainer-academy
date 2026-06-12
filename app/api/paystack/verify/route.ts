@@ -59,12 +59,12 @@ export async function GET(request: NextRequest) {
           .from("enrollments")
           .upsert(
             {
-              user_id: user.id,
+              learner_id: user.id,
               course_id: resolvedCourseId,
               progress_pct: 0,
               completed_lessons: [],
             },
-            { onConflict: "user_id,course_id" }
+            { onConflict: "learner_id,course_id" }
           );
         if (enrollErr) {
           console.error("[Paystack verify] enrollment upsert error:", enrollErr.message);

@@ -49,12 +49,12 @@ export async function POST(request: NextRequest) {
       .from("enrollments")
       .upsert(
         {
-          user_id: user.id,
+          learner_id: user.id,
           course_id: courseId,
           progress_pct: 0,
           completed_lessons: [],
         },
-        { onConflict: "user_id,course_id" }
+        { onConflict: "learner_id,course_id" }
       );
 
     if (enrollErr) {

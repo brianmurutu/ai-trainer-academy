@@ -12,49 +12,12 @@ export type AuthState =
   | undefined;
 
 // ---------------------------------------------------------------------------
-// Turnstile server-side verification helper
+// NOTE: Supabase has CAPTCHA protection enabled in the dashboard
+// (Authentication → Settings → Enable CAPTCHA protection → Cloudflare Turnstile).
+// Supabase handles siteverify itself when we pass captchaToken to auth methods.
+// We do NOT call Cloudflare siteverify separately — that would consume the
+// single-use token before Supabase can verify it.
 // ---------------------------------------------------------------------------
-type TurnstileResult =
-  | { ok: true }
-  | { ok: false; reason: string };
-
-async function verifyTurnstile(token: string | null): Promise<TurnstileResult> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-
-  // If Turnstile is not configured on the server, allow through.
-  if (!secret) return { ok: true };
-
-  // Empty / missing token means the widget failed to load or produce a token.
-  // Fail open so real users are not locked out by infrastructure issues.
-  if (!token) {
-    console.warn("[Turnstile] No token — failing open.");
-    return { ok: true };
-  }
-
-  try {
-    const res = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ secret, response: token }),
-      }
-    );
-    const data = await res.json();
-
-    if (!data.success) {
-      const codes: string = (data["error-codes"] ?? []).join(", ") || "unknown";
-      console.warn("[Turnstile] Verification failed:", codes);
-      return { ok: false, reason: codes };
-    }
-
-    return { ok: true };
-  } catch (err) {
-    // Network error calling Cloudflare — fail open to avoid blocking real users.
-    console.warn("[Turnstile] Network error:", err);
-    return { ok: true };
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Login
@@ -65,19 +28,18 @@ export async function loginAction(
 ): Promise<AuthState> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const turnstileToken = formData.get("cf-turnstile-response") as string | null;
+  const captchaToken = (formData.get("cf-turnstile-response") as string) || undefined;
 
   if (!email || !password) {
     return { error: "Please fill in all fields." };
   }
 
-  const check = await verifyTurnstile(turnstileToken);
-  if (!check.ok) {
-    return { error: `Security check failed (${check.reason}). Please refresh and try again.` };
-  }
-
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken },
+  });
 
   if (error) {
     return { error: error.message };
@@ -102,7 +64,7 @@ export async function signupAction(
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const role = (formData.get("role") as string) || "learner";
-  const turnstileToken = formData.get("cf-turnstile-response") as string | null;
+  const captchaToken = (formData.get("cf-turnstile-response") as string) || undefined;
 
   if (!name || !email || !password) {
     return { error: "Please fill in all fields." };
@@ -112,16 +74,12 @@ export async function signupAction(
     return { error: "Password must be at least 8 characters." };
   }
 
-  const check = await verifyTurnstile(turnstileToken);
-  if (!check.ok) {
-    return { error: `Security check failed (${check.reason}). Please refresh and try again.` };
-  }
-
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      captchaToken,
       data: {
         full_name: name,
         role,

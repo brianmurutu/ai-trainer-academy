@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ai-trainer-academy.top"),
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CurrencyProvider>
           {children}
         </CurrencyProvider>
+        <Analytics />
       </body>
     </html>
   );

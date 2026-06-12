@@ -224,4 +224,55 @@ export async function sendContactMessage({
   });
 }
 
+// ---------------------------------------------------------------------------
+// Email the learner when they purchase/enroll in a course
+// ---------------------------------------------------------------------------
+export async function sendCoursePurchaseEmail({
+  recipientEmail,
+  recipientName,
+  courseTitle,
+  courseLink,
+}: {
+  recipientEmail: string;
+  recipientName: string;
+  courseTitle: string;
+  courseLink: string;
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: recipientEmail,
+    subject: `🎒 Welcome to your course: ${courseTitle}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">Hi ${recipientName},</h2>
+        <p style="color:#4A6174;font-size:15px;line-height:1.6;margin-bottom:16px">
+          Thank you for enrolling in <strong>${courseTitle}</strong> on AI Trainer Academy!
+        </p>
+        
+        <div style="margin-top:20px;padding:16px;background:#F5F8FB;border-radius:8px;border-left:4px solid #1A6FBF;margin-bottom:24px">
+          <p style="margin:0;color:#0D1B2A;font-weight:600;font-size:14px">📢 Important Access Information:</p>
+          <p style="margin:8px 0 0;color:#4A6174;font-size:13.5px;line-height:1.5">
+            Since this course is delivered and managed directly through <strong>Telegram</strong>, you must have an active Telegram account to access the materials, group discussions, and lessons.
+          </p>
+        </div>
+
+        <p style="color:#4A6174;font-size:15px;line-height:1.6;margin-bottom:24px">
+          Click the button below to go to your course page and get started:
+        </p>
+
+        <a href="${courseLink}"
+           style="display:inline-block;background:#1A6FBF;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Go to Course Page →
+        </a>
+
+        <p style="color:#7A93A8;font-size:12px;margin-top:32px;border-top:1px solid #E2EAF0;padding-top:16px">
+          If you have any questions, reply directly to this email. Happy learning!
+        </p>
+      </div>
+    `,
+  });
+}
+
+
 

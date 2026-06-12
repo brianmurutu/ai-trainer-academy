@@ -1,6 +1,7 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { sendCoursePurchaseEmail } from "@/lib/email";
 
 /**
  * GET /api/paystack/verify?reference=xxx[&courseId=xxx]
@@ -67,6 +68,28 @@ export async function GET(request: NextRequest) {
           );
         if (enrollErr) {
           console.error("[Paystack verify] enrollment upsert error:", enrollErr.message);
+        } else {
+          // Send purchase confirmation email
+          try {
+            const { data: course, error: courseErr } = await db
+              .from("courses")
+              .select("title, slug")
+              .eq("id", resolvedCourseId)
+              .maybeSingle();
+
+            if (course && !courseErr) {
+              const courseLink = `${origin}/courses/${course.slug}`;
+              const recipientName = user.user_metadata?.full_name || "Learner";
+              await sendCoursePurchaseEmail({
+                recipientEmail: user.email || "",
+                recipientName,
+                courseTitle: course.title,
+                courseLink,
+              });
+            }
+          } catch (emailErr) {
+            console.error("[Paystack verify] Failed to send purchase email:", emailErr);
+          }
         }
       }
 

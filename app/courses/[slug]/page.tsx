@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { getCourseBySlug } from "@/lib/supabase/queries";
 import { mapCourseRowToCourse } from "@/lib/courses-data";
 import { createClient } from "@/lib/supabase/server";
-import { ChevronLeft, Star, Clock, BookOpen, User, DollarSign, Check, Award, ArrowRight } from "lucide-react";
+import { ChevronLeft, Star, Clock, BookOpen, User, DollarSign, Check, Award, ArrowRight, Send } from "lucide-react";
 import type { Metadata } from "next";
 import CourseEnrollmentWidget from "@/components/courses/CourseEnrollmentWidget";
 
@@ -241,6 +241,41 @@ export default async function CourseDetailPage({
               <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--navy)", marginBottom: 20 }}>
                 Course Content
               </h2>
+
+              {/* Telegram Delivery Warning Alert */}
+              <div style={{
+                background: "#EFF6FF",
+                border: "1px solid #BFDBFE",
+                borderRadius: 12,
+                padding: "16px 20px",
+                marginBottom: 24,
+                display: "flex",
+                gap: 12,
+                alignItems: "flex-start",
+              }}>
+                <div style={{
+                  background: "var(--accent)",
+                  borderRadius: "50%",
+                  padding: 6,
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  marginTop: 2
+                }}>
+                  <Send size={14} style={{ transform: "rotate(45deg)", marginLeft: -1, marginTop: 1 }} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 13.5, fontWeight: 600, color: "var(--navy)", marginBottom: 4 }}>
+                    Access & Telegram Delivery Requirement
+                  </h4>
+                  <p style={{ fontSize: 12.5, color: "var(--slate)", lineHeight: 1.5, margin: 0 }}>
+                    Please note that you will get access to the course content and materials after making the payment or completing enrollment. 
+                    An active <strong>Telegram</strong> account is required since all course content and updates will be delivered and managed through Telegram. A direct link will also be sent to your email.
+                  </p>
+                </div>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {course.curriculum.map((section, sidx) => (
                   <div key={sidx} style={{

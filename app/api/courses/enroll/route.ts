@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendCoursePurchaseEmail } from "@/lib/email";
 
 /**
  * POST /api/courses/enroll
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Verify the course is actually free
     const { data: course, error: courseErr } = await db
       .from("courses")
-      .select("id, price_ksh, price_usd, title")
+      .select("id, price_ksh, price_usd, title, slug")
       .eq("id", courseId)
       .maybeSingle();
 
@@ -59,6 +60,20 @@ export async function POST(request: NextRequest) {
     if (enrollErr) {
       console.error("[enroll] upsert error:", enrollErr.message);
       return NextResponse.json({ error: enrollErr.message }, { status: 500 });
+    }
+
+    // Send enrollment confirmation email
+    try {
+      const courseLink = `${request.nextUrl.origin}/courses/${course.slug}`;
+      const recipientName = user.user_metadata?.full_name || "Learner";
+      await sendCoursePurchaseEmail({
+        recipientEmail: user.email || "",
+        recipientName,
+        courseTitle: course.title,
+        courseLink,
+      });
+    } catch (emailErr) {
+      console.error("[enroll] Failed to send enrollment email:", emailErr);
     }
 
     return NextResponse.json({ success: true, courseId });

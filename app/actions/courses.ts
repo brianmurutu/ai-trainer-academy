@@ -5,6 +5,41 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+const STORAGE_BUCKET = "course-images";
+
+// ─── Upload image to Supabase Storage ────────────────────────────────────────
+// Returns the public URL of the uploaded image, or null if no file was given.
+async function uploadCourseImage(
+  db: ReturnType<typeof createAdminClient>,
+  file: File | null
+): Promise<string | null> {
+  if (!file || file.size === 0) return null;
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const { data, error } = await db.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, buffer, {
+      contentType: file.type || "image/jpeg",
+      upsert: false,
+    });
+
+  if (error) {
+    console.error("[uploadCourseImage] Storage error:", error.message);
+    return null;
+  }
+
+  const { data: urlData } = db.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(data.path);
+
+  return urlData.publicUrl ?? null;
+}
+
 // ─── Guard ────────────────────────────────────────────────────────────────────
 async function requireAdmin() {
   const supabase = await createClient();
@@ -148,7 +183,14 @@ export async function createCourse(
   };
   const tagStyle = TAG_COLORS[tag] ?? TAG_COLORS["Other"];
 
-  const imageUrl = (formData.get("image_url") as string)?.trim() || null;
+  // Handle featured image: upload new file if provided, otherwise use URL field fallback
+  const imageFile = formData.get("image_file") as File | null;
+  let imageUrl: string | null = (formData.get("image_url") as string)?.trim() || null;
+  if (imageFile && imageFile.size > 0) {
+    const uploaded = await uploadCourseImage(db, imageFile);
+    if (uploaded) imageUrl = uploaded;
+  }
+
   const buttonUrl = (formData.get("button_url") as string)?.trim() || null;
 
   const { data, error } = await db
@@ -212,8 +254,17 @@ export async function updateCourse(
   const tag = (formData.get("tag") as string)?.trim();
   const priceUsd = parseFloat((formData.get("price_usd") as string) || "0");
   const priceKsh = parseFloat((formData.get("price_ksh") as string) || "0");
-  const imageUrl = (formData.get("image_url") as string)?.trim() || null;
   const buttonUrl = (formData.get("button_url") as string)?.trim() || null;
+
+  // Keep existing image unless a new file is uploaded
+  const existingImageUrl = (formData.get("existing_image_url") as string)?.trim() || null;
+  const imageFile = formData.get("image_file") as File | null;
+  let imageUrl: string | null = existingImageUrl;
+  const db = createAdminClient();
+  if (imageFile && imageFile.size > 0) {
+    const uploaded = await uploadCourseImage(db, imageFile);
+    if (uploaded) imageUrl = uploaded;
+  }
 
   const whatYoullLearn = ((formData.get("what_youll_learn") as string) || "")
     .split("\n")

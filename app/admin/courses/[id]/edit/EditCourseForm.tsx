@@ -4,9 +4,10 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateCourse } from "@/app/actions/courses";
 import type { AdminCourse, UpdateCourseFormState } from "@/app/actions/courses";
+import { ImageUploadZone } from "@/components/ImageUploadZone";
 import {
   ArrowLeft, BookOpen, CheckCircle2, AlertCircle, Loader2,
-  Image as ImageIcon, Link2, ExternalLink,
+  ImageIcon, Link2, ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -56,14 +57,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// This is a Client Component but we receive the course as a prop
-// from the Server Component wrapper below.
+// ── Edit Form ────────────────────────────────────────────────────────────────
 export function EditCourseForm({ course }: { course: AdminCourse }) {
   const router = useRouter();
   const [state, action, pending] = useActionState<UpdateCourseFormState, FormData>(updateCourse, undefined);
   const [ksh, setKsh] = useState(String(course.price_ksh ?? ""));
-  const [imageUrl, setImageUrl] = useState(course.image_url ?? "");
-  const [imagePreviewError, setImagePreviewError] = useState(false);
 
   useEffect(() => {
     if (state && "success" in state && state.success) {
@@ -128,8 +126,10 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
       )}
 
       <form action={action}>
-        {/* Hidden course ID */}
+        {/* Hidden fields */}
         <input type="hidden" name="id" value={course.id} />
+        {/* Pass existing image URL so the server keeps it when no new file is uploaded */}
+        <input type="hidden" name="existing_image_url" value={course.image_url ?? ""} />
 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
@@ -138,38 +138,29 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
             <div>
               <Label>Course Title <span style={{ color: "var(--accent)" }}>*</span></Label>
               <input
-                name="title"
-                required
-                defaultValue={course.title}
+                name="title" required defaultValue={course.title}
                 placeholder="e.g. Fine-tuning LLaMA 3 with LoRA"
-                style={inputStyle}
-                onFocus={focusStyle} onBlur={blurStyle}
+                style={inputStyle} onFocus={focusStyle} onBlur={blurStyle}
               />
             </div>
-
             <div>
               <Label hint="(shown on the course card)">Short Description <span style={{ color: "var(--accent)" }}>*</span></Label>
               <textarea
-                name="description"
-                required
-                rows={2}
+                name="description" required rows={2}
                 defaultValue={course.description ?? ""}
                 style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
                 onFocus={focusStyle} onBlur={blurStyle}
               />
             </div>
-
             <div>
               <Label hint="(shown on the course detail page)">Full Description</Label>
               <textarea
-                name="long_description"
-                rows={5}
+                name="long_description" rows={5}
                 defaultValue={course.long_description ?? ""}
                 style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
                 onFocus={focusStyle} onBlur={blurStyle}
               />
             </div>
-
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
               <div>
                 <Label>Level</Label>
@@ -180,13 +171,8 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
               </div>
               <div>
                 <Label hint="e.g. 8 hours">Duration</Label>
-                <input
-                  name="duration"
-                  defaultValue={course.duration ?? ""}
-                  placeholder="e.g. 8 hours"
-                  style={inputStyle}
-                  onFocus={focusStyle} onBlur={blurStyle}
-                />
+                <input name="duration" defaultValue={course.duration ?? ""} placeholder="e.g. 8 hours"
+                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
               </div>
               <div>
                 <Label>Category Tag</Label>
@@ -199,74 +185,32 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
           </Section>
 
           {/* ── Featured Image & CTA ─────────────────────────── */}
-          <Section title="Media & Enrolment Link">
-            {/* Featured image URL */}
+          <Section title="Featured Image & Enrolment Link">
             <div>
-              <Label hint="Paste a direct image link from your Telegram files bot">
+              <Label>
                 <ImageIcon size={13} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
-                Featured Image URL
+                Featured Image
               </Label>
-              <input
-                name="image_url"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => { setImageUrl(e.target.value); setImagePreviewError(false); }}
-                placeholder="https://t.me/very_special_link_bot/…  or any direct image URL"
-                style={inputStyle}
-                onFocus={focusStyle} onBlur={blurStyle}
-              />
-              {/* Live preview */}
-              {imageUrl && !imagePreviewError && (
-                <div style={{
-                  marginTop: 10, borderRadius: 10, overflow: "hidden",
-                  border: "1px solid var(--line)", maxHeight: 200, position: "relative",
-                }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl}
-                    alt="Featured image preview"
-                    onError={() => setImagePreviewError(true)}
-                    style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }}
-                  />
-                </div>
-              )}
-              {imageUrl && imagePreviewError && (
-                <p style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
-                  ⚠ Could not load preview — make sure the URL is a direct link to an image (not a page).
-                </p>
-              )}
-              <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
-                Get a direct link: open your bot, share the image, right-click → &quot;Copy image address&quot;.
-              </p>
+              <ImageUploadZone existingUrl={course.image_url} inputName="image_file" />
             </div>
 
-            {/* Button / CTA URL */}
             <div>
-              <Label hint="Where learners go when they click the enrolment button">
+              <Label hint="Where learners go when they click the Enrol Now button">
                 <Link2 size={13} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
                 Enrolment / CTA Button URL
               </Label>
               <input
-                name="button_url"
-                type="url"
+                name="button_url" type="url"
                 defaultValue={course.button_url ?? ""}
-                placeholder="https://t.me/very_special_link_bot/…  or any enrolment link"
-                style={inputStyle}
-                onFocus={focusStyle} onBlur={blurStyle}
+                placeholder="https://t.me/very_special_link_bot/… or any payment / booking link"
+                style={inputStyle} onFocus={focusStyle} onBlur={blurStyle}
               />
               {course.button_url && (
-                <a
-                  href={course.button_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--accent)", marginTop: 6, textDecoration: "none" }}
-                >
+                <a href={course.button_url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--accent)", marginTop: 6, textDecoration: "none" }}>
                   <ExternalLink size={11} /> Test current link
                 </a>
               )}
-              <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
-                This is the link behind the &quot;Enrol Now&quot; button on the course page. You can paste a Telegram bot link, a Stripe payment link, a Calendly URL, etc.
-              </p>
             </div>
           </Section>
 
@@ -275,14 +219,9 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div>
                 <Label>Price (USD) <span style={{ color: "var(--accent)" }}>*</span></Label>
-                <input
-                  name="price_usd"
-                  type="number"
-                  min="0"
-                  step="1"
+                <input name="price_usd" type="number" min="0" step="1"
                   defaultValue={course.price_usd}
-                  style={inputStyle}
-                  onFocus={focusStyle} onBlur={blurStyle}
+                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle}
                   onChange={(e) => {
                     const usd = parseFloat(e.target.value);
                     if (!isNaN(usd)) setKsh(String(Math.round(usd * 130)));
@@ -291,85 +230,56 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
               </div>
               <div>
                 <Label hint="(auto at $1 = KSH 130, or override)">Price (KSH)</Label>
-                <input
-                  name="price_ksh"
-                  type="number"
-                  min="0"
+                <input name="price_ksh" type="number" min="0"
                   value={ksh}
                   onChange={(e) => setKsh(e.target.value)}
-                  style={inputStyle}
-                  onFocus={focusStyle} onBlur={blurStyle}
+                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle}
                 />
               </div>
             </div>
-            <div style={{
-              padding: "10px 14px", background: "var(--surface)",
-              borderRadius: 8, border: "1px solid var(--line)",
-              fontSize: 12, color: "var(--slate)",
-            }}>
-              Set both to 0 for a free course. Learners will see the KSH price by default.
+            <div style={{ padding: "10px 14px", background: "var(--surface)", borderRadius: 8, border: "1px solid var(--line)", fontSize: 12, color: "var(--slate)" }}>
+              Set both to 0 for a free course. Learners see the KSH price by default.
             </div>
           </Section>
 
-          {/* ── Trainer Info ───────────────────────────────────── */}
+          {/* ── Trainer ────────────────────────────────────────── */}
           <Section title="Trainer">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 12 }}>
               <div>
                 <Label>Trainer Full Name <span style={{ color: "var(--accent)" }}>*</span></Label>
-                <input
-                  name="trainer_name"
-                  required
-                  defaultValue={course.trainer_name ?? ""}
+                <input name="trainer_name" required defaultValue={course.trainer_name ?? ""}
                   placeholder="e.g. Dr. Amara Osei"
-                  style={inputStyle}
-                  onFocus={focusStyle} onBlur={blurStyle}
-                />
+                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
               </div>
               <div>
                 <Label hint="2 chars">Initials</Label>
-                <input
-                  name="trainer_initials"
-                  maxLength={2}
-                  defaultValue={course.trainer_initials ?? ""}
+                <input name="trainer_initials" maxLength={2} defaultValue={course.trainer_initials ?? ""}
                   placeholder="AO"
-                  style={inputStyle}
-                  onFocus={focusStyle} onBlur={blurStyle}
-                />
+                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
               </div>
             </div>
             <div>
               <Label>Trainer Title / Role</Label>
-              <input
-                name="trainer_title"
-                defaultValue={course.trainer_title ?? ""}
+              <input name="trainer_title" defaultValue={course.trainer_title ?? ""}
                 placeholder="e.g. Lead AI Researcher at DeepTech Africa"
-                style={inputStyle}
-                onFocus={focusStyle} onBlur={blurStyle}
-              />
+                style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
             </div>
             <div>
               <Label hint="(shown on the course detail page)">Trainer Bio</Label>
-              <textarea
-                name="trainer_bio"
-                rows={3}
-                defaultValue={course.trainer_bio ?? ""}
-                placeholder="Brief background on the trainer's expertise and experience."
+              <textarea name="trainer_bio" rows={3} defaultValue={course.trainer_bio ?? ""}
+                placeholder="Brief background on the trainer."
                 style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
-                onFocus={focusStyle} onBlur={blurStyle}
-              />
+                onFocus={focusStyle} onBlur={blurStyle} />
             </div>
           </Section>
 
-          {/* ── Curriculum ─────────────────────────────────────── */}
+          {/* ── Learning Outcomes ──────────────────────────────── */}
           <Section title="Learning Outcomes and Prerequisites">
             <div>
               <Label hint="(one per line — shown as bullet points)">
                 What You Will Learn <span style={{ color: "var(--accent)" }}>*</span>
               </Label>
-              <textarea
-                name="what_youll_learn"
-                required
-                rows={6}
+              <textarea name="what_youll_learn" required rows={6}
                 defaultValue={joinedWhatYoullLearn}
                 style={{ ...inputStyle, resize: "vertical", lineHeight: 1.8, fontFamily: "var(--font-mono)", fontSize: 13 }}
                 onFocus={focusStyle} onBlur={blurStyle}
@@ -377,9 +287,7 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
             </div>
             <div>
               <Label hint="(one per line)">Prerequisites</Label>
-              <textarea
-                name="prerequisites"
-                rows={3}
+              <textarea name="prerequisites" rows={3}
                 defaultValue={joinedPrereqs}
                 style={{ ...inputStyle, resize: "vertical", lineHeight: 1.8, fontFamily: "var(--font-mono)", fontSize: 13 }}
                 onFocus={focusStyle} onBlur={blurStyle}
@@ -391,8 +299,7 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
             <Link href="/admin/courses" style={{
               padding: "11px 22px", border: "1px solid var(--line)", borderRadius: 10,
-              fontSize: 14, color: "var(--slate)", textDecoration: "none",
-              background: "white",
+              fontSize: 14, color: "var(--slate)", textDecoration: "none", background: "white",
             }}>
               Cancel
             </Link>
@@ -400,9 +307,11 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
               type="submit"
               disabled={pending || (state !== undefined && "success" in state && state.success)}
               style={{
-                padding: "11px 28px", background: pending ? "var(--muted)" : "var(--accent)",
+                padding: "11px 28px",
+                background: pending ? "var(--muted)" : "var(--accent)",
                 color: "white", border: "none", borderRadius: 10,
-                fontSize: 14, fontWeight: 600, cursor: pending ? "not-allowed" : "pointer",
+                fontSize: 14, fontWeight: 600,
+                cursor: pending ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", gap: 8,
                 boxShadow: pending ? "none" : "0 2px 8px var(--accent-glow)",
                 transition: "background 0.15s",
@@ -412,6 +321,7 @@ export function EditCourseForm({ course }: { course: AdminCourse }) {
               {pending ? "Saving…" : (state && "success" in state && state.success) ? "Saved!" : "Save Changes"}
             </button>
           </div>
+
         </div>
       </form>
     </div>

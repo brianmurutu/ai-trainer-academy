@@ -3,7 +3,8 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCourse } from "@/app/actions/courses";
-import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon, Link2 } from "lucide-react";
+import { ImageUploadZone } from "@/components/ImageUploadZone";
+import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, Loader2, Link2 } from "lucide-react";
 import Link from "next/link";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
@@ -56,8 +57,6 @@ export default function NewCoursePage() {
   const router = useRouter();
   const [state, action, pending] = useActionState(createCourse, undefined);
   const [autoKsh, setAutoKsh] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [imagePreviewError, setImagePreviewError] = useState(false);
 
   useEffect(() => {
     if (state && "success" in state && state.success) {
@@ -232,37 +231,10 @@ export default function NewCoursePage() {
           </Section>
 
           {/* ── Media & Enrolment ───────────────────────────── */}
-          <Section title="Media & Enrolment Link">
+          <Section title="Featured Image & Enrolment Link">
             <div>
-              <Label hint="Paste a direct image link from your Telegram files bot">
-                <ImageIcon size={13} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
-                Featured Image URL
-              </Label>
-              <input
-                name="image_url"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => { setImageUrl(e.target.value); setImagePreviewError(false); }}
-                placeholder="https://t.me/very_special_link_bot/… or any direct image URL"
-                style={input}
-                onFocus={focusStyle} onBlur={blurStyle}
-              />
-              {imageUrl && !imagePreviewError && (
-                <div style={{ marginTop: 10, borderRadius: 10, overflow: "hidden", border: "1px solid var(--line)", maxHeight: 200 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl}
-                    alt="Featured image preview"
-                    onError={() => setImagePreviewError(true)}
-                    style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }}
-                  />
-                </div>
-              )}
-              {imageUrl && imagePreviewError && (
-                <p style={{ fontSize: 11, color: "#DC2626", marginTop: 6 }}>
-                  ⚠ Could not load preview — make sure the URL is a direct image link.
-                </p>
-              )}
+              <Label>Featured Image</Label>
+              <ImageUploadZone inputName="image_file" />
             </div>
             <div>
               <Label hint="Where learners go when they click Enrol Now">

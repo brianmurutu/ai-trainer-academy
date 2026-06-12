@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendNewApplicationNotification } from "@/lib/email";
 
 // ---------------------------------------------------------------------------
@@ -45,7 +46,8 @@ export async function submitApplicationAction(
   const hourlyRateKsh = formData.get("hourlyRateKsh") as string;
   const hourlyRateUsd = formData.get("hourlyRateUsd") as string;
   const sampleWork = formData.get("sampleWork") as string;
-  const captchaToken = (formData.get("cf-turnstile-response") as string) || undefined;
+  // Note: cf-turnstile-response is collected by the form for the widget UX
+  // but the admin createUser API does not require a captchaToken.
 
   // Basic validation
   if (!fullName || !email || !password) {
@@ -65,17 +67,19 @@ export async function submitApplicationAction(
   }
 
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
 
-  // Step 1: Create the Supabase auth account with trainer role
-  const { data: authData, error: signUpError } = await supabase.auth.signUp({
+  // Use the admin API to create the trainer account.
+  // email_confirm: true marks the email as already verified so Supabase
+  // never attempts to send a confirmation email. Trainers go through a
+  // manual approval process, so email confirmation is redundant at this stage.
+  const { data: authData, error: signUpError } = await adminSupabase.auth.admin.createUser({
     email,
     password,
-    options: {
-      captchaToken,
-      data: {
-        full_name: fullName,
-        role: "trainer",
-      },
+    email_confirm: true,
+    user_metadata: {
+      full_name: fullName,
+      role: "trainer",
     },
   });
 

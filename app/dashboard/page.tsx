@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getDashboardData } from "@/lib/supabase/queries";
 import CourseCard, { type CourseCardData } from "@/components/dashboard/CourseCard";
 import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
 import {
@@ -24,7 +25,8 @@ export const metadata: Metadata = {
 };
 
 // ---------------------------------------------------------------------------
-// Mock data (replace with Supabase queries once tables are created)
+// Mock data — only used as a fallback when Supabase returns empty results
+// so the dashboard always looks populated during development.
 // ---------------------------------------------------------------------------
 const MOCK_COURSES: CourseCardData[] = [
   {
@@ -71,12 +73,12 @@ const MOCK_COURSES: CourseCardData[] = [
 const MOCK_SESSIONS = [
   {
     id: "1",
-    title: "QLoRA Deep Dive — Part 2",
+    title: "QLoRA Deep Dive - Part 2",
     trainer: "Dr. Amara Osei",
     trainerInitials: "AO",
     trainerColor: "#6366F1",
     date: "Today",
-    time: "4:00 PM – 5:30 PM EAT",
+    time: "4:00 PM to 5:30 PM EAT",
     status: "starting_soon",
     joinable: true,
   },
@@ -87,7 +89,7 @@ const MOCK_SESSIONS = [
     trainerInitials: "ND",
     trainerColor: "#EC4899",
     date: "Tomorrow",
-    time: "10:00 AM – 11:00 AM EAT",
+    time: "10:00 AM to 11:00 AM EAT",
     status: "confirmed",
     joinable: false,
   },
@@ -98,7 +100,7 @@ const MOCK_SESSIONS = [
     trainerInitials: "JK",
     trainerColor: "#0EA5E9",
     date: "Fri, Jun 7",
-    time: "2:00 PM – 3:30 PM EAT",
+    time: "2:00 PM to 3:30 PM EAT",
     status: "confirmed",
     joinable: false,
   },
@@ -126,14 +128,14 @@ const MOCK_CERTIFICATES = [
 const MOCK_ACTIVITY = [
   { id: "1", type: "lesson", text: "Completed: LoRA Configuration Explained", time: "2h ago", Icon: CheckCircle2, color: "#059669" },
   { id: "2", type: "session", text: "Attended: Prompt Chaining Techniques with Sana Malik", time: "Yesterday", Icon: Video, color: "#6366F1" },
-  { id: "3", type: "lesson", text: "Started: QLoRA vs LoRA — Key Differences", time: "2d ago", Icon: Play, color: "#0EA5E9" },
+  { id: "3", type: "lesson", text: "Started: QLoRA vs LoRA - Key Differences", time: "2d ago", Icon: Play, color: "#0EA5E9" },
   { id: "4", type: "cert", text: "Earned certificate: Prompt Engineering Mastery", time: "May 28", Icon: Award, color: "#D97706" },
   { id: "5", type: "lesson", text: "Completed: Setting Up Your Training Environment", time: "May 25", Icon: CheckCircle2, color: "#059669" },
   { id: "6", type: "resource", text: "Downloaded: LoRA Paper Summary (PDF)", time: "May 24", Icon: FileText, color: "#8B5CF6" },
 ];
 
 // ---------------------------------------------------------------------------
-// Sub-components (defined in this file for simplicity)
+// Sub-components
 // ---------------------------------------------------------------------------
 
 function StatCard({
@@ -167,7 +169,9 @@ function StatCard({
   );
 }
 
-function SessionRow({ session }: { session: typeof MOCK_SESSIONS[0] }) {
+type SessionItem = typeof MOCK_SESSIONS[0];
+
+function SessionRow({ session }: { session: SessionItem }) {
   const isSoon = session.status === "starting_soon";
   return (
     <div style={{
@@ -208,6 +212,48 @@ function SessionRow({ session }: { session: typeof MOCK_SESSIONS[0] }) {
 }
 
 // ---------------------------------------------------------------------------
+// Empty-state CTA — shown when there is genuinely no data at all
+// ---------------------------------------------------------------------------
+function GetStartedCTA() {
+  return (
+    <div style={{
+      background: "white", borderRadius: 16, padding: "48px 32px",
+      border: "1px solid rgba(0,0,0,0.06)",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      textAlign: "center", marginBottom: 24,
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 16,
+        background: "#EEF2FF", display: "flex",
+        alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
+      }}>
+        <BookOpen size={26} color="#6366F1" />
+      </div>
+      <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--navy)", marginBottom: 8 }}>
+        Start your learning journey
+      </h2>
+      <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.6, marginBottom: 24, maxWidth: 380, margin: "0 auto 24px" }}>
+        Browse our courses or book a 1-on-1 session with a verified AI trainer to get started.
+      </p>
+      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+        <Link href="/courses" style={{
+          padding: "10px 22px", borderRadius: 9, background: "var(--navy)",
+          color: "white", textDecoration: "none", fontSize: 14, fontWeight: 500,
+        }}>
+          Browse courses
+        </Link>
+        <Link href="/trainers" style={{
+          padding: "10px 22px", borderRadius: 9, border: "1px solid var(--line)",
+          color: "var(--navy)", textDecoration: "none", fontSize: 14, fontWeight: 400,
+        }}>
+          Find a trainer
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 export default async function DashboardPage() {
@@ -224,8 +270,67 @@ export default async function DashboardPage() {
   const hour = now.getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  // Fetch real data from Supabase
+  const { enrollments, bookings, certificates } = await getDashboardData(user.id);
+
+  // Determine whether we have real data or should use mocks
+  const hasRealEnrollments = enrollments.length > 0;
+  const hasRealBookings = bookings.length > 0;
+  const hasRealCertificates = certificates.length > 0;
+  const hasAnyRealData = hasRealEnrollments || hasRealBookings || hasRealCertificates;
+
+  // Build CourseCardData from real enrollments (or fall back to mocks)
+  const displayCourses: CourseCardData[] = hasRealEnrollments
+    ? enrollments.map((e) => ({
+        id: e.course_id,
+        title: e.course?.title ?? "Untitled Course",
+        trainer: e.course?.trainer_name ?? "",
+        trainerInitials: e.course?.trainer_initials ?? "??",
+        progress: e.progress_pct,
+        totalLessons: Array.isArray(e.course?.curriculum) ? (e.course.curriculum as unknown[]).length : 0,
+        completedLessons: e.completed_lessons.length,
+        tag: e.course?.tag ?? "",
+        tagColor: e.course?.tag_color ?? "#6366F1",
+        tagBg: e.course?.tag_bg ?? "#EEF2FF",
+        lastAccessed: new Date(e.created_at).toLocaleDateString("en-KE", { month: "short", day: "numeric" }),
+      }))
+    : MOCK_COURSES;
+
+  // Build sessions from real bookings or fall back to mocks
+  const displaySessions: SessionItem[] = hasRealBookings
+    ? bookings.map((b) => ({
+        id: b.id,
+        title: b.session_topic ?? "Training Session",
+        trainer: "",
+        trainerInitials: "TR",
+        trainerColor: "#6366F1",
+        date: b.session_date
+          ? new Date(b.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" })
+          : "TBD",
+        time: b.session_date
+          ? new Date(b.session_date).toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" }) + " EAT"
+          : "",
+        status: b.status,
+        joinable: b.status === "starting_soon",
+      }))
+    : MOCK_SESSIONS;
+
+  // Build certificates from real data or fall back to mocks
+  const displayCertificates = hasRealCertificates
+    ? certificates.map((c) => ({
+        id: c.id,
+        title: c.course?.title ?? "Course Certificate",
+        issuedDate: c.completed_at
+          ? new Date(c.completed_at as unknown as string).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })
+          : "Recently",
+        credentialId: `ATA-${c.course_id.slice(0, 6).toUpperCase()}`,
+        color: c.course?.tag_color ?? "#6366F1",
+        bg: c.course?.tag_bg ?? "#EEF2FF",
+      }))
+    : MOCK_CERTIFICATES;
+
   const totalHours = 34;
-  const activeCourses = MOCK_COURSES.filter(c => c.progress > 0 && c.progress < 100).length;
+  const activeCourses = displayCourses.filter(c => c.progress > 0 && c.progress < 100).length;
 
   return (
     <div style={{ padding: "32px 32px 48px" }}>
@@ -252,19 +357,24 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats row section */}
+      {/* Get started CTA if everything is empty (not even mock is used) */}
+      {!hasAnyRealData && displayCourses.length === 0 && (
+        <GetStartedCTA />
+      )}
+
+      {/* Stats row */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
         gap: 14, marginBottom: 32,
       }}>
-        <StatCard label="Enrolled Courses" value={MOCK_COURSES.length} sub={`${activeCourses} in progress`} Icon={BookOpen} iconColor="#6366F1" iconBg="#EEF2FF" />
+        <StatCard label="Enrolled Courses" value={displayCourses.length} sub={`${activeCourses} in progress`} Icon={BookOpen} iconColor="#6366F1" iconBg="#EEF2FF" />
         <StatCard label="Hours Learned" value={totalHours} sub="This month" Icon={Clock} iconColor="#0EA5E9" iconBg="#E0F2FE" />
-        <StatCard label="Certificates" value={MOCK_CERTIFICATES.length} sub="Earned & verified" Icon={Award} iconColor="#D97706" iconBg="#FEF3C7" />
-        <StatCard label="Upcoming Sessions" value={MOCK_SESSIONS.length} sub="Next 7 days" Icon={CalendarDays} iconColor="#059669" iconBg="#D1FAE5" />
+        <StatCard label="Certificates" value={displayCertificates.length} sub="Earned and verified" Icon={Award} iconColor="#D97706" iconBg="#FEF3C7" />
+        <StatCard label="Upcoming Sessions" value={displaySessions.length} sub="Next 7 days" Icon={CalendarDays} iconColor="#059669" iconBg="#D1FAE5" />
       </div>
 
-      {/* Main grid section */}
+      {/* Main grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
 
         {/* Left column */}
@@ -278,9 +388,25 @@ export default async function DashboardPage() {
                 View all <ChevronRight size={14} />
               </Link>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
-              {MOCK_COURSES.map(c => <CourseCard key={c.id} course={c} />)}
-            </div>
+            {displayCourses.length === 0 ? (
+              <div style={{
+                padding: "32px", textAlign: "center", background: "white",
+                borderRadius: 14, border: "1px dashed var(--line)",
+              }}>
+                <p style={{ fontSize: 14, color: "var(--muted)", marginBottom: 12 }}>
+                  You have not enrolled in any courses yet.
+                </p>
+                <Link href="/courses" style={{
+                  fontSize: 13, color: "var(--accent)", fontWeight: 500, textDecoration: "none",
+                }}>
+                  Browse courses
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
+                {displayCourses.map(c => <CourseCard key={c.id} course={c} />)}
+              </div>
+            )}
           </section>
 
           {/* Upcoming Sessions */}
@@ -295,9 +421,20 @@ export default async function DashboardPage() {
                 View all <ChevronRight size={14} />
               </Link>
             </div>
-            <div>
-              {MOCK_SESSIONS.map(s => <SessionRow key={s.id} session={s} />)}
-            </div>
+            {displaySessions.length === 0 ? (
+              <div style={{ padding: "24px 0", textAlign: "center" }}>
+                <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 10 }}>
+                  No upcoming sessions scheduled.
+                </p>
+                <Link href="/trainers" style={{ fontSize: 13, color: "var(--accent)", fontWeight: 500, textDecoration: "none" }}>
+                  Book a trainer
+                </Link>
+              </div>
+            ) : (
+              <div>
+                {displaySessions.map(s => <SessionRow key={s.id} session={s} />)}
+              </div>
+            )}
           </section>
         </div>
 
@@ -331,7 +468,7 @@ export default async function DashboardPage() {
               </Link>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {MOCK_CERTIFICATES.map(cert => (
+              {displayCertificates.map(cert => (
                 <div key={cert.id} style={{
                   background: "white", borderRadius: 12, padding: "14px 16px",
                   border: "1px solid rgba(0,0,0,0.06)",
@@ -402,7 +539,7 @@ export default async function DashboardPage() {
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)" }}>Top pick for you</span>
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)", marginBottom: 4 }}>Naledi Dlamini</div>
-            <div style={{ fontSize: 12, color: "var(--slate)", marginBottom: 10 }}>AI Safety & RLHF specialist · 4.9 rating · 142 sessions</div>
+            <div style={{ fontSize: 12, color: "var(--slate)", marginBottom: 10 }}>AI Safety and RLHF specialist · 4.9 rating · 142 sessions</div>
             <Link href="/trainers/naledi-dlamini" style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               fontSize: 13, color: "var(--accent)", textDecoration: "none", fontWeight: 500,

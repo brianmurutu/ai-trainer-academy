@@ -47,7 +47,7 @@ const TRAINERS: Record<string, {
     slug: "dr-amara-osei",
     name: "Dr. Amara Osei",
     tagline: "LLM Fine-tuning Specialist · PhD in ML from UCT",
-    bio: "I've spent the last 8 years working at the intersection of academic research and industry AI. After completing my PhD at the University of Cape Town and doing two years of postdoctoral work at DeepMind, I joined Andela as Principal ML Engineer before moving to independent training full-time.\n\nI specialize in parameter-efficient fine-tuning techniques (LoRA, QLoRA, DoRA), RLHF pipelines, and dataset curation for African-language NLP. My teaching style is hands-on — every session involves writing real code, and I provide code reviews after each session.",
+    bio: "I've spent the last 8 years working at the intersection of academic research and industry AI. After completing my PhD at the University of Cape Town and doing two years of postdoctoral work at DeepMind, I joined Andela as Principal ML Engineer before moving to independent training full-time.\n\nI specialize in parameter-efficient fine-tuning techniques (LoRA, QLoRA, DoRA), RLHF pipelines, and dataset curation for African-language NLP. My teaching style is hands-on. Every session involves writing real code, and I provide code reviews after each session.",
     country: "Ghana",
     specialities: ["Fine-tuning (LoRA / QLoRA)", "RLHF & RLAIF", "Dataset Curation & Annotation", "Model Evaluation & Benchmarking", "NLP & Text Models"],
     experience: "8+ years",
@@ -71,10 +71,10 @@ const TRAINERS: Record<string, {
       { name: "Zawadi Kamau", initials: "ZK", rating: 4, date: "Apr 28, 2025", text: "Great content and very knowledgeable. Sometimes goes a bit fast but always happy to slow down when asked." },
     ],
     availableSlots: [
-      { id: "s1", date: "Thu Jun 5", dayLabel: "Tomorrow — Thu, Jun 5", time: "4:00 PM – 5:30 PM EAT", duration: "1.5 hrs", durationHrs: 1.5 },
-      { id: "s2", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "10:00 AM – 11:00 AM EAT", duration: "1 hr", durationHrs: 1 },
-      { id: "s3", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "2:00 PM – 4:00 PM EAT", duration: "2 hrs", durationHrs: 2 },
-      { id: "s4", date: "Mon Jun 9", dayLabel: "Monday, Jun 9", time: "6:00 PM – 7:00 PM EAT", duration: "1 hr", durationHrs: 1 },
+      { id: "s1", date: "Thu Jun 5", dayLabel: "Tomorrow, Thu Jun 5", time: "4:00 PM to 5:30 PM EAT", duration: "1.5 hrs", durationHrs: 1.5 },
+      { id: "s2", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "10:00 AM to 11:00 AM EAT", duration: "1 hr", durationHrs: 1 },
+      { id: "s3", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "2:00 PM to 4:00 PM EAT", duration: "2 hrs", durationHrs: 2 },
+      { id: "s4", date: "Mon Jun 9", dayLabel: "Monday, Jun 9", time: "6:00 PM to 7:00 PM EAT", duration: "1 hr", durationHrs: 1 },
     ],
   },
   "naledi-dlamini": {
@@ -100,8 +100,8 @@ const TRAINERS: Record<string, {
       { name: "Amira Hassan", initials: "AH", rating: 5, date: "May 15, 2025", text: "Life-changing session. The way she connects abstract safety concepts to practical engineering is exactly what I needed." },
     ],
     availableSlots: [
-      { id: "s1", date: "Fri Jun 6", dayLabel: "Friday, Jun 6", time: "10:00 AM – 11:00 AM EAT", duration: "1 hr", durationHrs: 1 },
-      { id: "s2", date: "Tue Jun 10", dayLabel: "Tuesday, Jun 10", time: "3:00 PM – 5:00 PM EAT", duration: "2 hrs", durationHrs: 2 },
+      { id: "s1", date: "Fri Jun 6", dayLabel: "Friday, Jun 6", time: "10:00 AM to 11:00 AM EAT", duration: "1 hr", durationHrs: 1 },
+      { id: "s2", date: "Tue Jun 10", dayLabel: "Tuesday, Jun 10", time: "3:00 PM to 5:00 PM EAT", duration: "2 hrs", durationHrs: 2 },
     ],
   },
 };

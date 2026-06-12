@@ -1,32 +1,206 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+/* ─── Palette & Tokens ─────────────────────────────────────────── */
 :root {
-  --font-display: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
-  --navy: #0D1B2A;
-  --navy-800: #1A2E42;
-  --navy-700: #243D54;
-  --ink: #1C2B3A;
-  --slate: #4A6174;
-  --muted: #7A93A8;
-  --line: #E2EAF0;
-  --surface: #F5F8FB;
-  --white: #FFFFFF;
-  --accent: #1A6FBF;
-  --accent-light: #EBF3FC;
-  --accent-dark: #0F4C8A;
-  --green: #1A7A4A;
-  --green-light: #E8F5EE;
-  --amber: #B05C0E;
-  --amber-light: #FDF0E4;
+  /* Fonts */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Core palette — deeper, bolder */
+  --navy:        #0A0F1E;
+  --navy-800:    #111827;
+  --navy-700:    #1C2B3A;
+  --ink:         #1A2035;
+  --slate:       #4B5875;
+  --muted:       #8492B0;
+  --line:        #E4E9F4;
+  --surface:     #F4F6FC;
+  --white:       #FFFFFF;
+
+  /* Accent — electric indigo-blue */
+  --accent:       #3B6EE8;
+  --accent-light: #EBF0FF;
+  --accent-dark:  #2450C0;
+  --accent-glow:  rgba(59,110,232,0.25);
+
+  /* Violet secondary */
+  --violet:       #7C3AED;
+  --violet-light: #EDE9FE;
+
+  /* Green */
+  --green:        #059669;
+  --green-light:  #D1FAE5;
+
+  /* Amber */
+  --amber:        #B45309;
+  --amber-light:  #FEF3C7;
+
+  /* Danger */
+  --red:          #DC2626;
+  --red-light:    #FEE2E2;
+
+  /* Gradients */
+  --grad-hero:        linear-gradient(135deg, #0A0F1E 0%, #111C3A 60%, #0D2052 100%);
+  --grad-accent:      linear-gradient(135deg, #3B6EE8 0%, #7C3AED 100%);
+  --grad-surface:     linear-gradient(180deg, #F4F6FC 0%, #FFFFFF 100%);
+  --grad-card-hover:  linear-gradient(135deg, rgba(59,110,232,0.06) 0%, rgba(124,58,237,0.04) 100%);
+
+  /* Shadows */
+  --shadow-xs:   0 1px 2px rgba(10,15,30,0.06);
+  --shadow-sm:   0 2px 8px rgba(10,15,30,0.08);
+  --shadow-md:   0 4px 16px rgba(10,15,30,0.10);
+  --shadow-lg:   0 8px 32px rgba(10,15,30,0.12);
+  --shadow-xl:   0 16px 48px rgba(10,15,30,0.16);
+  --shadow-accent: 0 4px 24px rgba(59,110,232,0.28);
+
+  /* Border radii */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-pill: 999px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+/* ─── Reset ─────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   font-family: var(--font-display);
   background: var(--white);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* ─── Base input / button resets ────────────────────────────────── */
+input, select, textarea, button {
+  font-family: var(--font-display);
+  font-size: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%       { box-shadow: 0 0 0 8px transparent; }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Utility classes ────────────────────────────────────────────── */
+.animate-fade-up   { animation: fadeSlideUp 0.5s ease both; }
+.animate-fade-in   { animation: fadeIn 0.4s ease both; }
+.animate-spin      { animation: spin 1s linear infinite; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, #e8ecf5 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ─── Badge / pill shared style ──────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Focus ring ─────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ─── Section utility ────────────────────────────────────────────── */
+.section-container {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding-left: var(--space-6);
+  padding-right: var(--space-6);
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--space-3);
 }

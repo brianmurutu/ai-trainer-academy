@@ -1,66 +1,112 @@
 "use client";
 import Link from "next/link";
 import { Star, ArrowRight } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 const trainers = [
-  { initials: "JM", name: "James Mwangi", spec: "Fine-tuning & RLHF", tags: ["LLaMA", "GPT-4", "RLHF"], rating: 4.9, sessions: 128, rate: "KSH 2,500/hr", bg: "#1A2E42", available: true },
-  { initials: "SA", name: "Sofia Andersson", spec: "Prompt Engineering", tags: ["ChatGPT", "Claude", "Gemini"], rating: 4.8, sessions: 94, rate: "$18/hr", bg: "#1A6FBF", available: true },
-  { initials: "KO", name: "Kofi Owusu", spec: "Dataset Curation", tags: ["Annotation", "JSONL", "Hugging Face"], rating: 5.0, sessions: 61, rate: "KSH 3,000/hr", bg: "#1A7A4A", available: false },
-  { initials: "PR", name: "Priya Rajan", spec: "Model Evaluation", tags: ["Benchmarking", "MMLU", "evals"], rating: 4.7, sessions: 203, rate: "$22/hr", bg: "#7A4A1A", available: true },
-  { initials: "DK", name: "David Kamau", spec: "LoRA & PEFT", tags: ["LoRA", "QLoRA", "Adapters"], rating: 4.9, sessions: 87, rate: "KSH 2,000/hr", bg: "#4A1A7A", available: true },
-  { initials: "YN", name: "Yuki Nakamura", spec: "AI Safety & Alignment", tags: ["Alignment", "RLAIF", "Red-teaming"], rating: 4.8, sessions: 45, rate: "$28/hr", bg: "#1A5A7A", available: false },
+  {
+    initials: "JM", name: "James Mwangi", spec: "Fine-tuning and RLHF",
+    tags: ["LLaMA", "GPT-4", "RLHF"], rating: 4.9, sessions: 128,
+    rateKsh: 2500, rateUsd: 19,
+    bg: "var(--grad-accent)", available: true, slug: "james-mwangi",
+  },
+  {
+    initials: "SA", name: "Sofia Andersson", spec: "Prompt Engineering",
+    tags: ["ChatGPT", "Claude", "Gemini"], rating: 4.8, sessions: 94,
+    rateKsh: 2340, rateUsd: 18,
+    bg: "linear-gradient(135deg, #1A6FBF 0%, #2B8FDF 100%)", available: true, slug: "sofia-andersson",
+  },
+  {
+    initials: "KO", name: "Kofi Owusu", spec: "Dataset Curation",
+    tags: ["Annotation", "JSONL", "Hugging Face"], rating: 5.0, sessions: 61,
+    rateKsh: 3000, rateUsd: 23,
+    bg: "linear-gradient(135deg, #1A7A4A 0%, #22A05E 100%)", available: false, slug: "kofi-owusu",
+  },
+  {
+    initials: "PR", name: "Priya Rajan", spec: "Model Evaluation",
+    tags: ["Benchmarking", "MMLU", "evals"], rating: 4.7, sessions: 203,
+    rateKsh: 2860, rateUsd: 22,
+    bg: "linear-gradient(135deg, #7A4A1A 0%, #B06422 100%)", available: true, slug: "priya-rajan",
+  },
+  {
+    initials: "DK", name: "David Kamau", spec: "LoRA and PEFT",
+    tags: ["LoRA", "QLoRA", "Adapters"], rating: 4.9, sessions: 87,
+    rateKsh: 2000, rateUsd: 15,
+    bg: "linear-gradient(135deg, #4A1A7A 0%, #6B2AAE 100%)", available: true, slug: "david-kamau",
+  },
+  {
+    initials: "YN", name: "Yuki Nakamura", spec: "AI Safety and Alignment",
+    tags: ["Alignment", "RLAIF", "Red-teaming"], rating: 4.8, sessions: 45,
+    rateKsh: 3640, rateUsd: 28,
+    bg: "linear-gradient(135deg, #1A5A7A 0%, #1E7FAD 100%)", available: false, slug: "yuki-nakamura",
+  },
 ];
 
 export default function Trainers() {
+  const { formatPrice } = useCurrency();
+
   return (
-    <section style={{ maxWidth: 1180, margin: "0 auto", padding: "72px 24px" }}>
+    <section style={{ maxWidth: 1180, margin: "0 auto", padding: "80px 24px" }}>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40, flexWrap: "wrap", gap: 16 }}>
         <div>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>Featured trainers</p>
-          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 600, color: "var(--navy)", letterSpacing: "-0.6px" }}>
+          <p className="section-label">Featured trainers</p>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-0.6px" }}>
             Learn from verified experts
           </h2>
         </div>
         <Link href="/trainers" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          fontSize: 14, color: "var(--accent)", textDecoration: "none", fontWeight: 500,
-        }}>View all trainers <ArrowRight size={15} /></Link>
+          fontSize: 14, color: "var(--accent)", textDecoration: "none", fontWeight: 600,
+          transition: "gap 0.15s",
+        }}
+          onMouseEnter={e => (e.currentTarget.style.gap = "10px")}
+          onMouseLeave={e => (e.currentTarget.style.gap = "6px")}
+        >View all trainers <ArrowRight size={15} /></Link>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-        {trainers.map(({ initials, name, spec, tags, rating, sessions, rate, bg, available }) => (
-          <div key={name} style={{
+        {trainers.map(({ initials, name, spec, tags, rating, sessions, rateKsh, rateUsd, bg, available, slug }) => (
+          <Link key={name} href={`/trainers/${slug}`} style={{
+            display: "block",
             background: "white", border: "1px solid var(--line)",
-            borderRadius: 16, padding: "20px", transition: "border-color 0.15s, box-shadow 0.15s",
+            borderRadius: 16, padding: "20px",
+            transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
+            textDecoration: "none",
             cursor: "pointer",
           }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.borderColor = "#B5D4F4";
-              (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 20px rgba(26,111,191,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
+              (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-md)";
+              (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.borderColor = "var(--line)";
-              (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
+              (e.currentTarget as HTMLElement).style.boxShadow = "none";
+              (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
               <div style={{
                 width: 46, height: 46, borderRadius: "50%",
                 background: bg, display: "flex", alignItems: "center",
-                justifyContent: "center", fontSize: 15, fontWeight: 600, color: "white", flexShrink: 0,
+                justifyContent: "center", fontSize: 15, fontWeight: 700, color: "white", flexShrink: 0,
               }}>{initials}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 500, fontSize: 15, color: "var(--navy)", marginBottom: 1 }}>{name}</div>
+                <div style={{ fontWeight: 600, fontSize: 15, color: "var(--navy)", marginBottom: 1 }}>{name}</div>
                 <div style={{ fontSize: 12, color: "var(--muted)" }}>{spec}</div>
               </div>
               <div style={{
                 display: "flex", alignItems: "center", gap: 5,
-                fontSize: 10, fontWeight: 600,
+                fontSize: 10, fontWeight: 700,
                 color: available ? "var(--green)" : "var(--muted)",
                 background: available ? "var(--green-light)" : "var(--surface)",
                 padding: "4px 9px", borderRadius: 20, flexShrink: 0,
               }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: available ? "var(--green)" : "var(--muted)" }} />
+                <div style={{
+                  width: 5, height: 5, borderRadius: "50%",
+                  background: available ? "var(--green)" : "var(--muted)",
+                  animation: available ? "pulse-dot 2s ease-in-out infinite" : "none",
+                }} />
                 <span>{available ? "Available" : "Busy"}</span>
               </div>
             </div>
@@ -79,13 +125,15 @@ export default function Trainers() {
               paddingTop: 14, borderTop: "1px solid var(--line)",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <Star size={13} fill="#B05C0E" color="#B05C0E" />
-                <span style={{ fontSize: 13, color: "var(--ink)", fontWeight: 500 }}>{rating}</span>
-                <span style={{ fontSize: 12, color: "var(--muted)" }}>· {sessions} sessions</span>
+                <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                <span style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>{rating}</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>| {sessions} sessions</span>
               </div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>{rate}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)" }}>
+                {formatPrice(rateKsh, rateUsd)}/hr
+              </span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

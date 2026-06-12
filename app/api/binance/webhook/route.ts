@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * POST /api/binance/webhook
@@ -62,15 +63,23 @@ export async function POST(request: NextRequest) {
 
       console.log(`[Binance Pay] Payment success: ${merchantTradeNo}, txId: ${transactionId}, ${orderAmount} ${currency}`);
 
-      // TODO: Once bookings table exists in Supabase, upsert the booking here:
-      // const supabase = await createAdminClient();
-      // await supabase.from("bookings").upsert({
-      //   binance_trade_no: merchantTradeNo,
-      //   binance_tx_id: transactionId,
-      //   amount: orderAmount,
-      //   currency,
-      //   status: "paid",
-      // });
+      const db = createAdminClient();
+      // Upsert into bookings using the Binance trade number as a unique key
+      const { error } = await db.from("bookings").upsert(
+        {
+          binance_trade_no: merchantTradeNo,
+          amount_usd: parseFloat(orderAmount),
+          currency: currency,
+          payment_method: "binance_pay",
+          status: "confirmed",
+        },
+        { onConflict: "binance_trade_no" }
+      );
+      if (error) {
+        console.error("[Binance webhook] bookings upsert error:", error.message);
+      } else {
+        console.log(`[Binance Pay] Booking confirmed: ${merchantTradeNo}`);
+      }
     }
 
     // Binance Pay requires this exact response body to acknowledge receipt

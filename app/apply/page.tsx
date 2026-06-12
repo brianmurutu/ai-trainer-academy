@@ -20,7 +20,7 @@ const sidePanelContent = (
     }}>Why train on our platform</div>
 
     {[
-      { num: "80%", label: "You keep 80% of every session — highest trainer share in the industry" },
+      { num: "80%", label: "You keep 80% of every session. Highest trainer share in the industry." },
       { num: "KSH", label: "Get paid weekly via M-Pesa, bank transfer, or crypto" },
       { num: "0", label: "Zero setup cost. One-time KSH 2,000 activation after approval" },
       { num: "∞", label: "Set your own rates, hours, and specialities. Full control." },
@@ -148,7 +148,7 @@ export default function ApplyPage() {
           <h1 style={{ fontSize: 24, fontWeight: 600, color: "var(--navy)", letterSpacing: "-0.4px", marginBottom: 4 }}>
             Trainer application
           </h1>
-          <p style={{ fontSize: 13, color: "var(--slate)" }}>Step {step + 1} of {STEPS.length} — {STEPS[step]}</p>
+          <p style={{ fontSize: 13, color: "var(--slate)" }}>Step {step + 1} of {STEPS.length}: {STEPS[step]}</p>
         </div>
 
         {/* Progress bar */}

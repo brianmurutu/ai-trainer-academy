@@ -60,9 +60,10 @@ export default function TrainerCard({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
           <div style={{
             width: 52, height: 52, borderRadius: 14,
-            background: featured ? "var(--accent)" : "var(--navy)",
+            background: featured ? "var(--grad-accent)" : "var(--navy)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 16, fontWeight: 700, color: "white",
+            boxShadow: featured ? "0 4px 12px var(--accent-glow)" : "none",
           }}>
             {trainer.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
           </div>
@@ -71,7 +72,7 @@ export default function TrainerCard({
             padding: "4px 9px", borderRadius: 20,
             background: trainer.available ? "#D1FAE5" : "#F3F4F6",
           }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: trainer.available ? "#059669" : "#9CA3AF" }} />
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: trainer.available ? "#059669" : "#9CA3AF", animation: trainer.available ? "pulse-dot 2s infinite" : "none" }} />
             <span style={{ fontSize: 11, fontWeight: 500, color: trainer.available ? "#059669" : "#9CA3AF" }}>
               {trainer.available ? "Available" : "Booked out"}
             </span>
@@ -107,9 +108,6 @@ export default function TrainerCard({
                 <Star size={12} color="#F59E0B" fill="#F59E0B" />
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy)" }}>{trainer.rating}</span>
                 <span style={{ fontSize: 11, color: "var(--muted)" }}>({trainer.reviewCount})</span>
-                <span style={{ color: "var(--line)", margin: "0 2px" }}>·</span>
-                <CalendarDays size={11} color="var(--muted)" />
-                <span style={{ fontSize: 11, color: "var(--muted)" }}>{trainer.sessionsCompleted} sessions</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--navy)", fontWeight: 600, marginTop: 4 }}>
                 {formatPrice(trainer.rateKsh, rateUsd)} <span style={{ fontWeight: 400, color: "var(--muted)" }}>/ hr</span>

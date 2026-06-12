@@ -12,8 +12,10 @@ export async function POST(request: NextRequest) {
     const {
       email,
       amountKsh,
+      amountUsd,
       currency = "KES",
       reference,
+      trainerId,
       trainerName,
       sessionTopic,
       callbackUrl,
@@ -53,8 +55,10 @@ export async function POST(request: NextRequest) {
           reference,
           callback_url: callbackUrl,
           metadata: {
+            trainer_id: trainerId,
             trainer_name: trainerName,
             session_topic: sessionTopic,
+            amount_usd: amountUsd ? String(amountUsd) : "0",
             custom_fields: [
               {
                 display_name: "Trainer",

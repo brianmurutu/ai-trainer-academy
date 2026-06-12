@@ -1,5 +1,5 @@
 "use client";
-import { useState, useActionState, useRef } from "react";
+import { useState, useActionState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import AuthShell from "@/components/AuthShell";
@@ -68,6 +68,22 @@ export default function ApplyPage() {
   const [captchaToken, setCaptchaToken] = useState("");
 
   const [state, action, pending] = useActionState(submitApplicationAction, undefined);
+
+  // Tokens are single-use — reset the widget after every submission so the
+  // user always has a fresh token ready for retries.
+  const handleSubmit = (formData: FormData) => {
+    action(formData);
+    turnstileRef.current?.reset();
+    setCaptchaToken("");
+  };
+
+  // Also reset if an error comes back (catches any edge cases).
+  useEffect(() => {
+    if (state?.error) {
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
+    }
+  }, [state]);
 
   const set = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(p => ({ ...p, [key]: e.target.value }));
@@ -181,7 +197,7 @@ export default function ApplyPage() {
           The native action points to the server action — only fires when the user
           clicks "Submit application" on the last step.
         */}
-        <form ref={formRef} action={action}>
+        <form ref={formRef} action={handleSubmit}>
           {/* Hidden fields for all form data — always rendered */}
           <input type="hidden" name="fullName" value={form.fullName} />
           <input type="hidden" name="email" value={form.email} />

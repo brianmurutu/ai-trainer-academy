@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getTrainerBySlug } from "@/lib/supabase/queries";
 import BookingWidget from "@/components/trainers/BookingWidget";
 import TrainerRateDisplay from "@/components/trainers/TrainerRateDisplay";
 import {
@@ -11,7 +12,6 @@ import {
   Users,
   CheckCircle2,
   ExternalLink,
-  ChevronLeft,
   Award,
   Link2,
   GitFork,
@@ -115,6 +115,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const dbTrainer = await getTrainerBySlug(slug);
+  
+  if (dbTrainer) {
+    return {
+      title: `${dbTrainer.full_name} | AI Trainer Academy`,
+      description: dbTrainer.tagline || "AI Model Trainer & Specialist",
+    };
+  }
+
   const trainer = TRAINERS[slug];
   if (!trainer) return { title: "Trainer Not Found | AI Trainer Academy" };
   return {
@@ -145,12 +154,114 @@ export default async function TrainerProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const trainer = TRAINERS[slug];
+  const supabase = await createClient();
+  
+  // Try fetching from the database first
+  const dbTrainer = await getTrainerBySlug(slug);
+  
+  let trainer;
+  
+  if (dbTrainer) {
+    // Fetch courses owned by this trainer
+    const { data: dbCourses } = await supabase
+      .from("courses")
+      .select("title, enrolled_count, rating")
+      .ilike("trainer_name", `%${dbTrainer.full_name}%`);
+
+    // Fetch verified reviews/bookings for this trainer
+    const { data: dbBookings } = await supabase
+      .from("bookings")
+      .select("learner_id, session_topic, session_date")
+      .eq("trainer_id", dbTrainer.id)
+      .eq("status", "confirmed")
+      .order("session_date", { ascending: false });
+
+    // Parse reviews from bookings
+    const reviews: { name: string; initials: string; rating: number; date: string; text: string }[] = [];
+    if (dbBookings) {
+      for (const b of dbBookings) {
+        const parts = b.session_topic?.split(" || ") || [];
+        const ratingPart = parts.find((p: string) => p.startsWith("Rating:"));
+        const commentPart = parts.find((p: string) => p.startsWith("Comment:"));
+        if (ratingPart || commentPart) {
+          const rating = ratingPart ? parseInt(ratingPart.split(":")[1], 10) : 5;
+          const text = commentPart ? commentPart.substring(8) : "Excellent session!";
+          const date = b.session_date ? new Date(b.session_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recently";
+          reviews.push({
+            name: "Verified Learner",
+            initials: "VL",
+            rating,
+            date,
+            text,
+          });
+        }
+      }
+    }
+
+    // Generate dynamic upcoming slots
+    const today = new Date();
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    const availableSlots = [];
+    let slotCount = 1;
+    
+    for (let offset = 1; offset <= 7; offset++) {
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + offset);
+      const dayName = days[futureDate.getDay()];
+      
+      if (dayName !== "Sunday") {
+        const dateStr = `${dayName.substring(0, 3)} ${months[futureDate.getMonth()]} ${futureDate.getDate()}`;
+        const dayLabel = `${offset === 1 ? "Tomorrow, " : ""}${dayName}, ${months[futureDate.getMonth()]} ${futureDate.getDate()}`;
+        
+        availableSlots.push({
+          id: `s-${offset}-${slotCount++}`,
+          date: dateStr,
+          dayLabel: dayLabel,
+          time: "4:00 PM to 5:00 PM EAT",
+          duration: "1 hr",
+          durationHrs: 1
+        });
+        
+        if (availableSlots.length >= 4) break;
+      }
+    }
+
+    trainer = {
+      slug: dbTrainer.slug,
+      name: dbTrainer.full_name,
+      tagline: dbTrainer.tagline || "AI Model Trainer & Specialist",
+      bio: dbTrainer.bio || "No bio provided yet.",
+      country: dbTrainer.country || "Kenya",
+      specialities: dbTrainer.specialities || [],
+      experience: "Verified Trainer",
+      rateKsh: dbTrainer.hourly_rate_ksh,
+      rateUsd: dbTrainer.hourly_rate_usd,
+      rating: dbTrainer.rating || 5.0,
+      reviewCount: dbTrainer.review_count || reviews.length,
+      sessionsCompleted: dbTrainer.sessions_completed || 0,
+      learnersHelped: dbTrainer.learners_helped || 0,
+      linkedinUrl: dbTrainer.linkedin_url || "",
+      githubUrl: dbTrainer.github_url || "",
+      sampleWorkUrl: dbTrainer.sample_work_url || "",
+      courses: (dbCourses || []).map(c => ({
+        title: c.title,
+        enrolled: c.enrolled_count || 0,
+        rating: c.rating || 5.0,
+      })),
+      reviews: reviews.length > 0 ? reviews : [
+        { name: "System Verified", initials: "SV", rating: 5, date: "Activation", text: "Successfully completed onboarding and directory verification." }
+      ],
+      availableSlots,
+    };
+  } else {
+    trainer = TRAINERS[slug];
+  }
 
   if (!trainer) notFound();
 
   // Get the current logged-in user's email for pre-filling Paystack
-  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email;
 

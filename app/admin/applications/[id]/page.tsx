@@ -11,6 +11,7 @@ const STATUS_CONFIG = {
   pending:  { label: "Pending review", bg: "#FEF3C7", color: "#D97706", Icon: Clock },
   approved: { label: "Approved",       bg: "#D1FAE5", color: "#059669", Icon: CheckCircle2 },
   rejected: { label: "Rejected",       bg: "#FEE2E2", color: "#DC2626", Icon: XCircle },
+  suspended: { label: "Suspended",     bg: "#FEF3C7", color: "#D97706", Icon: AlertCircle },
 } as const;
 
 function fmt(iso: string) {
@@ -34,7 +35,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
   const app = await getApplication(id);
   if (!app) notFound();
 
-  const cfg = STATUS_CONFIG[app.status];
+  const cfg = STATUS_CONFIG[app.is_suspended ? "suspended" : app.status];
   const initials = app.full_name.split(" ").map((n) => n[0]).slice(0, 2).join("");
 
   return (
@@ -113,7 +114,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
           <Card style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.06)", position: "sticky", top: 24 }}>
             <SectionTitle>Review decision</SectionTitle>
             <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 18, lineHeight: 1.5 }}>Trainer is emailed immediately after you confirm.</p>
-            <ReviewActions applicationId={app.id} applicantName={app.full_name} currentStatus={app.status} />
+            <ReviewActions applicationId={app.id} applicantName={app.full_name} currentStatus={app.status} isSuspended={app.is_suspended} />
           </Card>
           <Card>
             <SectionTitle>Requested rate</SectionTitle>

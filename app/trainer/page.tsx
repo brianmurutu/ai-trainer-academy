@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
+import TrainerActivationClient from "@/components/trainer/TrainerActivationClient";
 
 export const metadata: Metadata = {
   title: "Trainer Overview | AI Trainer Academy",
@@ -136,6 +137,273 @@ export default async function TrainerPage() {
   const fullName: string =
     (user.user_metadata?.full_name as string) ||
     user.email?.split("@")[0] || "Trainer";
+
+  // Check if trainer profile is already active in trainers table
+  const { data: trainerProfile } = await supabase
+    .from("trainers")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const isActivated = !!trainerProfile;
+
+  // Get application status
+  const { data: application } = await supabase
+    .from("trainer_applications")
+    .select("id, status, full_name, email")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const applicationStatus = application?.status || "pending";
+
+  if (!isActivated) {
+    if (applicationStatus === "approved" && application) {
+      return (
+        <div style={{
+          maxWidth: 640,
+          margin: "80px auto",
+          padding: "0 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+        }}>
+          <div style={{
+            background: "white",
+            borderRadius: 20,
+            border: "1px solid var(--line)",
+            boxShadow: "0 10px 30px rgba(10,15,30,0.08)",
+            padding: "40px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+            {/* Locked Badge Icon */}
+            <div style={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              background: "var(--accent-light)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--accent)",
+              marginBottom: 24,
+            }}>
+              <Landmark size={32} />
+            </div>
+
+            <h1 style={{
+              fontSize: 24,
+              fontWeight: 700,
+              color: "var(--navy)",
+              letterSpacing: "-0.5px",
+              marginBottom: 12,
+            }}>
+              Activate Your Trainer Account
+            </h1>
+            
+            <p style={{
+              fontSize: 14.5,
+              color: "var(--slate)",
+              lineHeight: 1.6,
+              maxWidth: 480,
+              marginBottom: 32,
+            }}>
+              Congratulations! Your trainer application has been approved. To activate your public directory profile, list courses, and start accepting learner bookings, please complete the activation fee.
+            </p>
+
+            {/* Price tag */}
+            <div style={{
+              background: "var(--surface)",
+              borderRadius: 14,
+              padding: "20px 24px",
+              width: "100%",
+              marginBottom: 32,
+              border: "1px solid rgba(0,0,0,0.04)",
+              textAlign: "left",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 500 }}>Activation Fee</span>
+                <span style={{ fontSize: 18, fontWeight: 700, color: "var(--navy)" }}>KES 2,000</span>
+              </div>
+              <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--slate)" }}>
+                  <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0 }} />
+                  <span>Public profile in our trainer directory</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--slate)" }}>
+                  <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0 }} />
+                  <span>Publish unlimited AI courses & tutorials</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--slate)" }}>
+                  <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0 }} />
+                  <span>Interactive calendar for direct 1-on-1 sessions</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--slate)" }}>
+                  <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0 }} />
+                  <span>80/20 platform split with automated weekly payouts</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ width: "100%" }}>
+              <TrainerActivationClient
+                applicationId={application.id}
+                email={application.email || user.email || ""}
+              />
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Need help? Contact our support team at <a href="mailto:support@aitraineracademy.com" style={{ color: "var(--accent)", textDecoration: "none" }}>support@aitraineracademy.com</a>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Pending or no application
+    if (applicationStatus === "pending") {
+      return (
+        <div style={{
+          maxWidth: 540,
+          margin: "100px auto",
+          padding: "0 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 20,
+        }}>
+          <div style={{
+            background: "white",
+            borderRadius: 20,
+            border: "1px solid var(--line)",
+            boxShadow: "0 10px 30px rgba(10,15,30,0.08)",
+            padding: "40px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+            <div style={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              background: "var(--amber-light)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--amber)",
+              marginBottom: 24,
+            }}>
+              <AlertCircle size={32} />
+            </div>
+
+            <h1 style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "var(--navy)",
+              letterSpacing: "-0.5px",
+              marginBottom: 12,
+            }}>
+              Application Under Review
+            </h1>
+            
+            <p style={{
+              fontSize: 14.5,
+              color: "var(--slate)",
+              lineHeight: 1.6,
+              marginBottom: 24,
+            }}>
+              Your application to become a trainer is currently under review by our administration. Once approved, you will receive an email confirmation and can pay the activation fee to go live.
+            </p>
+
+            <div style={{
+              padding: "12px 16px",
+              background: "var(--surface)",
+              borderRadius: 10,
+              fontSize: 13,
+              color: "var(--slate)",
+              width: "100%",
+            }}>
+              Review status: <strong>Pending Approval</strong>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (applicationStatus === "rejected") {
+      return (
+        <div style={{
+          maxWidth: 540,
+          margin: "100px auto",
+          padding: "0 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 20,
+        }}>
+          <div style={{
+            background: "white",
+            borderRadius: 20,
+            border: "1px solid var(--line)",
+            boxShadow: "0 10px 30px rgba(10,15,30,0.08)",
+            padding: "40px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+            <div style={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              background: "var(--red-light)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--red)",
+              marginBottom: 24,
+            }}>
+              <AlertCircle size={32} />
+            </div>
+
+            <h1 style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "var(--navy)",
+              letterSpacing: "-0.5px",
+              marginBottom: 12,
+            }}>
+              Application Status
+            </h1>
+            
+            <p style={{
+              fontSize: 14.5,
+              color: "var(--slate)",
+              lineHeight: 1.6,
+              marginBottom: 24,
+            }}>
+              We regret to inform you that your trainer application has not been approved at this time. Please contact our support team if you believe this is an error or have questions.
+            </p>
+
+            <div style={{
+              padding: "12px 16px",
+              background: "var(--surface)",
+              borderRadius: 10,
+              fontSize: 13,
+              color: "var(--slate)",
+              width: "100%",
+            }}>
+              Review status: <strong>Not Approved</strong>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
   const firstName = fullName.split(" ")[0];
 
   const now = new Date();

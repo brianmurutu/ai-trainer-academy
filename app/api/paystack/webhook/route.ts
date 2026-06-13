@@ -58,6 +58,16 @@ export async function POST(request: NextRequest) {
 
   if (eventType === "charge.success" && reference) {
     const metadata = (event.data?.metadata ?? {}) as Record<string, unknown>;
+
+    if (metadata.payment_type === "trainer_activation") {
+      const applicationId = metadata.application_id as string;
+      if (applicationId) {
+        const { activateTrainerProfile } = await import("@/lib/supabase/trainer-activation");
+        await activateTrainerProfile(applicationId);
+      }
+      return new NextResponse(null, { status: 200 });
+    }
+
     const amount = typeof event.data?.amount === "number" ? event.data.amount : 0;
     const amountKsh = metadata.amount_ksh ? Math.round(parseFloat(metadata.amount_ksh as string)) : Math.round(amount / 100);
     const amountUsd = metadata.amount_usd ? parseFloat(metadata.amount_usd as string) : 0;

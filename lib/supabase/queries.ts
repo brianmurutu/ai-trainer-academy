@@ -28,6 +28,10 @@ export type TrainerRow = {
   featured: boolean;
   bio: string | null;
   avatar_url: string | null;
+  learners_helped?: number;
+  linkedin_url?: string | null;
+  github_url?: string | null;
+  sample_work_url?: string | null;
 };
 
 export type CourseRow = {
@@ -90,7 +94,7 @@ export async function getTrainers(
     let query = supabase
       .from("trainers")
       .select(
-        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url"
+        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url, learners_helped, linkedin_url, github_url, sample_work_url"
       )
       .order("rating", { ascending: false });
 
@@ -124,7 +128,7 @@ export async function getTrainerBySlug(slug: string): Promise<TrainerRow | null>
     const { data, error } = await supabase
       .from("trainers")
       .select(
-        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url"
+        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url, learners_helped, linkedin_url, github_url, sample_work_url"
       )
       .eq("slug", slug)
       .single();

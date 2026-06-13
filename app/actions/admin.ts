@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sendApprovalEmail, sendRejectionEmail } from "@/lib/email";
+import { sendApprovalEmail, sendRejectionEmail, sendSuspensionEmail } from "@/lib/email";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -37,6 +37,7 @@ export type Application = {
   github_url: string | null;
   sample_work_url: string | null;
   status: "pending" | "approved" | "rejected";
+  is_suspended: boolean;
   reviewer_note: string | null;
   reviewed_at: string | null;
   created_at: string;
@@ -126,11 +127,49 @@ export async function approveApplication(
   revalidatePath("/admin/applications");
   revalidatePath("/admin");
 
+  // Initialize Paystack checkout for the activation fee (one-time KSH 2,000)
+  let activationUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/login`;
+  try {
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (secretKey) {
+      const reference = `act-${id}-${Date.now()}`;
+      const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/paystack/verify?reference=${reference}`;
+      
+      const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: app.email,
+          amount: 200000, // KSH 2,000 in lowest unit (kobo/cents equivalent)
+          currency: "KES",
+          reference,
+          callback_url: callbackUrl,
+          metadata: {
+            payment_type: "trainer_activation",
+            application_id: id,
+            amount_ksh: "2000",
+          },
+        }),
+      });
+      
+      const data = await paystackRes.json();
+      if (data.status && data.data?.authorization_url) {
+        activationUrl = data.data.authorization_url;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to initialize Paystack for trainer activation:", err);
+  }
+
   // Send approval email to trainer (non-blocking — don't fail the action if email fails)
   try {
     await sendApprovalEmail({
       trainerName: app.full_name,
       trainerEmail: app.email,
+      activationUrl,
       message,
     });
   } catch (emailErr) {
@@ -191,4 +230,106 @@ export async function rejectApplication(
   }
 
   return { success: true, message: `${app.full_name} has been notified of the decision.` };
+}
+
+// ---------------------------------------------------------------------------
+// Suspend a trainer (sets is_suspended = true on the application + trainers table)
+// ---------------------------------------------------------------------------
+export async function suspendTrainer(
+  _prevState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const id = formData.get("id") as string;
+  const reason = formData.get("reason") as string;
+
+  if (!id) return { error: "Missing application ID" };
+  if (!reason?.trim()) return { error: "A suspension reason is required" };
+
+  const db = createAdminClient();
+
+  const { data: app, error: fetchError } = await db
+    .from("trainer_applications")
+    .select("full_name, email, user_id, status")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !app) return { error: "Application not found" };
+  if (app.status !== "approved") return { error: "Only approved trainers can be suspended" };
+
+  // Flag the application
+  const { error: appUpdateError } = await db
+    .from("trainer_applications")
+    .update({ is_suspended: true })
+    .eq("id", id);
+
+  if (appUpdateError) return { error: appUpdateError.message };
+
+  // Also hide them from the public trainers directory
+  if (app.user_id) {
+    await db
+      .from("trainers")
+      .update({ available: false })
+      .eq("user_id", app.user_id);
+  }
+
+  revalidatePath("/admin/applications");
+  revalidatePath("/admin");
+  revalidatePath("/trainers");
+
+  try {
+    await sendSuspensionEmail({
+      trainerName: app.full_name,
+      trainerEmail: app.email,
+      reason,
+    });
+  } catch (emailErr) {
+    console.error("Suspension email failed:", emailErr);
+  }
+
+  return { success: true, message: `${app.full_name} has been suspended and notified by email.` };
+}
+
+// ---------------------------------------------------------------------------
+// Unsuspend / reinstate a trainer
+// ---------------------------------------------------------------------------
+export async function unsuspendTrainer(
+  _prevState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const id = formData.get("id") as string;
+
+  if (!id) return { error: "Missing application ID" };
+
+  const db = createAdminClient();
+
+  const { data: app, error: fetchError } = await db
+    .from("trainer_applications")
+    .select("full_name, email, user_id")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !app) return { error: "Application not found" };
+
+  const { error: appUpdateError } = await db
+    .from("trainer_applications")
+    .update({ is_suspended: false })
+    .eq("id", id);
+
+  if (appUpdateError) return { error: appUpdateError.message };
+
+  // Restore their directory listing
+  if (app.user_id) {
+    await db
+      .from("trainers")
+      .update({ available: true })
+      .eq("user_id", app.user_id);
+  }
+
+  revalidatePath("/admin/applications");
+  revalidatePath("/admin");
+  revalidatePath("/trainers");
+
+  return { success: true, message: `${app.full_name} has been reinstated.` };
 }

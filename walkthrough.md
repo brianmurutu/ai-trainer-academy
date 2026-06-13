@@ -1,64 +1,84 @@
-# Walkthrough — Live Conferencing, Dynamic Sessions & Bookings
+# Walkthrough — Trainer Activation Flow Automation & Dynamic Directory Loading
 
-All changes have been successfully implemented and verified with TypeScript compilation and production builds compiling cleanly.
+We have fully automated the trainer onboarding workflow and integrated dynamic database loading for the public trainer directory, with fallback options for hardcoded trainers during transition.
 
 ## Changes Made
 
 ---
 
-### Slot Parsing & Booking Metadata
-- **[BookingWidget.tsx](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/components/trainers/BookingWidget.tsx)**:
-  - Added a `parseSlotToIso` helper to convert select slot date/time strings into ISO timestamps relative to East Africa Time (UTC+3).
-  - Transmitted `sessionDate` and `sessionDurationHrs` inside both Card (Paystack) and Crypto (Binance Pay) POST request bodies.
-- **[Paystack API Routes](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/paystack/)**:
-  - **[initialize/route.ts](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/paystack/initialize/route.ts)**: Forwarded extracted `session_date` and `session_duration_hrs` into Paystack metadata payload.
-  - **[verify/route.ts](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/paystack/verify/route.ts)**: Extracted and stored `session_date` and `session_duration_hrs` on booking verification.
-  - **[webhook/route.ts](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/paystack/webhook/route.ts)**: Aligned the webhook event handler to save parsed slot data on transaction completion.
+### 1. Dynamic Trainer Profile Loading (`app/trainers/[slug]/page.tsx` & `lib/supabase/queries.ts`)
+- Modified `queries.ts` to include `learners_helped`, `linkedin_url`, `github_url`, and `sample_work_url` in the `TrainerRow` type definition and SQL selects.
+- Updated `app/trainers/[slug]/page.tsx` to search for the trainer profile in the database by slug.
+- If found in the database:
+  - Dynamically loads and maps their public details (name, tagline, bio, country, specialities, rates, social links).
+  - Fetches associated courses dynamically by checking their name.
+  - Fetches verified ratings and reviews parsed from confirmed booking details (`session_topic`).
+  - Generates 4 rolling, upcoming available calendar slots based on the current date (avoiding past hardcoded dates).
+- If not found in the database, bails out to search the fallback `TRAINERS` placeholder map.
+- Updated `generateMetadata` in the profile page to also query the database first so social cards and page titles are computed dynamically for real trainers.
 
 ---
 
-### Crypto Payment & Booking Linking
-- **[Binance API Routes](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/binance/)**:
-  - **[create-order/route.ts](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/binance/create-order/route.ts)**: On a successful Binance order creation, pre-creates a database booking record marked as `pending` with `binance_trade_no` to preserve all booking metadata.
-  - **[query-order/route.ts](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/api/binance/query-order/route.ts)**: As soon as a query returns a status of `PAID`, it immediately confirms the corresponding pending database booking to avoid dependency on webhook speeds.
-  - **[pay/crypto/[orderId]/page.tsx](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/pay/crypto/%5BorderId%5D/page.tsx)**:
-    - Fixed React rules by extracting impure `Date.now()` calls from the render phase and executing them inside `useEffect`.
-    - Wrapped synchronous `setState` actions inside effects with `setTimeout` to run them asynchronously on the next event loop tick, resolving linter errors.
+### 2. Automatic Placeholder Removal (`app/trainers/page.tsx`)
+- The main directory list page is already configured to read:
+  `const trainers = dbTrainers.length > 0 ? dbTrainers : FALLBACK_TRAINERS;`
+- Once the first real trainers onboard and activate, the hardcoded placeholder list is automatically replaced by the active database profiles.
 
 ---
 
-### Learner Sessions Dashboard
-- **[page.tsx](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/dashboard/sessions/page.tsx)**:
-  - Rewritten as a dynamic server component that calls the `getLearnerSessions()` action to fetch the learner's actual database booking records.
-- **[LearnerSessionsClient.tsx](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/dashboard/sessions/LearnerSessionsClient.tsx)**:
-  - Manages active/past session filters dynamically.
-  - Displays a green, pulse-animated "Join Call" action link if a meeting link is present.
-  - Renders gray disabled "Pending Confirmation" or "Meeting Link Pending" buttons if the slot is not yet accepted or has no meeting URL.
+### 3. Trainer Overview Page Gating (`app/trainer/page.tsx`)
+- Checked `trainers` table for an active row matching the logged-in user's ID.
+- Checked the `trainer_applications` table for the trainer's status.
+- Implemented status-based blockers if not active:
+  - **Approved (Unactivated)**: Renders a premium locked activation screen showcasing the trainer benefits package (directory profile, unlimited courses, direct bookings, 80/20 platform split) and rendering the checkout component.
+  - **Pending**: Renders a clean "Application Under Review" card.
+  - **Rejected**: Renders a polite rejection status overview card.
 
 ---
 
-### Trainer Bookings Dashboard
-- **[page.tsx](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/trainer/bookings/page.tsx)**:
-  - Converted to a server-side component fetching bookings dynamically via the `getTrainerBookings()` action.
-- **[TrainerBookingsClient.tsx](file:///c:/Users/Night%20Hawk/OneDrive/Documents/GitHub/ai-trainer-academy/app/trainer/bookings/TrainerBookingsClient.tsx)**:
-  - Manages pending/confirmed lists using live database statuses.
-  - Links "Accept Booking" to an overlay modal pre-populated with a free, zero-config Jitsi Meet room link (`https://meet.jit.si/ATA-Session-[id]`).
-  - Allows trainers to customize this URL to Zoom or Google Meet links, then updates the DB using the `acceptTrainerBooking` server action.
+### 4. Paystack Activation Checkout Widget (`components/trainer/TrainerActivationClient.tsx`)
+- Created a client component wrapper that initializes a Paystack KES 2,000 transaction for trainer activation, passes secure metadata, and redirects the user directly to Paystack's payment portal.
+- Handled loading states, transaction references, and connection errors securely with styled components matching the academy's navy-indigo theme.
+
+---
+
+### 5. Database Activation Helper (`lib/supabase/trainer-activation.ts`)
+- Created `activateTrainerProfile(applicationId)` helper using the Supabase admin client to select trainer application details, automatically slugify their full name, default their tagline, and create/upsert their active profile record into the public `trainers` table.
+- Automatically marks the application status as `"approved"` in the database.
+
+---
+
+### 6. Admin Approvals & Email Notification Overhaul (`app/actions/admin.ts` & `lib/email.ts`)
+- Updated `approveApplication` to automatically initialize the Paystack checkout session for KSH 2,000 upon approval.
+- Generated dynamic activation links and passed them as a template variable to the updated `sendApprovalEmail` function, embedding a green payment CTA in the approval email.
+
+---
+
+### 7. Callback & Webhook Verification (`app/api/paystack/verify/route.ts` & `app/api/paystack/webhook/route.ts`)
+- Intercepted incoming verify queries and POST webhooks with the payment type metadata set to `"trainer_activation"`.
+- Triggered profile activation immediately in the database and redirected successful sessions to `/trainer?activated=true`.
 
 ---
 
 ## Verification Results
 
-### TypeScript Compilation
-- Executed type checking successfully:
+### TypeScript Type-Checking
+- Checked type definitions successfully:
   ```bash
   npx tsc --noEmit
   ```
   Result: **Passed (0 errors)**.
 
-### Production Build Compilation
-- Executed Next.js build compilation:
+### ESLint Code Quality
+- Ran linter on modified files:
+  ```bash
+  npx eslint app/trainer/page.tsx components/trainer/TrainerActivationClient.tsx lib/supabase/trainer-activation.ts app/trainers/[slug]/page.tsx
+  ```
+  Result: **Passed (0 errors, 0 warnings)**.
+
+### Next.js Production Build
+- Checked compilation and static/dynamic bailing optimization:
   ```bash
   npm run build
   ```
-  Result: **Passed (Compiled successfully, built all dynamic routes and sitemap dependencies)**.
+  Result: **Successful compilation (Compiled successfully in 28.0s)**.

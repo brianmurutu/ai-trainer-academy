@@ -60,14 +60,14 @@ export async function sendNewApplicationNotification({
 export async function sendApprovalEmail({
   trainerName,
   trainerEmail,
+  activationUrl,
   message,
 }: {
   trainerName: string;
   trainerEmail: string;
+  activationUrl: string;
   message?: string;
 }) {
-  const loginUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/login`;
-
   await getResend().emails.send({
     from: FROM,
     to: trainerEmail,
@@ -81,14 +81,13 @@ export async function sendApprovalEmail({
         ${message ? `<blockquote style="border-left:3px solid #1A6FBF;padding:8px 16px;color:#4A6174;margin:16px 0">${message}</blockquote>` : ""}
         <p style="color:#4A6174;margin-bottom:20px">
           <strong>Next steps:</strong><br/>
-          1. Log in to your account<br/>
-          2. Pay the one-time KSH 2,000 activation fee<br/>
-          3. Set up your trainer profile and start earning
+          1. Pay the one-time KSH 2,000 activation fee to go live on the directory<br/>
+          2. Log in and configure your schedule, rates, and active courses
         </p>
-        <a href="${loginUrl}"
-           style="display:inline-block;background:#1A6FBF;color:white;text-decoration:none;
+        <a href="${activationUrl}"
+           style="display:inline-block;background:#059669;color:white;text-decoration:none;
                   padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
-          Log in →
+          Pay Activation Fee & Go Live →
         </a>
       </div>
     `,
@@ -274,5 +273,47 @@ export async function sendCoursePurchaseEmail({
   });
 }
 
+// ---------------------------------------------------------------------------
+// Email the trainer when their account is suspended
+// ---------------------------------------------------------------------------
+export async function sendSuspensionEmail({
+  trainerName,
+  trainerEmail,
+  reason,
+}: {
+  trainerName: string;
+  trainerEmail: string;
+  reason: string;
+}) {
+  const contactUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/contact`;
+
+  await getResend().emails.send({
+    from: FROM,
+    to: trainerEmail,
+    subject: "⚠️ Your AI Trainer Academy account has been suspended",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">Account suspended, ${trainerName}</h2>
+        <p style="color:#4A6174;margin-bottom:12px">
+          Your trainer account on AI Trainer Academy has been <strong style="color:#D97706">temporarily suspended</strong> due to a compliance concern.
+        </p>
+        <blockquote style="border-left:3px solid #D97706;padding:8px 16px;color:#4A6174;margin:16px 0">
+          ${reason}
+        </blockquote>
+        <p style="color:#4A6174;margin-bottom:20px">
+          Your profile has been hidden from the trainer directory. If you believe this is a mistake or would like to resolve the issue, please contact our team.
+        </p>
+        <a href="${contactUrl}"
+           style="display:inline-block;background:#D97706;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Contact Support →
+        </a>
+        <p style="color:#7A93A8;font-size:12px;margin-top:24px">
+          AI Trainer Academy compliance team
+        </p>
+      </div>
+    `,
+  });
+}
 
 

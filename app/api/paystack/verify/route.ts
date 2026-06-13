@@ -52,6 +52,15 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     const learnerId = user?.id || metadata.learner_id || null;
 
+    if (metadata.payment_type === "trainer_activation") {
+      const applicationId = metadata.application_id;
+      if (applicationId) {
+        const { activateTrainerProfile } = await import("@/lib/supabase/trainer-activation");
+        await activateTrainerProfile(applicationId);
+      }
+      return NextResponse.redirect(new URL("/trainer?activated=true", origin));
+    }
+
     if (resolvedCourseId) {
       // Course purchase - create enrollment
       if (user) {

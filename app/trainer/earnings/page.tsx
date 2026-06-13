@@ -50,7 +50,7 @@ export default function TrainerEarningsPage() {
       <div style={{
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
         gap: 16, marginBottom: 32
-      }}>
+      }} className="stats-row-grid">
         {[
           { label: "Gross Revenues", value: formatVal(MOCK_EARNINGS.totalRevenueKsh), sub: "Total generated", Icon: DollarSign, color: "var(--accent)" },
           { label: "Net Earnings (80%)", value: formatVal(MOCK_EARNINGS.netEarningsKsh), sub: "Your net share", Icon: TrendingUp, color: "var(--green)" },
@@ -72,7 +72,7 @@ export default function TrainerEarningsPage() {
       </div>
 
       {/* Main Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 24, alignItems: "start" }} className="earnings-grid">
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 24, alignItems: "start" }} className="responsive-split-grid">
         
         {/* Ledger Table */}
         <div style={{

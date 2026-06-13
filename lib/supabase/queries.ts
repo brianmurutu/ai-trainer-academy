@@ -140,6 +140,48 @@ export async function getTrainerBySlug(slug: string): Promise<TrainerRow | null>
   }
 }
 
+// Helper to retrieve actual enrollments and rating reviews from the database
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getDynamicCourseStats(supabase: any) {
+  // Query all enrollments to count them by course_id
+  const { data: enrollments } = await supabase
+    .from("enrollments")
+    .select("course_id");
+
+  const enrollmentCounts: Record<string, number> = {};
+  if (enrollments) {
+    for (const e of enrollments) {
+      enrollmentCounts[e.course_id] = (enrollmentCounts[e.course_id] || 0) + 1;
+    }
+  }
+
+  // Query all confirmed bookings that are course ratings
+  const { data: bookings } = await supabase
+    .from("bookings")
+    .select("course_id, session_topic")
+    .not("course_id", "is", null)
+    .eq("status", "confirmed");
+
+  const ratingSums: Record<string, number> = {};
+  const ratingCounts: Record<string, number> = {};
+
+  if (bookings) {
+    for (const b of bookings) {
+      const parts = b.session_topic?.split(" || ") || [];
+      const ratingPart = parts.find((p: string) => p.startsWith("Rating:"));
+      if (ratingPart) {
+        const val = parseInt(ratingPart.split(":")[1], 10);
+        if (!isNaN(val) && b.course_id) {
+          ratingSums[b.course_id] = (ratingSums[b.course_id] || 0) + val;
+          ratingCounts[b.course_id] = (ratingCounts[b.course_id] || 0) + 1;
+        }
+      }
+    }
+  }
+
+  return { enrollmentCounts, ratingSums, ratingCounts };
+}
+
 // ============================================================
 // getCourseRows
 // ============================================================
@@ -169,7 +211,28 @@ export async function getCourseRows(
       console.error("[getCourseRows] Supabase error:", error.message);
       return [];
     }
-    return (data as CourseRow[]) ?? [];
+
+    if (!data) return [];
+
+    const { enrollmentCounts, ratingSums, ratingCounts } = await getDynamicCourseStats(supabase);
+
+    return (data as CourseRow[]).map(c => {
+      const dbEnrollments = enrollmentCounts[c.id] || 0;
+      const dbRatingCount = ratingCounts[c.id] || 0;
+      const dbRatingSum = ratingSums[c.id] || 0;
+
+      const baseReviews = 50; 
+      const currentRating = Number(c.rating || 0);
+      const newRating = dbRatingCount > 0 
+        ? ((currentRating * baseReviews) + dbRatingSum) / (baseReviews + dbRatingCount)
+        : currentRating;
+
+      return {
+        ...c,
+        enrolled_count: (c.enrolled_count || 0) + dbEnrollments,
+        rating: Number(newRating.toFixed(1))
+      };
+    });
   } catch (err) {
     console.error("[getCourseRows] Unexpected error:", err);
     return [];
@@ -195,7 +258,25 @@ export async function getCourseBySlug(slug: string): Promise<CourseRow | null> {
       console.error("[getCourseBySlug] Supabase error:", error.message);
       return null;
     }
-    return (data as CourseRow) ?? null;
+
+    if (!data) return null;
+
+    const { enrollmentCounts, ratingSums, ratingCounts } = await getDynamicCourseStats(supabase);
+    const dbEnrollments = enrollmentCounts[data.id] || 0;
+    const dbRatingCount = ratingCounts[data.id] || 0;
+    const dbRatingSum = ratingSums[data.id] || 0;
+
+    const baseReviews = 50; 
+    const currentRating = Number(data.rating || 0);
+    const newRating = dbRatingCount > 0 
+      ? ((currentRating * baseReviews) + dbRatingSum) / (baseReviews + dbRatingCount)
+      : currentRating;
+
+    return {
+      ...data,
+      enrolled_count: (data.enrolled_count || 0) + dbEnrollments,
+      rating: Number(newRating.toFixed(1))
+    };
   } catch (err) {
     console.error("[getCourseBySlug] Unexpected error:", err);
     return null;

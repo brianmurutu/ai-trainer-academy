@@ -55,10 +55,10 @@ export default function CoursesClient({ initialCourses }: CoursesClientProps) {
             letterSpacing: "-0.8px",
             marginBottom: 16,
           }}>
-            Vetted Courses by Industry Practitioners
+            Explore Vetted AI Courses Across All Domains
           </h1>
           <p style={{ fontSize: 16, color: "var(--slate)", lineHeight: 1.6 }}>
-            Gain practical, production-level skills in large language model fine-tuning, prompt engineering, RAG architectures, and AI model optimization.
+            Master prompt engineering, AI agents, computer vision, data science, NLP, custom model fine-tuning, and production-ready MLOps.
           </p>
         </section>
 

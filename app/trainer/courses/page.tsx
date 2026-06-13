@@ -78,7 +78,7 @@ export default function TrainerCoursesPage() {
       {/* Stats Summary row */}
       <div style={{
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginBottom: 40
-      }}>
+      }} className="stats-row-grid">
         {[
           { label: "Active Courses", value: courses.filter(c => c.status === "Live").length, desc: "published", icon: <BookOpen size={20} color="var(--accent)" /> },
           { label: "Total Students", value: courses.reduce((acc, c) => acc + c.enrolled, 0), desc: "enrolled", icon: <Users size={20} color="var(--green)" /> },

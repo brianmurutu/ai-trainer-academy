@@ -4,8 +4,8 @@ import CoursesClient from "./CoursesClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Courses | AI Trainer Academy",
-  description: "Browse verified training programs in LLM fine-tuning, parameter optimization, prompt engineering, and production MLOps led by active practitioners.",
+  title: "AI Courses | AI Trainer Academy",
+  description: "Explore verified AI training programs across all domains, from prompt engineering and AI agents to machine learning, NLP, and custom model architectures.",
 };
 
 export const dynamic = "force-dynamic";

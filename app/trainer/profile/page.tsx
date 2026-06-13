@@ -83,7 +83,7 @@ export default function TrainerProfilePage() {
         </Link>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 24, alignItems: "start" }} className="profile-grid">
+      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 24, alignItems: "start" }} className="responsive-split-grid">
         
         {/* Profile Card Mockup */}
         <div style={{

@@ -64,7 +64,7 @@ export default function Trainers() {
         >View all trainers <ArrowRight size={15} /></Link>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }} className="responsive-cards-grid">
         {trainers.map(({ initials, name, spec, tags, rating, sessions, rateKsh, rateUsd, bg, available, slug }) => (
           <Link key={name} href={`/trainers/${slug}`} style={{
             display: "block",

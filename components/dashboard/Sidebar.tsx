@@ -75,7 +75,7 @@ export default function Sidebar({ userName, userEmail, userInitials }: SidebarPr
           style={{
             position: "fixed", inset: 0, zIndex: 95,
             background: "rgba(10,15,30,0.5)", backdropFilter: "blur(4px)",
-            display: "none",
+            display: "block",
           }}
           className="sidebar-backdrop"
         />

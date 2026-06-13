@@ -367,7 +367,7 @@ export default async function DashboardPage() {
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
         gap: 14, marginBottom: 32,
-      }}>
+      }} className="stats-row-grid">
         <StatCard label="Enrolled Courses" value={displayCourses.length} sub={`${activeCourses} in progress`} Icon={BookOpen} iconColor="#6366F1" iconBg="#EEF2FF" />
         <StatCard label="Hours Learned" value={totalHours} sub="This month" Icon={Clock} iconColor="#0EA5E9" iconBg="#E0F2FE" />
         <StatCard label="Certificates" value={displayCertificates.length} sub="Earned and verified" Icon={Award} iconColor="#D97706" iconBg="#FEF3C7" />

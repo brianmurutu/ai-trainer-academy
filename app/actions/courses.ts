@@ -361,3 +361,72 @@ export async function deleteCourse(
   revalidatePath("/courses");
   return { success: true };
 }
+
+// ─── Rate course ──────────────────────────────────────────────────────────────
+export async function rateCourseAction(
+  courseId: string,
+  rating: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    if (rating < 1 || rating > 5) {
+      return { success: false, error: "Rating must be between 1 and 5 stars." };
+    }
+
+    const db = createAdminClient();
+
+    // 1. Verify if user is actually enrolled in the course
+    const { data: enrollment } = await db
+      .from("enrollments")
+      .select("id")
+      .eq("course_id", courseId)
+      .eq("learner_id", user.id)
+      .maybeSingle();
+
+    if (!enrollment) {
+      return { success: false, error: "You must be enrolled in this course to rate it." };
+    }
+
+    // 2. Check if a confirmed booking already exists for this course
+    const { data: booking } = await db
+      .from("bookings")
+      .select("id, session_topic")
+      .eq("course_id", courseId)
+      .eq("learner_id", user.id)
+      .eq("status", "confirmed")
+      .maybeSingle();
+
+    if (booking) {
+      // Update the existing booking topic to append the rating
+      const baseTopic = booking.session_topic?.split(" || ")[0] || "Course Purchase";
+      const updatedTopic = `${baseTopic} || Rating:${rating}`;
+      
+      const { error } = await db
+        .from("bookings")
+        .update({ session_topic: updatedTopic })
+        .eq("id", booking.id);
+
+      if (error) return { success: false, error: error.message };
+    } else {
+      // Create a confirmed booking record to store the rating
+      const { error } = await db.from("bookings").insert({
+        learner_id: user.id,
+        course_id: courseId,
+        session_topic: `Course Purchase || Rating:${rating}`,
+        status: "confirmed",
+        payment_method: "free_or_manual",
+      });
+
+      if (error) return { success: false, error: error.message };
+    }
+
+    revalidatePath("/courses");
+    revalidatePath("/dashboard/courses");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to submit rating." };
+  }
+}

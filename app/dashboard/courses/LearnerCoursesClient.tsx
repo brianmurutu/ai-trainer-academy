@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, Search, ArrowRight, Play, CheckCircle, Download, Star } from "lucide-react";
+import { BookOpen, Search, ArrowRight, Play, CheckCircle, Star } from "lucide-react";
 import { type Course } from "@/lib/courses-data";
-import { useCurrency } from "@/components/CurrencyProvider";
+import { rateCourseAction } from "@/app/actions/courses";
 
 type EnrolledCourseWithProgress = Course & {
   progress: number;
@@ -20,7 +20,6 @@ type LearnerCoursesClientProps = {
 export default function LearnerCoursesClient({ initialCourses }: LearnerCoursesClientProps) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "active" | "completed">("all");
-  const { formatPrice } = useCurrency();
 
   const [clickedCourses, setClickedCourses] = useState<Record<string, boolean>>(() => {
     if (typeof window !== "undefined") {
@@ -54,11 +53,19 @@ export default function LearnerCoursesClient({ initialCourses }: LearnerCoursesC
     }
   };
 
-  const handleRateCourse = (courseId: string, rating: number) => {
+  const handleRateCourse = async (courseId: string, rating: number) => {
     const updated = { ...userRatings, [courseId]: rating };
     setUserRatings(updated);
     if (typeof window !== "undefined") {
       localStorage.setItem("course_ratings", JSON.stringify(updated));
+    }
+    try {
+      const res = await rateCourseAction(courseId, rating);
+      if (!res.success) {
+        console.error("Failed to save rating in database:", res.error);
+      }
+    } catch (err) {
+      console.error("Error saving rating:", err);
     }
   };
 

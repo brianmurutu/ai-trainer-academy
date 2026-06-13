@@ -178,7 +178,7 @@ export default async function TrainerPage() {
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
           gap: 14,
-        }}>
+        }} className="stats-row-grid">
           <EarningsStat label="This Month" value={fmt(MOCK_EARNINGS.thisMonth)} sub={`↑ ${MOCK_EARNINGS.growth}% vs last month`} highlight />
           <EarningsStat label="Pending Payout" value={fmt(MOCK_EARNINGS.pendingPayout)} sub="Next payout: Jun 10" />
           <EarningsStat label="Last Month" value={fmt(MOCK_EARNINGS.lastMonth)} />
@@ -187,7 +187,7 @@ export default async function TrainerPage() {
       </section>
 
       {/* Main grid section */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }} className="responsive-split-grid">
 
         {/* Left column */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>

@@ -142,7 +142,7 @@ export default async function CourseDetailPage({
           color: "white",
           padding: "60px 24px",
         }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 360px", gap: 40, alignItems: "center" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 360px", gap: 40, alignItems: "center" }} className="responsive-split-grid">
             <div>
               <span style={{
                 background: "rgba(255,255,255,0.1)",
@@ -205,7 +205,7 @@ export default async function CourseDetailPage({
         </section>
 
         {/* Content & Sticky Sidebar Grid */}
-        <section style={{ maxWidth: 1100, margin: "-40px auto 80px", padding: "0 24px", display: "grid", gridTemplateColumns: "1fr 360px", gap: 32, alignItems: "start" }}>
+        <section style={{ maxWidth: 1100, margin: "-40px auto 80px", padding: "0 24px", display: "grid", gridTemplateColumns: "1fr 360px", gap: 32, alignItems: "start" }} className="responsive-split-grid">
           
           {/* Main Course Content */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -220,7 +220,7 @@ export default async function CourseDetailPage({
               <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--navy)", marginBottom: 20 }}>
                 What you'll learn
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="responsive-cards-grid">
                 {course.whatYoullLearn.map((item, idx) => (
                   <div key={idx} style={{ display: "flex", alignItems: "start", gap: 10 }}>
                     <Check size={16} color="var(--green)" style={{ marginTop: 2, flexShrink: 0 }} />

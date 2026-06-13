@@ -96,7 +96,7 @@ export default function TrainerLearnersPage() {
           <p style={{ fontSize: 13, color: "var(--slate)" }}>No active students match your search criteria.</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 20 }} className="responsive-cards-grid">
           {filtered.map(l => (
             <div key={l.id} style={{
               background: "white", borderRadius: 14, border: "1px solid var(--line)",

@@ -139,7 +139,7 @@ export default function TrainerBookingsClient({ initialBookings }: TrainerBookin
               background: "white", borderRadius: 14, border: "1px solid var(--line)",
               padding: 24, display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 20,
               alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.01)"
-            }} className="booking-grid">
+            }} className="responsive-split-grid">
               
               {/* Learner Info */}
               <div style={{ display: "flex", gap: 12, alignItems: "start" }}>

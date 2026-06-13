@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, Search, ArrowRight, Play, CheckCircle, Download } from "lucide-react";
+import { BookOpen, Search, ArrowRight, Play, CheckCircle, Download, Star } from "lucide-react";
 import { type Course } from "@/lib/courses-data";
 import { useCurrency } from "@/components/CurrencyProvider";
 
@@ -21,6 +21,46 @@ export default function LearnerCoursesClient({ initialCourses }: LearnerCoursesC
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "active" | "completed">("all");
   const { formatPrice } = useCurrency();
+
+  const [clickedCourses, setClickedCourses] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return JSON.parse(localStorage.getItem("course_clicks") || "{}");
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  const [userRatings, setUserRatings] = useState<Record<string, number>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return JSON.parse(localStorage.getItem("course_ratings") || "{}");
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  const [hoveredStars, setHoveredStars] = useState<Record<string, number>>({});
+
+  const handleCourseClick = (courseId: string) => {
+    const updated = { ...clickedCourses, [courseId]: true };
+    setClickedCourses(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("course_clicks", JSON.stringify(updated));
+    }
+  };
+
+  const handleRateCourse = (courseId: string, rating: number) => {
+    const updated = { ...userRatings, [courseId]: rating };
+    setUserRatings(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("course_ratings", JSON.stringify(updated));
+    }
+  };
 
   const filtered = initialCourses.filter(c => {
     const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) || 
@@ -170,14 +210,21 @@ export default function LearnerCoursesClient({ initialCourses }: LearnerCoursesC
                   </div>
 
                   {/* Action button */}
-                  <Link href={`/dashboard/courses/${c.slug}`} style={{
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    padding: "10px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: 600,
-                    background: isFinished ? "var(--surface)" : "var(--navy)",
-                    color: isFinished ? "var(--navy)" : "white",
-                    border: isFinished ? "1px solid var(--line)" : "none",
-                    textAlign: "center"
-                  }}>
+                  <a
+                    href={c.button_url || `/dashboard/courses/${c.slug}`}
+                    target={c.button_url ? "_blank" : undefined}
+                    rel={c.button_url ? "noopener noreferrer" : undefined}
+                    onClick={() => handleCourseClick(c.id)}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      padding: "10px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: 600,
+                      background: isFinished ? "var(--surface)" : "var(--navy)",
+                      color: isFinished ? "var(--navy)" : "white",
+                      border: isFinished ? "1px solid var(--line)" : "none",
+                      textAlign: "center",
+                      cursor: "pointer"
+                    }}
+                  >
                     {isFinished ? (
                       <>
                         Review Syllabus <CheckCircle size={14} color="var(--green)" />
@@ -187,25 +234,55 @@ export default function LearnerCoursesClient({ initialCourses }: LearnerCoursesC
                         Resume Learning <Play size={12} fill="currentColor" />
                       </>
                     )}
-                  </Link>
+                  </a>
 
-                  {/* Offline Download button */}
-                  {c.button_url && (
-                    <a href={c.button_url} target="_blank" rel="noopener noreferrer" style={{
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      padding: "10px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: 600,
-                      background: "#EBF3FF",
-                      color: "var(--accent)",
-                      border: "1px solid rgba(26, 111, 191, 0.15)",
-                      textAlign: "center",
-                      marginTop: 8,
-                      transition: "background-color 0.15s, transform 0.1s"
-                    }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#DCE9FF"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#EBF3FF"; }}
-                    >
-                      Download Offline <Download size={14} />
-                    </a>
+                  {/* Rating Prompt Section */}
+                  {clickedCourses[c.id] && (
+                    <div style={{
+                      marginTop: 12,
+                      padding: "10px 12px",
+                      background: "var(--surface)",
+                      border: "1px solid var(--line)",
+                      borderRadius: 8,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                    }}>
+                      {userRatings[c.id] ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--green)", fontWeight: 500 }}>
+                          <CheckCircle size={13} color="var(--green)" />
+                          <span>Rated: {userRatings[c.id]} / 5 stars</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--navy)" }}>Rate your learning experience:</span>
+                          <div style={{ display: "flex", gap: 4 }}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => handleRateCourse(c.id, star)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  padding: 0,
+                                  cursor: "pointer",
+                                  transition: "transform 0.15s",
+                                }}
+                                onMouseEnter={() => setHoveredStars(prev => ({ ...prev, [c.id]: star }))}
+                                onMouseLeave={() => setHoveredStars(prev => ({ ...prev, [c.id]: 0 }))}
+                              >
+                                <Star
+                                  size={16}
+                                  color="#F59E0B"
+                                  fill={star <= (hoveredStars[c.id] || userRatings[c.id] || 0) ? "#F59E0B" : "none"}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sendApprovalEmail, sendRejectionEmail, sendSuspensionEmail } from "@/lib/email";
+import { sendApprovalEmail, sendRejectionEmail, sendSuspensionEmail, sendAdminMessageEmail } from "@/lib/email";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -164,7 +164,8 @@ export async function approveApplication(
     console.error("Failed to initialize Paystack for trainer activation:", err);
   }
 
-  // Send approval email to trainer (non-blocking — don't fail the action if email fails)
+  // Send approval email to trainer
+  let emailError: string | null = null;
   try {
     await sendApprovalEmail({
       trainerName: app.full_name,
@@ -173,7 +174,16 @@ export async function approveApplication(
       message,
     });
   } catch (emailErr) {
-    console.error("Approval email failed:", emailErr);
+    const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+    console.error("Approval email failed:", msg);
+    emailError = msg;
+  }
+
+  if (emailError) {
+    return {
+      success: true,
+      message: `${app.full_name} approved ✓ — but the notification email FAILED: ${emailError}. Check your Resend domain verification.`,
+    };
   }
 
   return { success: true, message: `${app.full_name} has been approved and notified by email.` };
@@ -332,4 +342,109 @@ export async function unsuspendTrainer(
   revalidatePath("/trainers");
 
   return { success: true, message: `${app.full_name} has been reinstated.` };
+}
+
+// ---------------------------------------------------------------------------
+// Resend the approval / activation email (for trainers who never got it)
+// ---------------------------------------------------------------------------
+export async function resendApprovalEmail(
+  _prevState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const id = formData.get("id") as string;
+  if (!id) return { error: "Missing application ID" };
+
+  const db = createAdminClient();
+
+  const { data: app, error: fetchError } = await db
+    .from("trainer_applications")
+    .select("full_name, email, status")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !app) return { error: "Application not found" };
+  if (app.status !== "approved") return { error: "Can only resend for approved trainers" };
+
+  // Generate a fresh Paystack activation link
+  let activationUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://ai-trainer-academy.top"}/login`;
+  try {
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (secretKey) {
+      const reference = `act-${id}-${Date.now()}`;
+      const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://ai-trainer-academy.top"}/api/paystack/verify?reference=${reference}`;
+      const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: app.email,
+          amount: 200000,
+          currency: "KES",
+          reference,
+          callback_url: callbackUrl,
+          metadata: { payment_type: "trainer_activation", application_id: id, amount_ksh: "2000" },
+        }),
+      });
+      const data = await paystackRes.json();
+      if (data.status && data.data?.authorization_url) {
+        activationUrl = data.data.authorization_url;
+      }
+    }
+  } catch (err) {
+    console.error("Paystack re-init failed:", err);
+  }
+
+  try {
+    await sendApprovalEmail({
+      trainerName: app.full_name,
+      trainerEmail: app.email,
+      activationUrl,
+    });
+  } catch (emailErr) {
+    const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+    return { error: `Email failed: ${msg}` };
+  }
+
+  return { success: true, message: `Approval email resent to ${app.email}.` };
+}
+
+// ---------------------------------------------------------------------------
+// Admin sends a direct message to any trainer/applicant
+// ---------------------------------------------------------------------------
+export async function sendAdminMessage(
+  _prevState: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const id      = formData.get("id") as string;
+  const subject = (formData.get("subject") as string)?.trim();
+  const body    = (formData.get("body") as string)?.trim();
+
+  if (!id)      return { error: "Missing application ID" };
+  if (!subject) return { error: "Subject is required" };
+  if (!body)    return { error: "Message body is required" };
+
+  const db = createAdminClient();
+
+  const { data: app, error: fetchError } = await db
+    .from("trainer_applications")
+    .select("full_name, email")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !app) return { error: "Trainer not found" };
+
+  try {
+    await sendAdminMessageEmail({
+      trainerName: app.full_name,
+      trainerEmail: app.email,
+      subject,
+      body,
+    });
+  } catch (emailErr) {
+    const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+    return { error: `Failed to send message: ${msg}` };
+  }
+
+  return { success: true, message: `Message sent to ${app.full_name} (${app.email}).` };
 }

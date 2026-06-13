@@ -316,4 +316,50 @@ export async function sendSuspensionEmail({
   });
 }
 
+// ---------------------------------------------------------------------------
+// Admin → Trainer direct message
+// ---------------------------------------------------------------------------
+export async function sendAdminMessageEmail({
+  trainerName,
+  trainerEmail,
+  subject,
+  body,
+}: {
+  trainerName: string;
+  trainerEmail: string;
+  subject: string;
+  body: string;
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  await getResend().emails.send({
+    from: FROM,
+    to: trainerEmail,
+    replyTo: process.env.ADMIN_EMAIL ?? undefined,
+    subject,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #E2EAF0">
+          <div style="width:36px;height:36px;background:#0D1B2A;border-radius:9px;display:flex;align-items:center;justify-content:center">
+            <span style="color:white;font-size:14px;font-weight:700">AT</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:#0D1B2A">AI Trainer Academy</span>
+        </div>
+        <h2 style="color:#0D1B2A;font-size:18px;margin-bottom:6px">Hi ${trainerName},</h2>
+        <p style="color:#4A6174;font-size:13px;margin-bottom:20px">You have a new message from the AI Trainer Academy team.</p>
+        <div style="background:#F5F8FB;border-left:4px solid #1A6FBF;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px">
+          <p style="color:#1C2B3A;font-size:14px;line-height:1.75;white-space:pre-wrap;margin:0">${body}</p>
+        </div>
+        <p style="color:#7A93A8;font-size:12px">
+          To reply, simply respond to this email or visit your
+          <a href="${siteUrl}/trainer" style="color:#1A6FBF;text-decoration:none">trainer dashboard</a>.
+        </p>
+        <p style="color:#B0BEC5;font-size:11px;margin-top:20px;border-top:1px solid #E2EAF0;padding-top:12px">
+          AI Trainer Academy · You're receiving this because you're a registered trainer.
+        </p>
+      </div>
+    `,
+  });
+}
+
 

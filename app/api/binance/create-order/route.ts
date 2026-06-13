@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, randomBytes } from "crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * POST /api/binance/create-order
@@ -29,8 +30,12 @@ export async function POST(request: NextRequest) {
       amountUsd,
       currency = "USDT",
       trainerName,
+      trainerSlug,
       sessionTopic,
+      sessionDate,
+      sessionDurationHrs,
       learnerEmail,
+      learnerId,
       orderId,
     } = body;
 
@@ -113,6 +118,38 @@ export async function POST(request: NextRequest) {
         { error: data.errorMessage ?? "Binance Pay order creation failed", code: data.code },
         { status: 400 }
       );
+    }
+
+    // Resolve trainer ID from slug
+    const db = createAdminClient();
+    let trainerId = null;
+    if (trainerSlug) {
+      const { data: trainer } = await db
+        .from("trainers")
+        .select("id")
+        .eq("slug", trainerSlug)
+        .maybeSingle();
+      if (trainer) {
+        trainerId = trainer.id;
+      }
+    }
+
+    // Insert pending booking in DB
+    const { error: bookingErr } = await db.from("bookings").insert({
+      binance_trade_no: merchantTradeNo,
+      trainer_id: trainerId,
+      learner_id: learnerId || null,
+      session_topic: sessionTopic,
+      session_date: sessionDate || null,
+      session_duration_hrs: sessionDurationHrs ? Number(sessionDurationHrs) : null,
+      amount_usd: Number(amountUsd),
+      currency: "USDT",
+      payment_method: "binance_pay",
+      status: "pending",
+    });
+
+    if (bookingErr) {
+      console.error("[Binance create-order] Failed to save pending booking:", bookingErr.message);
     }
 
     return NextResponse.json({

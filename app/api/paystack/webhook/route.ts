@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
         trainer_id: trainerId,
         learner_id: learnerId,
         session_topic: (metadata.courseTitle as string) ?? (metadata.session_topic as string) ?? null,
+        session_date: (metadata.session_date as string) ?? null,
+        session_duration_hrs: metadata.session_duration_hrs ? Number(metadata.session_duration_hrs) : null,
         amount_ksh: amountKsh,
         amount_usd: amountUsd,
         payment_method: "paystack",

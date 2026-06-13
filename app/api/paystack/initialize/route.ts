@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
       trainerSlug,
       learnerId,
       sessionTopic,
+      sessionDate,
+      sessionDurationHrs,
       callbackUrl,
       metadata = {},
     } = body;
@@ -65,6 +67,8 @@ export async function POST(request: NextRequest) {
             trainer_slug: trainerSlug,
             learner_id: learnerId,
             session_topic: sessionTopic,
+            session_date: sessionDate,
+            session_duration_hrs: sessionDurationHrs,
             amount_usd: amountUsd ? String(amountUsd) : "0",
             amount_ksh: amountKsh ? String(amountKsh) : "0",
             custom_fields: [

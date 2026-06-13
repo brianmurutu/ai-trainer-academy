@@ -34,6 +34,40 @@ type BookingWidgetProps = {
   learnerId?: string;
 };
 
+function parseSlotToIso(dateStr: string, timeStr: string): string {
+  try {
+    const year = 2026;
+    const dateParts = dateStr.trim().split(/\s+/);
+    const monthStr = dateParts[dateParts.length - 2];
+    const dayStr = dateParts[dateParts.length - 1];
+
+    const months: Record<string, number> = {
+      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+      jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+    };
+    const month = months[monthStr.toLowerCase().substring(0, 3)] ?? 5;
+    const day = parseInt(dayStr, 10) || 1;
+
+    const startTimePart = timeStr.split(" to ")[0].trim();
+    const isPm = startTimePart.toLowerCase().includes("pm");
+    const isAm = startTimePart.toLowerCase().includes("am");
+    const [hoursStr, minutesStr] = startTimePart.replace(/(am|pm)/i, "").trim().split(":");
+    let hours = parseInt(hoursStr, 10) || 0;
+    const minutes = parseInt(minutesStr, 10) || 0;
+
+    if (isPm && hours !== 12) hours += 12;
+    if (isAm && hours === 12) hours = 0;
+
+    // EAT timezone is UTC+3
+    const utcHours = hours - 3;
+    const date = new Date(Date.UTC(year, month, day, utcHours, minutes, 0));
+    return date.toISOString();
+  } catch (err) {
+    console.error("Error parsing slot to ISO:", err);
+    return new Date().toISOString();
+  }
+}
+
 export default function BookingWidget({
   trainerName,
   trainerSlug,
@@ -60,7 +94,6 @@ export default function BookingWidget({
     }, 0);
   }, [globalCurrency]);
 
-  const rate = currency === "KES" ? rateKsh : rateUsd;
   const totalUsd = selectedSlot ? rateUsd * selectedSlot.durationHrs : 0;
 
   const formatSessionPrice = (amountKsh: number, amountUsd: number) => {
@@ -96,6 +129,8 @@ export default function BookingWidget({
           trainerSlug,
           learnerId,
           sessionTopic: `Session with ${trainerName} — ${selectedSlot.date} ${selectedSlot.time}`,
+          sessionDate: parseSlotToIso(selectedSlot.date, selectedSlot.time),
+          sessionDurationHrs: selectedSlot.durationHrs,
           callbackUrl,
         }),
       });
@@ -126,8 +161,12 @@ export default function BookingWidget({
           amountUsd: totalUsd.toFixed(2),
           currency: "USDT",
           trainerName,
+          trainerSlug,
           sessionTopic: `Session with ${trainerName} — ${selectedSlot.date} ${selectedSlot.time}`,
+          sessionDate: parseSlotToIso(selectedSlot.date, selectedSlot.time),
+          sessionDurationHrs: selectedSlot.durationHrs,
           learnerEmail: userEmail,
+          learnerId,
         }),
       });
 

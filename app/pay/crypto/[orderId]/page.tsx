@@ -43,16 +43,39 @@ function QrCode({ content, size = 200 }: { content: string; size?: number }) {
 // Countdown timer
 // ---------------------------------------------------------------------------
 function Countdown({ expiresAt }: { expiresAt: number }) {
-  const [remaining, setRemaining] = useState(Math.max(0, expiresAt - Date.now()));
+  const [remaining, setRemaining] = useState(0);
 
   useEffect(() => {
+    if (expiresAt === 0) return;
+    const timer = setTimeout(() => {
+      setRemaining(Math.max(0, expiresAt - Date.now()));
+    }, 0);
     const id = setInterval(() => {
       const r = Math.max(0, expiresAt - Date.now());
       setRemaining(r);
       if (r === 0) clearInterval(id);
     }, 1000);
-    return () => clearInterval(id);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(id);
+    };
   }, [expiresAt]);
+
+  if (expiresAt === 0) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "5px 12px", borderRadius: 20,
+        background: "#FFF7ED",
+        border: "1px solid #FED7AA",
+      }}>
+        <Clock size={12} color="#D97706" />
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#D97706" }}>
+          Expires in 15:00
+        </span>
+      </div>
+    );
+  }
 
   const mins = String(Math.floor(remaining / 60000)).padStart(2, "0");
   const secs = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
@@ -114,11 +137,18 @@ export default function CryptoPayPage({
   const checkoutUrl = sp.checkoutUrl ?? "";
   const amount = sp.amount ?? "";
   const currency = sp.currency ?? "USDT";
-  const expireTime = sp.expireTime ? Number(sp.expireTime) : Date.now() + 15 * 60 * 1000;
 
+  const [expireTime, setExpireTime] = useState<number>(0);
   const [orderInfo, setOrderInfo] = useState<OrderInfo | null>(null);
   const [pollingError, setPollingError] = useState<string | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setExpireTime(sp.expireTime ? Number(sp.expireTime) : Date.now() + 15 * 60 * 1000);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [sp.expireTime]);
 
   // If Binance redirected with ?status=success / ?status=cancelled, use that
   const urlStatus = sp.status;
@@ -144,7 +174,10 @@ export default function CryptoPayPage({
     // If Binance already told us via redirect, don't poll
     if (urlStatus === "success" || urlStatus === "cancelled") return;
 
-    pollStatus();
+    const initTimer = setTimeout(() => {
+      pollStatus();
+    }, 0);
+
     const id = setInterval(() => {
       if (orderInfo?.status === "PAID" || orderInfo?.status === "CANCELED" || orderInfo?.status === "EXPIRED") {
         clearInterval(id);
@@ -152,7 +185,11 @@ export default function CryptoPayPage({
       }
       pollStatus();
     }, 5000);
-    return () => clearInterval(id);
+
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(id);
+    };
   }, [pollStatus, urlStatus, orderInfo?.status]);
 
   const effectiveStatus: Status =

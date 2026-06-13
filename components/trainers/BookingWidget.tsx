@@ -60,6 +60,16 @@ export default function BookingWidget({
   const totalAmount = selectedSlot ? rate * selectedSlot.durationHrs : 0;
   const totalUsd = selectedSlot ? rateUsd * selectedSlot.durationHrs : 0;
 
+  const formatSessionPrice = (amountKsh: number, amountUsd: number) => {
+    if (payMethod === "crypto") {
+      return `$${amountUsd.toFixed(2)} USDT`;
+    }
+    if (currency === "KES") {
+      return `KSH ${amountKsh.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+    return `$${amountUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
   // Card payment via Paystack
   const handleCardPayment = async () => {
     if (!selectedSlot) return;
@@ -74,10 +84,13 @@ export default function BookingWidget({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: userEmail || "guest@example.com",
-          amountKsh: currency === "KES" ? totalAmount : totalAmount * 130,
+          amountKsh: rateKsh * selectedSlot.durationHrs,
+          amountUsd: rateUsd * selectedSlot.durationHrs,
+          amount: currency === "KES" ? rateKsh * selectedSlot.durationHrs : rateUsd * selectedSlot.durationHrs,
           currency,
           reference,
           trainerName,
+          trainerSlug,
           sessionTopic: `Session with ${trainerName} — ${selectedSlot.date} ${selectedSlot.time}`,
           callbackUrl,
         }),
@@ -238,11 +251,7 @@ export default function BookingWidget({
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {availableSlots.map((slot) => {
             const selected = selectedSlot?.id === slot.id;
-            const displayRate = payMethod === "crypto"
-              ? `$${(rateUsd * slot.durationHrs).toFixed(0)} USDT`
-              : currency === "KES"
-              ? `KSH ${(rateKsh * slot.durationHrs).toLocaleString()}`
-              : `$${(rateUsd * slot.durationHrs)}`;
+            const displayRate = formatSessionPrice(rateKsh * slot.durationHrs, rateUsd * slot.durationHrs);
 
             return (
               <button key={slot.id} type="button" onClick={() => setSelectedSlot(selected ? null : slot)} style={{
@@ -283,19 +292,11 @@ export default function BookingWidget({
           {[
             [
               `${selectedSlot.duration} session`,
-              payMethod === "crypto"
-                ? `$${totalUsd.toFixed(0)} USDT`
-                : currency === "KES"
-                ? `KSH ${totalAmount.toLocaleString()}`
-                : `$${totalAmount}`,
+              formatSessionPrice(rateKsh * selectedSlot.durationHrs, rateUsd * selectedSlot.durationHrs),
             ],
             [
               "Total charged",
-              payMethod === "crypto"
-                ? `$${totalUsd.toFixed(0)} USDT`
-                : currency === "KES"
-                ? `KSH ${totalAmount.toLocaleString()}`
-                : `$${totalAmount}`,
+              formatSessionPrice(rateKsh * selectedSlot.durationHrs, rateUsd * selectedSlot.durationHrs),
             ],
           ].map(([label, val], i) => (
             <div key={label} style={{

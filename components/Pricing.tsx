@@ -7,33 +7,66 @@ import { useCurrency } from "@/components/CurrencyProvider";
 const basePlans = [
   {
     name: "Free",
-    priceKsh: 0, priceUsd: 0,
-    period: "forever",
-    desc: "Explore the platform and browse trainers before committing.",
-    features: ["Browse trainer directory", "1 free resource per month", "Community forum access", "Basic profile"],
+    desc: "Explore the platform and browse our free course syllabus and directory.",
+    features: [
+      "Browse course catalog",
+      "Access free intro modules",
+      "Community forum access",
+      "Basic student profile"
+    ],
     cta: "Start free", href: "/signup", featured: false,
+    monthly: { priceKsh: 0, priceUsd: 0, totalKsh: 0, totalUsd: 0 },
+    annual: { priceKsh: 0, priceUsd: 0, totalKsh: 0, totalUsd: 0 },
   },
   {
     name: "Pro",
-    priceKsh: 1500, priceUsd: 12,
-    period: "per month",
-    desc: "Everything you need to learn fast with structured resources.",
-    features: ["Unlimited resources", "Group training sessions", "Certificates on completion", "Priority support", "Course downloads"],
+    desc: "Unlimited access to all courses, datasets, and certificates.",
+    features: [
+      "Access to all courses",
+      "Download source code & notebooks",
+      "Verified course certificates",
+      "Member Discord access",
+      "Offline course downloads"
+    ],
     cta: "Start Pro", href: "/signup?plan=pro", featured: true,
+    monthly: { priceKsh: 1500, priceUsd: 12, totalKsh: 1500, totalUsd: 12 },
+    annual: { priceKsh: 1200, priceUsd: 9.6, totalKsh: 14400, totalUsd: 115.2 },
   },
   {
     name: "Elite",
-    priceKsh: 4500, priceUsd: 35,
-    period: "per month",
-    desc: "Dedicated 1-on-1 time with top-rated trainers.",
-    features: ["Everything in Pro", "4 hrs 1-on-1 sessions/month", "Priority trainer booking", "Personalised learning path", "Direct trainer messaging"],
+    desc: "Comprehensive learning with guided mentorship and live workshops.",
+    features: [
+      "Everything in Pro",
+      "Monthly live cohort workshops",
+      "Guided learning paths & reviews",
+      "Direct instructor Q&A support",
+      "Exclusive advanced masterclasses"
+    ],
     cta: "Go Elite", href: "/signup?plan=elite", featured: false,
+    monthly: { priceKsh: 4500, priceUsd: 35, totalKsh: 4500, totalUsd: 35 },
+    annual: { priceKsh: 3600, priceUsd: 28, totalKsh: 43200, totalUsd: 336 },
   },
 ];
 
 export default function Pricing() {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency } = useCurrency();
   const [annual, setAnnual] = useState(false);
+
+  const formatDisplayPrice = (ksh: number, usd: number) => {
+    if (usd === 0) return "Free";
+    if (currency === "USD") {
+      return usd % 1 === 0 ? `$${usd}` : `$${usd.toFixed(2)}`;
+    } else if (currency === "KES") {
+      return `KES ${ksh.toLocaleString()}`;
+    } else if (currency === "EUR") {
+      const eur = usd * 0.92;
+      return eur % 1 === 0 ? `€${Math.round(eur)}` : `€${eur.toFixed(2)}`;
+    } else if (currency === "GBP") {
+      const gbp = usd * 0.78;
+      return gbp % 1 === 0 ? `£${Math.round(gbp)}` : `£${gbp.toFixed(2)}`;
+    }
+    return formatPrice(ksh, usd);
+  };
 
   return (
     <section style={{
@@ -42,11 +75,11 @@ export default function Pricing() {
     }}>
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "80px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <p className="section-label">Pricing</p>
+          <p className="section-label">Course Access Plans</p>
           <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-0.8px", marginBottom: 12 }}>
-            Start free. Upgrade when ready.
+            Flexible pricing for all learning levels
           </h2>
-          <p style={{ fontSize: 15, color: "var(--slate)", marginBottom: 28 }}>All plans include M-Pesa, card, and crypto payment options.</p>
+          <p style={{ fontSize: 15, color: "var(--slate)", marginBottom: 28 }}>All subscriptions include M-Pesa, card, and crypto payment options.</p>
 
           {/* Annual / monthly toggle */}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
@@ -79,10 +112,9 @@ export default function Pricing() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, maxWidth: 960, margin: "0 auto" }} className="pricing-grid">
-          {basePlans.map(({ name, priceKsh, priceUsd, period, desc, features, cta, href, featured }) => {
-            const effectiveKsh = annual && priceKsh > 0 ? Math.round(priceKsh * 0.8) : priceKsh;
-            const effectiveUsd = annual && priceUsd > 0 ? Math.round(priceUsd * 0.8) : priceUsd;
-            const displayPrice = priceKsh === 0 ? "Free" : formatPrice(effectiveKsh, effectiveUsd);
+          {basePlans.map(({ name, desc, features, cta, href, featured, monthly, annual: annualPlan }) => {
+            const plan = annual ? annualPlan : monthly;
+            const displayPrice = formatDisplayPrice(plan.priceKsh, plan.priceUsd);
 
             return (
               <div key={name} style={{
@@ -110,9 +142,12 @@ export default function Pricing() {
 
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: featured ? "rgba(255,255,255,0.5)" : "var(--muted)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{name}</div>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: featured ? "white" : "var(--navy)", letterSpacing: "-0.5px", marginBottom: 2 }}>{displayPrice}</div>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: featured ? "white" : "var(--navy)", letterSpacing: "-0.5px", marginBottom: 2 }}>
+                    {displayPrice}
+                    {plan.priceKsh > 0 && <span style={{ fontSize: 14, fontWeight: 400, color: featured ? "rgba(255,255,255,0.6)" : "var(--muted)" }}>/mo</span>}
+                  </div>
                   <div style={{ fontSize: 12, color: featured ? "rgba(255,255,255,0.4)" : "var(--muted)", marginBottom: 14 }}>
-                    {priceKsh === 0 ? "no card needed" : (annual ? "billed annually" : period)}
+                    {plan.priceKsh === 0 ? "no card needed" : (annual ? `Billed annually (${formatDisplayPrice(plan.totalKsh, plan.totalUsd)}/yr)` : "Billed monthly")}
                   </div>
                   <p style={{ fontSize: 13, color: featured ? "rgba(255,255,255,0.65)" : "var(--slate)", lineHeight: 1.6 }}>{desc}</p>
                 </div>

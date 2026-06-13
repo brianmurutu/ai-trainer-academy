@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { type Course, type Lesson } from "@/lib/courses-data";
-import { ChevronLeft, Play, FileText, CheckCircle2, Circle, MessageSquare, BookOpen, Clock, ArrowRight, Award } from "lucide-react";
+import { ChevronLeft, Play, FileText, CheckCircle2, Circle } from "lucide-react";
 
 type CoursePlayerClientProps = {
   course: Course;
@@ -96,10 +96,10 @@ export default function CoursePlayerClient({ course, userEmail }: CoursePlayerCl
       </header>
 
       {/* Main player layout */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", flex: 1, overflow: "hidden" }} className="responsive-split-grid">
         
         {/* Left side: player area + tabs content */}
-        <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24, overflowY: "auto" }}>
+        <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24, overflowY: "auto" }} className="responsive-container">
           
           {/* Mock Video Player container */}
           <div style={{
@@ -145,7 +145,7 @@ export default function CoursePlayerClient({ course, userEmail }: CoursePlayerCl
                   {activeLesson?.title} is a text-based reading module.
                 </p>
                 <button
-                  onClick={(e) => toggleLessonCompletion(activeLesson?.id || "", e as any)}
+                  onClick={(e) => toggleLessonCompletion(activeLesson?.id || "", e)}
                   style={{
                     background: "white", color: "var(--navy)", border: "none", padding: "10px 20px",
                     borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer"
@@ -184,14 +184,14 @@ export default function CoursePlayerClient({ course, userEmail }: CoursePlayerCl
 
           {/* Tabs for details */}
           <div style={{ borderBottom: "1px solid var(--line)", display: "flex", gap: 24 }}>
-            {[
+            {([
               { id: "overview", label: "Overview" },
               { id: "notes", label: "My Notes" },
               { id: "ask", label: "Ask Instructor" }
-            ].map(tab => (
+            ] as const).map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 style={{
                   background: "none",
                   border: "none",

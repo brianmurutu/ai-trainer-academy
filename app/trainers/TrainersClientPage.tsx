@@ -90,7 +90,7 @@ export default function TrainersClientPage({ trainers }: Props) {
           background: "var(--grad-hero)",
           padding: "64px 32px 52px",
           backgroundImage: "var(--grad-hero), radial-gradient(circle at 20% 80%, rgba(59,110,232,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(124,58,237,0.12) 0%, transparent 50%)",
-        }}>
+        }} className="responsive-container">
           <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -166,7 +166,7 @@ export default function TrainersClientPage({ trainers }: Props) {
         {/* Filters bar */}
         <div style={{
           background: "white", borderBottom: "1px solid var(--line)", padding: "0 32px",
-        }}>
+        }} className="responsive-container">
           <div style={{
             maxWidth: 1100, margin: "0 auto",
             display: "flex", gap: 6, alignItems: "center",
@@ -219,7 +219,7 @@ export default function TrainersClientPage({ trainers }: Props) {
         </div>
 
         {/* Trainer grid */}
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 32px 64px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 32px 64px" }} className="responsive-container">
 
           {filtered.length === 0 && (
             <div style={{
@@ -252,11 +252,11 @@ export default function TrainersClientPage({ trainers }: Props) {
                   Top rated this month
                 </h2>
               </div>
-              <div style={{
+               <div style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
                 gap: 16,
-              }}>
+              }} className="responsive-cards-grid">
                 {featured.map((t) => (
                   <TrainerCard key={t.slug} trainer={toCardData(t)} featured />
                 ))}
@@ -274,7 +274,7 @@ export default function TrainersClientPage({ trainers }: Props) {
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
                 gap: 16,
-              }}>
+              }} className="responsive-cards-grid">
                 {rest.map((t) => (
                   <TrainerCard key={t.slug} trainer={toCardData(t)} />
                 ))}

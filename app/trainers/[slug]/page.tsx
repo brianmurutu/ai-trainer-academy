@@ -213,7 +213,7 @@ export default async function TrainerProfilePage({
         <nav aria-label="Breadcrumb" style={{
           background: "white", borderBottom: "1px solid var(--line)",
           padding: "16px 32px",
-        }}>
+        }} className="responsive-container">
           <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 500, color: "var(--slate)" }}>
             <Link href="/" style={{ color: "var(--muted)", textDecoration: "none", transition: "color 0.2s" }} className="hover-link">
               Home
@@ -229,8 +229,8 @@ export default async function TrainerProfilePage({
           </div>
         </nav>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 32px 64px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 28, alignItems: "start" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 32px 64px" }} className="responsive-container">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 28, alignItems: "start" }} className="responsive-split-grid">
 
           {/* Left: main profile */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -297,7 +297,7 @@ export default async function TrainerProfilePage({
                 display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
                 gap: 0, marginTop: 24, paddingTop: 20,
                 borderTop: "1px solid var(--line)",
-              }}>
+              }} className="stats-row-grid">
                 {[
                     { label: "Rating", value: <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "center" }}>{trainer.rating}<Star size={15} fill="#F59E0B" color="#F59E0B" style={{ display: "inline" }} /></span>, sub: `${trainer.reviewCount} reviews` },
                   { label: "Sessions", value: trainer.sessionsCompleted.toString(), sub: "completed" },

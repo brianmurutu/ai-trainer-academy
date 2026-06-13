@@ -32,7 +32,7 @@ export default function CoursesClient({ initialCourses }: CoursesClientProps) {
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--surface)", minHeight: "100vh", padding: "60px 24px 100px" }}>
+      <main style={{ background: "var(--surface)", minHeight: "100vh", padding: "60px 24px 100px" }} className="responsive-container">
         {/* Header */}
         <section style={{ maxWidth: 800, margin: "0 auto 48px", textAlign: "center" }}>
           <span style={{
@@ -62,7 +62,6 @@ export default function CoursesClient({ initialCourses }: CoursesClientProps) {
           </p>
         </section>
 
-        {/* Filter Controls */}
         <section style={{
           maxWidth: 1100,
           margin: "0 auto 40px",
@@ -76,7 +75,7 @@ export default function CoursesClient({ initialCourses }: CoursesClientProps) {
           alignItems: "center",
           justifyContent: "space-between",
           boxShadow: "0 4px 12px rgba(0,0,0,0.01)"
-        }}>
+        }} className="responsive-container">
           {/* Search bar */}
           <div style={{ position: "relative", flex: "1 1 300px" }}>
             <Search size={18} color="var(--muted)" style={{ position: "absolute", left: 14, top: 12 }} />
@@ -164,14 +163,14 @@ export default function CoursesClient({ initialCourses }: CoursesClientProps) {
             }}>
               <BookOpen size={48} color="var(--muted)" style={{ marginBottom: 16 }} />
               <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--navy)", marginBottom: 8 }}>No Courses Found</h3>
-              <p style={{ fontSize: 14, color: "var(--slate)" }}>We couldn't find any courses matching your filters. Try adjusting your search term.</p>
+              <p style={{ fontSize: 14, color: "var(--slate)" }}>We couldn&apos;t find any courses matching your filters. Try adjusting your search term.</p>
             </div>
           ) : (
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: 24,
-            }}>
+            }} className="responsive-cards-grid">
               {filteredCourses.map((course: Course) => (
                 <div
                   key={course.id}

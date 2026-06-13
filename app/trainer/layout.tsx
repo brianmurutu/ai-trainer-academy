@@ -55,14 +55,14 @@ export default async function TrainerLayout({
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F7FA" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F7FA" }} className="dashboard-layout">
       <TrainerSidebar
         userName={fullName}
         userEmail={user.email ?? ""}
         userInitials={getInitials(fullName)}
         applicationStatus={applicationStatus}
       />
-      <main style={{ flex: 1, overflowX: "hidden" }}>
+      <main style={{ flex: 1, overflowX: "hidden" }} className="dashboard-main">
         {children}
       </main>
     </div>

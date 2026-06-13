@@ -320,8 +320,8 @@ export default async function DashboardPage() {
     ? certificates.map((c) => ({
         id: c.id,
         title: c.course?.title ?? "Course Certificate",
-        issuedDate: c.completed_at
-          ? new Date(c.completed_at as unknown as string).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })
+        issuedDate: c.created_at
+          ? new Date(c.created_at as unknown as string).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })
           : "Recently",
         credentialId: `ATA-${c.course_id.slice(0, 6).toUpperCase()}`,
         color: c.course?.tag_color ?? "#6366F1",
@@ -333,7 +333,7 @@ export default async function DashboardPage() {
   const activeCourses = displayCourses.filter(c => c.progress > 0 && c.progress < 100).length;
 
   return (
-    <div style={{ padding: "32px 32px 48px" }}>
+    <div style={{ padding: "32px 32px 48px" }} className="responsive-container">
       {/* Header section */}
       <div style={{ marginBottom: 32, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
         <div>
@@ -375,7 +375,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Main grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }} className="responsive-split-grid">
 
         {/* Left column */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -403,7 +403,7 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }} className="responsive-cards-grid">
                 {displayCourses.map(c => <CourseCard key={c.id} course={c} />)}
               </div>
             )}

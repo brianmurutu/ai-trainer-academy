@@ -203,7 +203,7 @@ export default function BusinessPage() {
             color: "var(--slate)",
             marginBottom: 40,
           }}>
-            Flexible licensing tiers to align with your organization's growth.
+            Flexible licensing tiers to align with your organization&apos;s growth.
           </p>
 
           <div style={{
@@ -355,7 +355,7 @@ export default function BusinessPage() {
               }}>
                 <div style={{
                   width: 50, height: 50, borderRadius: "50%", background: "var(--green)",
-                  display: "flex", alignItems: "center", justifyCenter: "center", margin: "0 auto 16px",
+                  display: "flex", alignItems: "center", margin: "0 auto 16px",
                   justifyContent: "center", color: "white"
                 }}>
                   <Check size={28} />

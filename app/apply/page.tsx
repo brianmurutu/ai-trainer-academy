@@ -45,7 +45,7 @@ const sidePanelContent = (
   </div>
 );
 
-type FormData = {
+type ApplyFormData = {
   fullName: string; email: string; password: string;
   country: string; linkedin: string; github: string;
   specialities: string[]; experience: string;
@@ -58,7 +58,7 @@ const STEPS = ["Account", "Expertise", "Profile & Rates", "Review"];
 export default function ApplyPage() {
   const [step, setStep] = useState(0);
   const [showPwd, setShowPwd] = useState(false);
-  const [form, setForm] = useState<FormData>({
+  const [form, setForm] = useState<ApplyFormData>({
     fullName: "", email: "", password: "", country: "", linkedin: "", github: "",
     specialities: [], experience: "", bio: "", hourlyRateKsh: "", hourlyRateUsd: "",
     sampleWork: "", agreeTerms: false,
@@ -81,11 +81,11 @@ export default function ApplyPage() {
   useEffect(() => {
     if (state?.error) {
       turnstileRef.current?.reset();
-      setCaptchaToken("");
+      setTimeout(() => setCaptchaToken(""), 0);
     }
   }, [state]);
 
-  const set = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+  const set = (key: keyof ApplyFormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(p => ({ ...p, [key]: e.target.value }));
 
   const toggleSpec = (s: string) =>
@@ -354,7 +354,7 @@ export default function ApplyPage() {
                 border: "1px solid #F5D5B0", borderRadius: 10,
                 fontSize: 12, color: "var(--amber)", lineHeight: 1.6,
               }}>
-                <strong>Activation fee:</strong> If approved, you'll pay a one-time KSH 2,000 fee to activate your trainer profile. This is refundable if you're not approved.
+                <strong>Activation fee:</strong> If approved, you&apos;ll pay a one-time KSH 2,000 fee to activate your trainer profile. This is refundable if you&apos;re not approved.
               </div>
 
               <label style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}>

@@ -40,13 +40,13 @@ export default async function DashboardLayout({
     "Learner";
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F7FA" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F7FA" }} className="dashboard-layout">
       <Sidebar
         userName={fullName}
         userEmail={user.email ?? ""}
         userInitials={getInitials(fullName)}
       />
-      <main style={{ flex: 1, overflowX: "hidden" }}>
+      <main style={{ flex: 1, overflowX: "hidden" }} className="dashboard-main">
         {children}
       </main>
     </div>

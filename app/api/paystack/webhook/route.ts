@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -59,14 +59,30 @@ export async function POST(request: NextRequest) {
   if (eventType === "charge.success" && reference) {
     const metadata = (event.data?.metadata ?? {}) as Record<string, unknown>;
     const amount = typeof event.data?.amount === "number" ? event.data.amount : 0;
-    const amountKsh = Math.round(amount / 100);
+    const amountKsh = metadata.amount_ksh ? Math.round(parseFloat(metadata.amount_ksh as string)) : Math.round(amount / 100);
     const amountUsd = metadata.amount_usd ? parseFloat(metadata.amount_usd as string) : 0;
+    const learnerId = (metadata.learner_id as string) ?? null;
+    const courseId = (metadata.courseId as string) ?? null;
+
+    let trainerId = (metadata.trainer_id as string) ?? null;
+    if (!trainerId && metadata.trainer_slug) {
+      const { data: trainer } = await db
+        .from("trainers")
+        .select("id")
+        .eq("slug", metadata.trainer_slug as string)
+        .maybeSingle();
+      if (trainer) {
+        trainerId = trainer.id;
+      }
+    }
 
     const { error } = await db.from("bookings").upsert(
       {
         paystack_reference: reference,
-        trainer_id: (metadata.trainer_id as string) ?? null,
-        session_topic: (metadata.session_topic as string) ?? null,
+        course_id: courseId,
+        trainer_id: trainerId,
+        learner_id: learnerId,
+        session_topic: (metadata.courseTitle as string) ?? (metadata.session_topic as string) ?? null,
         amount_ksh: amountKsh,
         amount_usd: amountUsd,
         payment_method: "paystack",

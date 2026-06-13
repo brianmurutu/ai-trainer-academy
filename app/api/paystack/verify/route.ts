@@ -44,16 +44,16 @@ export async function GET(request: NextRequest) {
     const metadata = tx.metadata ?? {};
     const resolvedCourseId = courseId || metadata.courseId || null;
 
-    const amountKsh = Math.round((tx.amount ?? 0) / 100);
+    const amountKsh = metadata.amount_ksh ? Math.round(parseFloat(metadata.amount_ksh)) : Math.round((tx.amount ?? 0) / 100);
     const amountUsd = metadata.amount_usd ? parseFloat(metadata.amount_usd) : 0;
 
     const db = createAdminClient();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const learnerId = user?.id || metadata.learner_id || null;
 
     if (resolvedCourseId) {
       // Course purchase - create enrollment
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
       if (user) {
         const { error: enrollErr } = await db
           .from("enrollments")
@@ -93,11 +93,12 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Also write to bookings for admin visibility
+      // Also write to bookings for admin/learner visibility
       await db.from("bookings").upsert(
         {
           paystack_reference: reference,
           course_id: resolvedCourseId,
+          learner_id: learnerId,
           session_topic: metadata.courseTitle || metadata.session_topic || null,
           amount_ksh: amountKsh,
           amount_usd: amountUsd,
@@ -112,10 +113,23 @@ export async function GET(request: NextRequest) {
       );
     } else {
       // Trainer session booking
+      let trainerId = metadata.trainer_id || null;
+      if (!trainerId && metadata.trainer_slug) {
+        const { data: trainer } = await db
+          .from("trainers")
+          .select("id")
+          .eq("slug", metadata.trainer_slug)
+          .maybeSingle();
+        if (trainer) {
+          trainerId = trainer.id;
+        }
+      }
+
       const { error } = await db.from("bookings").upsert(
         {
           paystack_reference: reference,
-          trainer_id: metadata.trainer_id ?? null,
+          trainer_id: trainerId,
+          learner_id: learnerId,
           session_topic: metadata.session_topic ?? null,
           amount_ksh: amountKsh,
           amount_usd: amountUsd,

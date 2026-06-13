@@ -15,8 +15,7 @@ const basePlans = [
       "Basic student profile"
     ],
     cta: "Start free", href: "/signup", featured: false,
-    monthly: { priceKsh: 0, priceUsd: 0, totalKsh: 0, totalUsd: 0 },
-    annual: { priceKsh: 0, priceUsd: 0, totalKsh: 0, totalUsd: 0 },
+    priceKsh: 0, priceUsd: 0,
   },
   {
     name: "Pro",
@@ -29,8 +28,7 @@ const basePlans = [
       "Offline course downloads"
     ],
     cta: "Start Pro", href: "/signup?plan=pro", featured: true,
-    monthly: { priceKsh: 1500, priceUsd: 12, totalKsh: 1500, totalUsd: 12 },
-    annual: { priceKsh: 1200, priceUsd: 9.6, totalKsh: 14400, totalUsd: 115.2 },
+    priceKsh: 1000, priceUsd: 8,
   },
   {
     name: "Elite",
@@ -43,8 +41,7 @@ const basePlans = [
       "Exclusive advanced masterclasses"
     ],
     cta: "Go Elite", href: "/signup?plan=elite", featured: false,
-    monthly: { priceKsh: 4500, priceUsd: 35, totalKsh: 4500, totalUsd: 35 },
-    annual: { priceKsh: 3600, priceUsd: 28, totalKsh: 43200, totalUsd: 336 },
+    priceKsh: 3000, priceUsd: 24,
   },
 ];
 
@@ -112,9 +109,12 @@ export default function Pricing() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, maxWidth: 960, margin: "0 auto" }} className="pricing-grid">
-          {basePlans.map(({ name, desc, features, cta, href, featured, monthly, annual: annualPlan }) => {
-            const plan = annual ? annualPlan : monthly;
-            const displayPrice = formatDisplayPrice(plan.priceKsh, plan.priceUsd);
+          {basePlans.map(({ name, desc, features, cta, href, featured, priceKsh, priceUsd }) => {
+            const effectiveKsh = annual && priceKsh > 0 ? Math.round(priceKsh * 0.8) : priceKsh;
+            const effectiveUsd = annual && priceUsd > 0 ? priceUsd * 0.8 : priceUsd;
+            const displayPrice = formatDisplayPrice(effectiveKsh, effectiveUsd);
+            const totalKsh = effectiveKsh * 12;
+            const totalUsd = effectiveUsd * 12;
 
             return (
               <div key={name} style={{
@@ -144,10 +144,10 @@ export default function Pricing() {
                   <div style={{ fontSize: 13, fontWeight: 700, color: featured ? "rgba(255,255,255,0.5)" : "var(--muted)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{name}</div>
                   <div style={{ fontSize: 32, fontWeight: 800, color: featured ? "white" : "var(--navy)", letterSpacing: "-0.5px", marginBottom: 2 }}>
                     {displayPrice}
-                    {plan.priceKsh > 0 && <span style={{ fontSize: 14, fontWeight: 400, color: featured ? "rgba(255,255,255,0.6)" : "var(--muted)" }}>/mo</span>}
+                    {priceKsh > 0 && <span style={{ fontSize: 14, fontWeight: 400, color: featured ? "rgba(255,255,255,0.6)" : "var(--muted)" }}>/mo</span>}
                   </div>
                   <div style={{ fontSize: 12, color: featured ? "rgba(255,255,255,0.4)" : "var(--muted)", marginBottom: 14 }}>
-                    {plan.priceKsh === 0 ? "no card needed" : (annual ? `Billed annually (${formatDisplayPrice(plan.totalKsh, plan.totalUsd)}/yr)` : "Billed monthly")}
+                    {priceKsh === 0 ? "no card needed" : (annual ? `Billed annually (${formatDisplayPrice(totalKsh, totalUsd)}/yr)` : "Billed monthly")}
                   </div>
                   <p style={{ fontSize: 13, color: featured ? "rgba(255,255,255,0.65)" : "var(--slate)", lineHeight: 1.6 }}>{desc}</p>
                 </div>
@@ -165,7 +165,7 @@ export default function Pricing() {
                   display: "block", textAlign: "center",
                   padding: "12px", borderRadius: 10,
                   fontSize: 14, fontWeight: 700, textDecoration: "none",
-                  background: featured ? "white" : "var(--accent)",
+                  background: featured ? "white" : "var(--navy)",
                   color: featured ? "var(--navy)" : "white",
                   transition: "opacity 0.15s, transform 0.1s",
                   boxShadow: featured ? "var(--shadow-sm)" : "var(--shadow-accent)",

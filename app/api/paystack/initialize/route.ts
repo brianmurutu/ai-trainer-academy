@@ -13,17 +13,21 @@ export async function POST(request: NextRequest) {
       email,
       amountKsh,
       amountUsd,
+      amount,
       currency = "KES",
       reference,
       trainerId,
       trainerName,
+      trainerSlug,
+      learnerId,
       sessionTopic,
       callbackUrl,
+      metadata = {},
     } = body;
 
-    if (!email || !amountKsh || !reference) {
+    if (!email || !(amount || amountKsh) || !reference) {
       return NextResponse.json(
-        { error: "Missing required fields: email, amountKsh, reference" },
+        { error: "Missing required fields: email, amount/amountKsh, reference" },
         { status: 400 }
       );
     }
@@ -37,8 +41,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Paystack expects amount in the lowest currency unit.
-    // For KES (Kenyan Shilling): amount × 100 (kobo equivalent)
-    const amountInLowestUnit = Math.round(Number(amountKsh) * 100);
+    // For KES/USD: amount × 100 (cents/kobo equivalent)
+    const amountInLowestUnit = Math.round(Number(amount ?? amountKsh) * 100);
 
     const paystackRes = await fetch(
       "https://api.paystack.co/transaction/initialize",
@@ -55,10 +59,14 @@ export async function POST(request: NextRequest) {
           reference,
           callback_url: callbackUrl,
           metadata: {
+            ...metadata,
             trainer_id: trainerId,
             trainer_name: trainerName,
+            trainer_slug: trainerSlug,
+            learner_id: learnerId,
             session_topic: sessionTopic,
             amount_usd: amountUsd ? String(amountUsd) : "0",
+            amount_ksh: amountKsh ? String(amountKsh) : "0",
             custom_fields: [
               {
                 display_name: "Trainer",
@@ -70,6 +78,7 @@ export async function POST(request: NextRequest) {
                 variable_name: "session_topic",
                 value: sessionTopic,
               },
+              ...(metadata.custom_fields || []),
             ],
           },
         }),

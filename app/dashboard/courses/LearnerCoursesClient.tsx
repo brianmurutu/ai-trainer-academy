@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, Search, ArrowRight, Play, CheckCircle } from "lucide-react";
+import { BookOpen, Search, ArrowRight, Play, CheckCircle, Download } from "lucide-react";
 import { type Course } from "@/lib/courses-data";
 import { useCurrency } from "@/components/CurrencyProvider";
 
@@ -188,6 +188,25 @@ export default function LearnerCoursesClient({ initialCourses }: LearnerCoursesC
                       </>
                     )}
                   </Link>
+
+                  {/* Offline Download button */}
+                  {c.button_url && (
+                    <a href={c.button_url} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      padding: "10px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: 600,
+                      background: "#EBF3FF",
+                      color: "var(--accent)",
+                      border: "1px solid rgba(26, 111, 191, 0.15)",
+                      textAlign: "center",
+                      marginTop: 8,
+                      transition: "background-color 0.15s, transform 0.1s"
+                    }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#DCE9FF"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#EBF3FF"; }}
+                    >
+                      Download Offline <Download size={14} />
+                    </a>
+                  )}
                 </div>
               </div>
             );

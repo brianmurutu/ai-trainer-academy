@@ -31,6 +31,7 @@ type BookingWidgetProps = {
   rateUsd: number;
   availableSlots: Slot[];
   userEmail?: string;
+  learnerId?: string;
 };
 
 export default function BookingWidget({
@@ -40,6 +41,7 @@ export default function BookingWidget({
   rateUsd,
   availableSlots,
   userEmail,
+  learnerId,
 }: BookingWidgetProps) {
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [currency, setCurrency] = useState<"KES" | "USD">("KES");
@@ -49,15 +51,16 @@ export default function BookingWidget({
   const { formatPrice, currency: globalCurrency } = useCurrency();
 
   useEffect(() => {
-    if (globalCurrency === "KES") {
-      setCurrency("KES");
-    } else {
-      setCurrency("USD");
-    }
+    const target = globalCurrency === "KES" ? "KES" : "USD";
+    setTimeout(() => {
+      setCurrency(prev => {
+        if (prev !== target) return target;
+        return prev;
+      });
+    }, 0);
   }, [globalCurrency]);
 
   const rate = currency === "KES" ? rateKsh : rateUsd;
-  const totalAmount = selectedSlot ? rate * selectedSlot.durationHrs : 0;
   const totalUsd = selectedSlot ? rateUsd * selectedSlot.durationHrs : 0;
 
   const formatSessionPrice = (amountKsh: number, amountUsd: number) => {
@@ -91,6 +94,7 @@ export default function BookingWidget({
           reference,
           trainerName,
           trainerSlug,
+          learnerId,
           sessionTopic: `Session with ${trainerName} — ${selectedSlot.date} ${selectedSlot.time}`,
           callbackUrl,
         }),

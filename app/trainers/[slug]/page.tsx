@@ -467,6 +467,7 @@ export default async function TrainerProfilePage({
               rateUsd={trainer.rateUsd}
               availableSlots={trainer.availableSlots}
               userEmail={userEmail}
+              learnerId={user?.id}
             />
           </div>
         </div>

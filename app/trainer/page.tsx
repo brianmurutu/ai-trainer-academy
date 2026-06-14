@@ -21,78 +21,11 @@ import {
 import type { Metadata } from "next";
 import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
 import TrainerActivationClient from "@/components/trainer/TrainerActivationClient";
+import { getTrainerDashboardMetrics } from "@/app/actions/trainer";
 
 export const metadata: Metadata = {
   title: "Trainer Overview | AI Trainer Academy",
 };
-
-// ---------------------------------------------------------------------------
-// Mock data (replace with Supabase queries once tables are ready)
-// ---------------------------------------------------------------------------
-const MOCK_EARNINGS = {
-  thisMonth: 87500,
-  lastMonth: 72000,
-  growth: 21.5,
-  pendingPayout: 34200,
-  lifetimeEarnings: 412000,
-  currency: "KSH",
-};
-
-const MOCK_UPCOMING = [
-  {
-    id: "1",
-    learnerName: "Brian Mwangi",
-    learnerInitials: "BM",
-    topic: "QLoRA Fine-tuning Walkthrough",
-    date: "Today",
-    time: "4:00 PM – 5:30 PM EAT",
-    status: "starting_soon",
-    amountKsh: 3750,
-  },
-  {
-    id: "2",
-    learnerName: "Amira Hassan",
-    learnerInitials: "AH",
-    topic: "Intro to RLHF Pipelines",
-    date: "Tomorrow",
-    time: "10:00 AM – 11:00 AM EAT",
-    status: "confirmed",
-    amountKsh: 2500,
-  },
-  {
-    id: "3",
-    learnerName: "Obi Chukwu",
-    learnerInitials: "OC",
-    topic: "RAG System Architecture Review",
-    date: "Fri, Jun 7",
-    time: "2:00 PM – 4:00 PM EAT",
-    status: "confirmed",
-    amountKsh: 5000,
-  },
-  {
-    id: "4",
-    learnerName: "Zawadi Kamau",
-    learnerInitials: "ZK",
-    topic: "Prompt Engineering Fundamentals",
-    date: "Sat, Jun 8",
-    time: "9:00 AM – 10:00 AM EAT",
-    status: "confirmed",
-    amountKsh: 2500,
-  },
-];
-
-const MOCK_HISTORY = [
-  { id: "h1", learnerName: "Naledi Dlamini", topic: "Dataset Curation Techniques", date: "Jun 1", duration: "1.5h", amountKsh: 3750, rating: 5 },
-  { id: "h2", learnerName: "James Kariuki", topic: "LLaMA 3 Fine-tuning Part 1", date: "May 30", duration: "2h", amountKsh: 5000, rating: 5 },
-  { id: "h3", learnerName: "Priya Nair", topic: "Evaluation Metrics Overview", date: "May 28", duration: "1h", amountKsh: 2500, rating: 4 },
-  { id: "h4", learnerName: "Kofi Asante", topic: "LoRA Configuration Deep Dive", date: "May 25", duration: "1.5h", amountKsh: 3750, rating: 5 },
-];
-
-const MOCK_COURSES = [
-  { id: "c1", title: "Fine-tuning LLaMA 3 with LoRA", enrolled: 47, rating: 4.9, lessons: 24, status: "published" },
-  { id: "c2", title: "Practical RLHF for Engineers", enrolled: 23, rating: 4.8, lessons: 18, status: "published" },
-  { id: "c3", title: "Building Production RAG Systems", enrolled: 0, rating: 0, lessons: 8, status: "draft" },
-];
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -142,10 +75,11 @@ export default async function TrainerPage() {
   const { data: trainerProfile } = await supabase
     .from("trainers")
     .select("id")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .maybeSingle();
 
-  const isActivated = !!trainerProfile;
+  // BYPASS logic
+  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com";
 
   // Get application status
   const { data: application } = await supabase
@@ -404,6 +338,16 @@ export default async function TrainerPage() {
     }
   }
 
+  const {
+    earnings,
+    upcomingBookings,
+    historyBookings,
+    courses,
+    learnersCount,
+    sessionsDone,
+    avgRating,
+  } = await getTrainerDashboardMetrics(trainerProfile?.id || null, fullName);
+
   const firstName = fullName.split(" ")[0];
 
   const now = new Date();
@@ -447,10 +391,10 @@ export default async function TrainerPage() {
           gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
           gap: 14,
         }} className="stats-row-grid">
-          <EarningsStat label="This Month" value={fmt(MOCK_EARNINGS.thisMonth)} sub={`↑ ${MOCK_EARNINGS.growth}% vs last month`} highlight />
-          <EarningsStat label="Pending Payout" value={fmt(MOCK_EARNINGS.pendingPayout)} sub="Next payout: Jun 10" />
-          <EarningsStat label="Last Month" value={fmt(MOCK_EARNINGS.lastMonth)} />
-          <EarningsStat label="Lifetime Earned" value={fmt(MOCK_EARNINGS.lifetimeEarnings)} sub="Since joining" />
+          <EarningsStat label="This Month" value={fmt(earnings.thisMonth)} sub={earnings.growth >= 0 ? `↑ ${earnings.growth}% vs last month` : `↓ ${Math.abs(earnings.growth)}% vs last month`} highlight />
+          <EarningsStat label="Pending Payout" value={fmt(earnings.pendingPayout)} sub="Next payout: Jun 10" />
+          <EarningsStat label="Last Month" value={fmt(earnings.lastMonth)} />
+          <EarningsStat label="Lifetime Earned" value={fmt(earnings.lifetimeEarnings)} sub="Since joining" />
         </div>
       </section>
 
@@ -475,13 +419,17 @@ export default async function TrainerPage() {
               </Link>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {MOCK_UPCOMING.map((b, i) => {
+              {upcomingBookings.length === 0 ? (
+                <div style={{ padding: "20px", textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
+                  No upcoming bookings found.
+                </div>
+              ) : upcomingBookings.map((b, i) => {
                 const isSoon = b.status === "starting_soon";
                 return (
                   <div key={b.id} style={{
                     display: "flex", alignItems: "center", gap: 14,
                     padding: "13px 0",
-                    borderBottom: i < MOCK_UPCOMING.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                    borderBottom: i < upcomingBookings.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
                   }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: "50%",
@@ -527,10 +475,14 @@ export default async function TrainerPage() {
               </Link>
             </div>
             <div>
-              {MOCK_HISTORY.map((h, i) => (
+              {historyBookings.length === 0 ? (
+                <div style={{ padding: "20px", textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
+                  No past sessions found.
+                </div>
+              ) : historyBookings.map((h, i) => (
                 <div key={h.id} style={{
                   display: "flex", alignItems: "center", gap: 14, padding: "12px 0",
-                  borderBottom: i < MOCK_HISTORY.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                  borderBottom: i < historyBookings.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
                 }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: "50%",
@@ -538,7 +490,7 @@ export default async function TrainerPage() {
                     justifyContent: "center", fontSize: 12, fontWeight: 600,
                     color: "var(--slate)", flexShrink: 0,
                   }}>
-                    {h.learnerName.split(" ").map(n => n[0]).join("").toUpperCase()}
+                    {h.learnerName.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "var(--navy)" }}>{h.topic}</div>
@@ -554,7 +506,7 @@ export default async function TrainerPage() {
                     </div>
                   </div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", flexShrink: 0 }}>
-                    +KSH {Math.round(h.amountKsh * 0.8).toLocaleString()}
+                    +KSH {Math.round(h.amountKsh).toLocaleString()}
                   </div>
                 </div>
               ))}
@@ -566,7 +518,7 @@ export default async function TrainerPage() {
             }}>
               <span style={{ fontSize: 13, color: "var(--slate)" }}>Your platform share (80%)</span>
               <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy)" }}>
-                KSH {MOCK_HISTORY.reduce((sum, h) => sum + Math.round(h.amountKsh * 0.8), 0).toLocaleString()} this period
+                KSH {historyBookings.reduce((sum, h) => sum + Math.round(h.amountKsh), 0).toLocaleString()} this period
               </span>
             </div>
           </section>
@@ -578,10 +530,10 @@ export default async function TrainerPage() {
           {/* Quick stats */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {[
-              { label: "Total Learners", value: "94", Icon: Users, iconColor: "#6366F1", iconBg: "#EEF2FF" },
-              { label: "Avg. Rating", value: "4.9", Icon: Star, iconColor: "#D97706", iconBg: "#FEF3C7" },
-              { label: "Sessions Done", value: "218", Icon: CalendarDays, iconColor: "#0EA5E9", iconBg: "#E0F2FE" },
-              { label: "Courses Live", value: "2", Icon: BookOpen, iconColor: "#059669", iconBg: "#D1FAE5" },
+              { label: "Total Learners", value: learnersCount, Icon: Users, iconColor: "#6366F1", iconBg: "#EEF2FF" },
+              { label: "Avg. Rating", value: avgRating, Icon: Star, iconColor: "#D97706", iconBg: "#FEF3C7" },
+              { label: "Sessions Done", value: sessionsDone, Icon: CalendarDays, iconColor: "#0EA5E9", iconBg: "#E0F2FE" },
+              { label: "Courses Live", value: courses.length, Icon: BookOpen, iconColor: "#059669", iconBg: "#D1FAE5" },
             ].map(({ label, value, Icon, iconColor, iconBg }) => (
               <div key={label} style={{
                 background: "white", borderRadius: 12, padding: "14px",
@@ -643,7 +595,7 @@ export default async function TrainerPage() {
               ))}
               <div style={{ marginTop: 4, padding: "10px 12px", background: "var(--accent-light)", borderRadius: 10, border: "1px solid rgba(26,111,191,0.15)" }}>
                 <div style={{ fontSize: 12, color: "var(--accent)", fontWeight: 500 }}>
-                  Pending payout: <strong>KSH {MOCK_EARNINGS.pendingPayout.toLocaleString()}</strong>
+                  Pending payout: <strong>KSH {earnings.pendingPayout.toLocaleString()}</strong>
                 </div>
                 <div style={{ fontSize: 11, color: "var(--slate)", marginTop: 2 }}>Auto-processed every Monday</div>
               </div>
@@ -663,7 +615,11 @@ export default async function TrainerPage() {
               <Link href="/trainer/courses" style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none" }}>Manage</Link>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {MOCK_COURSES.map(c => (
+              {courses.length === 0 ? (
+                <div style={{ padding: "10px", textAlign: "center", color: "var(--muted)", fontSize: 12 }}>
+                  No courses published yet.
+                </div>
+              ) : courses.map((c: any) => (
                 <div key={c.id} style={{
                   padding: "12px 14px", borderRadius: 10,
                   background: c.status === "draft" ? "var(--surface)" : "white",
@@ -691,8 +647,6 @@ export default async function TrainerPage() {
                 border: "1.5px dashed var(--line)", textDecoration: "none",
                 fontSize: 13, color: "var(--muted)", transition: "border-color 0.15s",
               }}
-                onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)")}
-                onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)")}
               >
                 <Plus size={14} /> Create new course
               </Link>

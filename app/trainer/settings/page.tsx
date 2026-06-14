@@ -106,8 +106,8 @@ export default function TrainerSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
-          amountKsh: 1000,
-          amount: 1000,
+          amountKsh: 300,
+          amount: 300,
           currency: "KES",
           reference,
           sessionTopic: "Video Introduction Feature Upgrade",
@@ -115,7 +115,7 @@ export default function TrainerSettingsPage() {
           metadata: {
             payment_type: "video_intro_activation",
             trainer_id: trainerId,
-            amount_ksh: "1000",
+            amount_ksh: "300",
           },
         }),
       });
@@ -390,7 +390,7 @@ export default function TrainerSettingsPage() {
                     Unlock Profile Introduction Video
                   </div>
                   <p style={{ fontSize: 12.5, color: "var(--slate)", lineHeight: 1.5 }}>
-                    Trainers with a video introduction get <strong>3× more bookings</strong> on average. Highlight your expertise and engage learners by uploading a Loom, YouTube, or Vimeo intro. Unlock this premium add-on for a one-time fee of <strong>KES 1,000</strong>.
+                    Trainers with a video introduction get <strong>3× more bookings</strong> on average. Highlight your expertise and engage learners by uploading a Loom, YouTube, or Vimeo intro. Unlock this premium add-on for a one-time fee of <strong>KES 300 ($3)</strong>.
                   </p>
                   <button
                     type="button"
@@ -411,7 +411,7 @@ export default function TrainerSettingsPage() {
                       gap: 6,
                     }}
                   >
-                    {payLoading ? "Initializing..." : "Unlock for KES 1,000"}
+                    {payLoading ? "Initializing..." : "Unlock for KES 300 / $3"}
                   </button>
                 </div>
               )}

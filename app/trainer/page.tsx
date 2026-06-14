@@ -183,7 +183,7 @@ export default async function TrainerPage() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 500 }}>Activation Fee</span>
-                <span style={{ fontSize: 18, fontWeight: 700, color: "var(--navy)" }}>KES 2,000</span>
+                <span style={{ fontSize: 18, fontWeight: 700, color: "var(--navy)" }}>KES 1,000</span>
               </div>
               <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--slate)" }}>
@@ -215,7 +215,7 @@ export default async function TrainerPage() {
 
           <div style={{ textAlign: "center" }}>
             <p style={{ fontSize: 12.5, color: "var(--muted)" }}>
-              Need help? Contact our support team at <a href="mailto:support@aitraineracademy.com" style={{ color: "var(--accent)", textDecoration: "none" }}>support@aitraineracademy.com</a>
+              Need help? Contact our support team at <a href="mailto:support@ai-trainer-academy.top" style={{ color: "var(--accent)", textDecoration: "none" }}>support@ai-trainer-academy.top</a>
             </p>
           </div>
         </div>

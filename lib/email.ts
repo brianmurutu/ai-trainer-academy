@@ -8,7 +8,7 @@ import { Resend } from "resend";
 
 const FROM =
   process.env.EMAIL_FROM ??
-  "AI Trainer Academy <noreply@aitraineracademy.com>";
+  "AI Trainer Academy <noreply@ai-trainer-academy.top>";
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
@@ -81,7 +81,7 @@ export async function sendApprovalEmail({
         ${message ? `<blockquote style="border-left:3px solid #1A6FBF;padding:8px 16px;color:#4A6174;margin:16px 0">${message}</blockquote>` : ""}
         <p style="color:#4A6174;margin-bottom:20px">
           <strong>Next steps:</strong><br/>
-          1. Pay the one-time KSH 2,000 activation fee to go live on the directory<br/>
+          1. Pay the one-time KSH 1,000 activation fee to go live on the directory<br/>
           2. Log in and configure your schedule, rates, and active courses
         </p>
         <a href="${activationUrl}"

@@ -26,7 +26,7 @@ export default function PricingPage() {
     },
     {
       q: "What is the trainer activation fee?",
-      a: "To maintain a high-quality platform, we charge a one-time KSH 2,000 (approx. $15 USD) activation fee after your application is approved. This covers verification of your profile, background checks, and onboarding support.",
+      a: "To maintain a high-quality platform, we charge a one-time KSH 1,000 (approx. $8 USD) activation fee after your application is approved. This covers verification of your profile, background checks, and onboarding support.",
     },
     {
       q: "Can I get a refund if a session is cancelled?",
@@ -151,7 +151,7 @@ export default function PricingPage() {
             <div style={{ flex: 1, marginBottom: 32 }}>
               {[
                 "Keep 80% of bookings & course sales",
-                `One-time ${formatPrice(2000, 15)} activation fee`,
+                `One-time ${formatPrice(1000, 8)} activation fee`,
                 "Set your own schedule & rates",
                 "Accept global payments (Card, M-Pesa, USDT)",
                 "Get payouts straight to M-Pesa / Bank",

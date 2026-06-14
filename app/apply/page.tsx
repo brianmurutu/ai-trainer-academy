@@ -24,7 +24,7 @@ const sidePanelContent = (
     {[
       { num: "80%", label: "You keep 80% of every session. Highest trainer share in the industry." },
       { num: "KSH", label: "Get paid weekly via M-Pesa, bank transfer, or crypto" },
-      { num: "0", label: "Zero setup cost. One-time KSH 2,000 activation after approval" },
+      { num: "0", label: "Zero setup cost. One-time KSH 1,000 activation after approval" },
       { num: "∞", label: "Set your own rates, hours, and specialities. Full control." },
     ].map(({ num, label }) => (
       <div key={num} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 24 }}>
@@ -136,7 +136,7 @@ export default function ApplyPage() {
             border: "1px solid var(--line)", borderRadius: 12, marginBottom: 28, textAlign: "left",
           }}>
             <p style={{ fontSize: 13, fontWeight: 500, color: "var(--navy)", marginBottom: 8 }}>What happens next</p>
-            {["Our team reviews your credentials & bio", "You'll receive an email with the decision", "If approved, pay the one-time KSH 2,000 activation fee", "Set up your profile and start earning"].map((s, i) => (
+            {["Our team reviews your credentials & bio", "You'll receive an email with the decision", "If approved, pay the one-time KSH 1,000 activation fee", "Set up your profile and start earning"].map((s, i) => (
               <div key={s} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
                 <span style={{
                   width: 20, height: 20, borderRadius: "50%", background: "var(--accent-light)",
@@ -354,7 +354,7 @@ export default function ApplyPage() {
                 border: "1px solid #F5D5B0", borderRadius: 10,
                 fontSize: 12, color: "var(--amber)", lineHeight: 1.6,
               }}>
-                <strong>Activation fee:</strong> If approved, you&apos;ll pay a one-time KSH 2,000 fee to activate your trainer profile. This is refundable if you&apos;re not approved.
+                <strong>Activation fee:</strong> If approved, you&apos;ll pay a one-time KSH 1,000 fee to activate your trainer profile. This is refundable if you&apos;re not approved.
               </div>
 
               <label style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}>

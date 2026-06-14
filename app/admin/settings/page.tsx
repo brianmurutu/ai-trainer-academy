@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Settings, Shield, Mail, Database } from "lucide-react";
+import { Shield, Mail, Database } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Settings | Admin" };
@@ -14,7 +14,7 @@ async function requireAdmin() {
 
 export default async function AdminSettingsPage() {
   const user = await requireAdmin();
-  const emailSender = process.env.EMAIL_FROM ?? "AI Trainer Academy <noreply@aitraineracademy.com>";
+  const emailSender = process.env.EMAIL_FROM ?? "AI Trainer Academy <noreply@ai-trainer-academy.top>";
 
   const cardStyle: React.CSSProperties = {
     background: "white",
@@ -77,7 +77,7 @@ export default async function AdminSettingsPage() {
         </div>
         <div style={{ ...rowStyle, borderBottom: "none" }}>
           <span style={{ color: "var(--muted)" }}>Activation fee (new trainers)</span>
-          <span style={{ fontWeight: 500 }}>KSH 2,000 (one-time)</span>
+          <span style={{ fontWeight: 500 }}>KSH 1,000 (one-time)</span>
         </div>
       </div>
 

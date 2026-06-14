@@ -127,7 +127,7 @@ export async function approveApplication(
   revalidatePath("/admin/applications");
   revalidatePath("/admin");
 
-  // Initialize Paystack checkout for the activation fee (one-time KSH 2,000)
+  // Initialize Paystack checkout for the activation fee (one-time KSH 1,000)
   let activationUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/login`;
   try {
     const secretKey = process.env.PAYSTACK_SECRET_KEY;
@@ -143,14 +143,14 @@ export async function approveApplication(
         },
         body: JSON.stringify({
           email: app.email,
-          amount: 200000, // KSH 2,000 in lowest unit (kobo/cents equivalent)
+          amount: 100000, // KSH 1,000 in lowest unit (kobo/cents equivalent)
           currency: "KES",
           reference,
           callback_url: callbackUrl,
           metadata: {
             payment_type: "trainer_activation",
             application_id: id,
-            amount_ksh: "2000",
+            amount_ksh: "1000",
           },
         }),
       });
@@ -378,11 +378,11 @@ export async function resendApprovalEmail(
         headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           email: app.email,
-          amount: 200000,
+          amount: 100000,
           currency: "KES",
           reference,
           callback_url: callbackUrl,
-          metadata: { payment_type: "trainer_activation", application_id: id, amount_ksh: "2000" },
+          metadata: { payment_type: "trainer_activation", application_id: id, amount_ksh: "1000" },
         }),
       });
       const data = await paystackRes.json();

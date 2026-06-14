@@ -85,7 +85,7 @@ export default function ReviewActions({
         {showApprove && (
           <Modal title={`Approve ${applicantName}?`} onClose={() => setShowApprove(false)}>
             <p style={subText}>
-              An approval email with the KES 2,000 activation payment link will be sent immediately.
+              An approval email with the KES 1,000 activation payment link will be sent immediately.
             </p>
             <form action={approveAction}>
               <input type="hidden" name="id" value={applicationId} />

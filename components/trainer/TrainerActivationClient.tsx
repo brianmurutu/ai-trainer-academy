@@ -24,8 +24,8 @@ export default function TrainerActivationClient({ applicationId, email }: Props)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          amountKsh: 2000,
-          amount: 2000,
+          amountKsh: 1000,
+          amount: 1000,
           currency: "KES",
           reference,
           sessionTopic: "Trainer Profile Activation",
@@ -33,7 +33,7 @@ export default function TrainerActivationClient({ applicationId, email }: Props)
           metadata: {
             payment_type: "trainer_activation",
             application_id: applicationId,
-            amount_ksh: "2000",
+            amount_ksh: "1000",
           },
         }),
       });
@@ -100,7 +100,7 @@ export default function TrainerActivationClient({ applicationId, email }: Props)
         ) : (
           <>
             <CreditCard size={16} />
-            Pay Activation Fee (KSH 2,000)
+            Pay Activation Fee (KSH 1,000)
             <ArrowRight size={16} />
           </>
         )}

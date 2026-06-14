@@ -16,7 +16,7 @@ export default function TrainerFaqPage() {
     },
     {
       q: "How does the application verification process work?",
-      a: "After you submit the application form, our admin team reviews your portfolio, GitHub repositories, and LinkedIn profile. If you meet our criteria, we'll schedule a brief 15-minute Google Meet call to audit your training approach and verify your identity. Once approved, you pay the KSH 2,000 activation fee and your profile goes live.",
+      a: "After you submit the application form, our admin team reviews your portfolio, GitHub repositories, and LinkedIn profile. If you meet our criteria, we'll schedule a brief 15-minute Google Meet call to audit your training approach and verify your identity. Once approved, you pay the KSH 1,000 activation fee and your profile goes live.",
     },
     {
       q: "How much should I charge for 1-on-1 sessions?",

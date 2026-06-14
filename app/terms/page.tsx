@@ -65,7 +65,7 @@ export default function TermsPage() {
             </p>
             <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 6 }}>
               <li><strong>Commission Share:</strong> The platform retains a 20% commission fee; trainers receive 80% of booking and course sale revenues.</li>
-              <li><strong>Trainer Verification Fee:</strong> Approved trainers pay a one-time KSH 2,000 profile activation fee prior to activation.</li>
+              <li><strong>Trainer Verification Fee:</strong> Approved trainers pay a one-time KSH 1,000 profile activation fee prior to activation.</li>
               <li><strong>Escrow Payouts:</strong> Trainers receive their accumulated funds on weekly cycles directly to their configured payout channels (M-Pesa or Bank account).</li>
             </ul>
 

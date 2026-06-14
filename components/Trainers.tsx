@@ -3,7 +3,22 @@ import Link from "next/link";
 import { Star, ArrowRight } from "lucide-react";
 import { useCurrency } from "@/components/CurrencyProvider";
 
-const trainers = [
+interface DbTrainer {
+  id: string;
+  slug: string;
+  full_name: string;
+  tagline: string | null;
+  specialities: string[];
+  rating: number;
+  review_count: number;
+  sessions_completed: number;
+  hourly_rate_ksh: number;
+  hourly_rate_usd: number;
+  available: boolean;
+  featured: boolean;
+}
+
+const staticTrainers = [
   {
     initials: "JM", name: "James Mwangi", spec: "Fine-tuning and RLHF",
     tags: ["LLaMA", "GPT-4", "RLHF"], rating: 4.9, sessions: 128,
@@ -42,8 +57,41 @@ const trainers = [
   },
 ];
 
-export default function Trainers() {
+const GRADIENTS = [
+  "var(--grad-accent)",
+  "linear-gradient(135deg, #1A6FBF 0%, #2B8FDF 100%)",
+  "linear-gradient(135deg, #1A7A4A 0%, #22A05E 100%)",
+  "linear-gradient(135deg, #7A4A1A 0%, #B06422 100%)",
+  "linear-gradient(135deg, #4A1A7A 0%, #6B2AAE 100%)",
+  "linear-gradient(135deg, #1A5A7A 0%, #1E7FAD 100%)",
+];
+
+const getInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
+export default function Trainers({ dbTrainers }: { dbTrainers?: DbTrainer[] }) {
   const { formatPrice } = useCurrency();
+
+  const displayTrainers = dbTrainers && dbTrainers.length > 0
+    ? dbTrainers.map((t, idx) => ({
+        initials: getInitials(t.full_name),
+        name: t.full_name,
+        spec: t.tagline || (t.specialities?.[0] ? `${t.specialities[0]} Specialist` : "AI Trainer"),
+        tags: t.specialities || [],
+        rating: Number(t.rating) || 5.0,
+        sessions: t.sessions_completed || 0,
+        rateKsh: Number(t.hourly_rate_ksh) || 2000,
+        rateUsd: Number(t.hourly_rate_usd) || 15,
+        bg: GRADIENTS[idx % GRADIENTS.length],
+        available: t.available !== false,
+        slug: t.slug,
+      }))
+    : staticTrainers;
 
   return (
     <section style={{ maxWidth: 1180, margin: "0 auto", padding: "80px 24px" }}>
@@ -65,7 +113,7 @@ export default function Trainers() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }} className="responsive-cards-grid">
-        {trainers.map(({ initials, name, spec, tags, rating, sessions, rateKsh, rateUsd, bg, available, slug }) => (
+        {displayTrainers.map(({ initials, name, spec, tags, rating, sessions, rateKsh, rateUsd, bg, available, slug }) => (
           <Link key={name} href={`/trainers/${slug}`} style={{
             display: "block",
             background: "white", border: "1px solid var(--line)",

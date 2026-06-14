@@ -31,6 +31,7 @@ export async function activateTrainerProfile(applicationId: string): Promise<boo
       .from("trainers")
       .upsert({
         id: app.user_id, // Match auth user ID
+        user_id: app.user_id, // Set user_id explicitly
         full_name: app.full_name,
         slug,
         tagline: app.specialities[0] ? `${app.specialities[0]} Specialist` : "AI Trainer",
@@ -41,12 +42,10 @@ export async function activateTrainerProfile(applicationId: string): Promise<boo
         hourly_rate_usd: app.hourly_rate_usd || 15,
         linkedin_url: app.linkedin_url,
         github_url: app.github_url,
-        sample_work_url: app.sample_work_url,
         available: true,
         rating: 5.0,
         review_count: 0,
         sessions_completed: 0,
-        learners_helped: 0,
         featured: false,
       }, { onConflict: "id" });
 

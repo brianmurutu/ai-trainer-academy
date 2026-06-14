@@ -22,6 +22,7 @@ import type { Metadata } from "next";
 import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
 import TrainerActivationClient from "@/components/trainer/TrainerActivationClient";
 import { getTrainerDashboardMetrics } from "@/app/actions/trainer";
+import { activateTrainerProfile } from "@/lib/supabase/trainer-activation";
 
 export const metadata: Metadata = {
   title: "Trainer Overview | AI Trainer Academy",
@@ -38,13 +39,23 @@ function EarningsStat({
   return (
     <div style={{
       background: highlight ? "var(--accent)" : "white",
-      borderRadius: 14, padding: "20px 22px",
-      border: highlight ? "none" : "1px solid rgba(0,0,0,0.06)",
-      boxShadow: highlight ? "0 4px 16px rgba(26,111,191,0.3)" : "0 1px 3px rgba(0,0,0,0.04)",
+      borderRadius: 16,
+      padding: "24px",
+      border: "1px solid var(--line)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      color: highlight ? "white" : "var(--navy)",
     }}>
-      <div style={{ fontSize: 12, fontWeight: 500, color: highlight ? "rgba(255,255,255,0.65)" : "var(--muted)", marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 600, color: highlight ? "white" : "var(--navy)", letterSpacing: "-0.5px", lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: highlight ? "rgba(255,255,255,0.5)" : "var(--muted)", marginTop: 6 }}>{sub}</div>}
+      <div style={{ fontSize: 13, color: highlight ? "rgba(255,255,255,0.75)" : "var(--muted)", fontWeight: 500 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 800 }}>{value}</div>
+      {sub && (
+        <div style={{ fontSize: 12, color: highlight ? "rgba(255,255,255,0.6)" : "var(--muted)" }}>
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -72,14 +83,11 @@ export default async function TrainerPage() {
     user.email?.split("@")[0] || "Trainer";
 
   // Check if trainer profile is already active in trainers table
-  const { data: trainerProfile } = await supabase
+  let { data: trainerProfile } = await supabase
     .from("trainers")
     .select("id")
     .eq("user_id", user.id)
     .maybeSingle();
-
-  // BYPASS logic
-  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com";
 
   // Get application status
   const { data: application } = await supabase
@@ -89,6 +97,22 @@ export default async function TrainerPage() {
     .maybeSingle();
 
   const applicationStatus = application?.status || "pending";
+
+  // Auto-activate bypassed users if profile is missing but application is present
+  if (!trainerProfile && user.email === "brian@yagwatech.com" && application) {
+    const success = await activateTrainerProfile(application.id);
+    if (success) {
+      const { data: updatedProfile } = await supabase
+        .from("trainers")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      trainerProfile = updatedProfile;
+    }
+  }
+
+  // BYPASS logic
+  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com";
 
   if (!isActivated) {
     if (applicationStatus === "approved" && application) {

@@ -94,7 +94,7 @@ export async function getTrainers(
     let query = supabase
       .from("trainers")
       .select(
-        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url, learners_helped, linkedin_url, github_url, sample_work_url"
+        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url, linkedin_url, github_url"
       )
       .order("rating", { ascending: false });
 
@@ -110,7 +110,12 @@ export async function getTrainers(
       console.error("[getTrainers] Supabase error:", error.message);
       return [];
     }
-    return (data as TrainerRow[]) ?? [];
+    const trainers = (data as any[]) ?? [];
+    return trainers.map(t => ({
+      ...t,
+      learners_helped: 0,
+      sample_work_url: null
+    })) as TrainerRow[];
   } catch (err) {
     console.error("[getTrainers] Unexpected error:", err);
     return [];
@@ -128,7 +133,7 @@ export async function getTrainerBySlug(slug: string): Promise<TrainerRow | null>
     const { data, error } = await supabase
       .from("trainers")
       .select(
-        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url, learners_helped, linkedin_url, github_url, sample_work_url"
+        "id, slug, full_name, tagline, country, specialities, rating, review_count, sessions_completed, hourly_rate_ksh, hourly_rate_usd, available, featured, bio, avatar_url, linkedin_url, github_url"
       )
       .eq("slug", slug)
       .single();
@@ -137,7 +142,12 @@ export async function getTrainerBySlug(slug: string): Promise<TrainerRow | null>
       console.error("[getTrainerBySlug] Supabase error:", error.message);
       return null;
     }
-    return (data as TrainerRow) ?? null;
+    if (!data) return null;
+    return {
+      ...(data as any),
+      learners_helped: 0,
+      sample_work_url: null
+    } as TrainerRow;
   } catch (err) {
     console.error("[getTrainerBySlug] Unexpected error:", err);
     return null;

@@ -205,9 +205,6 @@ export async function updateTrainerProfile(formData: FormData) {
     const githubUrl = formData.get("github_url");
     if (githubUrl !== null) updates.github_url = githubUrl;
 
-    const sampleWorkUrl = formData.get("sample_work_url");
-    if (sampleWorkUrl !== null) updates.sample_work_url = sampleWorkUrl;
-
     const adminDb = createAdminClient();
     const { error } = await adminDb
       .from("trainers")

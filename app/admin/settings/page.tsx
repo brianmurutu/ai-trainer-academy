@@ -14,6 +14,7 @@ async function requireAdmin() {
 
 export default async function AdminSettingsPage() {
   const user = await requireAdmin();
+  const emailSender = process.env.EMAIL_FROM ?? "AI Trainer Academy <noreply@aitraineracademy.com>";
 
   const cardStyle: React.CSSProperties = {
     background: "white",
@@ -92,9 +93,10 @@ export default async function AdminSettingsPage() {
         </div>
         <div style={{ ...rowStyle, borderBottom: "none" }}>
           <span style={{ color: "var(--muted)" }}>Sender</span>
-          <span style={{ fontWeight: 500 }}>noreply@ai-trainer-acedmy.co.ke</span>
+          <span style={{ fontWeight: 500 }}>{emailSender}</span>
         </div>
       </div>
+
 
       <div style={{ padding: "14px 16px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 10, fontSize: 12, color: "#92400E", lineHeight: 1.6 }}>
         <strong>To change platform settings</strong>, update environment variables in your hosting provider and redeploy. Contact your developer for schema changes.

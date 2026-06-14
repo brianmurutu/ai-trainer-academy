@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { User, DollarSign, Calendar, CreditCard, Save, Check, Globe } from "lucide-react";
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import { User, DollarSign, Calendar, CreditCard, Save, Globe } from "lucide-react";
 import { parseTrainerBio, stringifyTrainerBio } from "@/lib/trainer-utils";
 
 export default function TrainerSettingsPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
 
   // Profile data state
   const [fullName, setFullName] = useState("");
@@ -64,12 +65,11 @@ export default function TrainerSettingsPage() {
         if (trainer) {
           setTrainerId(trainer.id);
           const { bio: cleanBio, videoUrl: parsedVideoUrl, videoUnlocked: parsedVideoUnlocked } = parseTrainerBio(trainer.bio);
-          setBio(cleanBio);
+          setBio(cleanBio || "");
           setVideoUrl(parsedVideoUrl);
           setVideoUnlocked(parsedVideoUnlocked);
-          
-          setHourlyRateKsh(Number(trainer.hourly_rate_ksh) || 3000);
-          setHourlyRateUsd(Number(trainer.hourly_rate_usd) || 25);
+          setHourlyRateKsh(trainer.hourly_rate_ksh || 3000);
+          setHourlyRateUsd(trainer.hourly_rate_usd || 25);
           setLinkedinUrl(trainer.linkedin_url || "");
           setGithubUrl(trainer.github_url || "");
         } else {
@@ -86,12 +86,14 @@ export default function TrainerSettingsPage() {
     // Check query params for success message
     const params = new URLSearchParams(window.location.search);
     if (params.get("video_unlocked") === "true") {
-      setMessage({ type: "success", text: "🎉 Success! Video Introduction feature unlocked successfully. You can now save your video URL!" });
+      setTimeout(() => {
+        setMessage({ type: "success", text: "🎉 Success! Video Introduction feature unlocked successfully. You can now save your video URL!" });
+      }, 0);
     }
-  }, []);
+  }, [supabase]);
 
   const handleUnlockVideo = async () => {
-    if (!trainerId) {
+    if (!trainerId || !user) {
       setMessage({ type: "error", text: "Trainer profile not loaded yet." });
       return;
     }
@@ -136,6 +138,10 @@ export default function TrainerSettingsPage() {
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
+    if (!user) {
+      setMessage({ type: "error", text: "User session not active." });
+      return;
+    }
     e.preventDefault();
     setLoading(true);
     setMessage(null);
@@ -172,8 +178,9 @@ export default function TrainerSettingsPage() {
       if (dbError) throw dbError;
 
       setMessage({ type: "success", text: "Profile updated successfully!" });
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message || "Failed to update profile settings." });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to update profile settings.";
+      setMessage({ type: "error", text: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -411,7 +418,7 @@ export default function TrainerSettingsPage() {
                       gap: 6,
                     }}
                   >
-                    {payLoading ? "Initializing..." : "Unlock for KES 300 / $3"}
+                    {payLoading ? "Initializing..." : "Unlock for KES 300 ($3)"}
                   </button>
                 </div>
               )}
@@ -536,17 +543,17 @@ export default function TrainerSettingsPage() {
             </span>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 12 }}>
-              {Object.keys(availabilities).map(day => (
+              {(Object.keys(availabilities) as Array<keyof typeof availabilities>).map(day => (
                 <button
                   type="button"
                   key={day}
-                  onClick={() => setAvailabilities({ ...availabilities, [day]: !(availabilities as any)[day] })}
+                  onClick={() => setAvailabilities({ ...availabilities, [day]: !availabilities[day] })}
                   style={{
                     padding: "8px 16px",
                     borderRadius: 8,
-                    border: (availabilities as any)[day] ? "1px solid var(--accent)" : "1px solid var(--line)",
-                    background: (availabilities as any)[day] ? "var(--accent-light)" : "white",
-                    color: (availabilities as any)[day] ? "var(--accent-dark)" : "var(--slate)",
+                    border: availabilities[day] ? "1px solid var(--accent)" : "1px solid var(--line)",
+                    background: availabilities[day] ? "var(--accent-light)" : "white",
+                    color: availabilities[day] ? "var(--accent-dark)" : "var(--slate)",
                     fontSize: 13,
                     fontWeight: 500,
                     cursor: "pointer",

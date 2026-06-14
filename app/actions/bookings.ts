@@ -72,8 +72,8 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
     }
 
     return bookings.map((b: any) => {
-      // Parse session_topic to extract meeting URL
       const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
+      const topicStr = topic || "";
 
       const trainerName = b.trainers?.full_name || "Trainer";
       const initials = trainerName.split(" ").map((n: string) => n[0]).slice(0, 2).join("");
@@ -85,9 +85,9 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
         const d = new Date(b.session_date);
         dateLabel = d.toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" });
         timeLabel = d.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" });
-      } else if (topic.includes(" — ")) {
+      } else if (topicStr.includes(" — ")) {
         // Fallback from topic string: Topic — Date Time
-        const parts = topic.split(" — ")[1]?.split(" ");
+        const parts = topicStr.split(" — ")[1]?.split(" ");
         if (parts) {
           dateLabel = parts.slice(0, 3).join(" ");
           timeLabel = parts.slice(3).join(" ");
@@ -96,7 +96,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
 
       return {
         id: b.id,
-        topic: topic.split(" — ")[0] || "1-on-1 Consultation",
+        topic: topicStr.split(" — ")[0] || "1-on-1 Consultation",
         meetingUrl: meetingUrl || null,
         trainerName,
         trainerTitle: b.trainers?.tagline || "Consultant",
@@ -166,6 +166,7 @@ export async function getTrainerBookings(): Promise<TrainerBookingMapped[]> {
       }
 
       const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
+      const topicStr = topic || "";
 
       let dateLabel = "TBD";
       let timeLabel = "TBD";
@@ -173,8 +174,8 @@ export async function getTrainerBookings(): Promise<TrainerBookingMapped[]> {
         const d = new Date(b.session_date);
         dateLabel = d.toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" });
         timeLabel = d.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" });
-      } else if (topic.includes(" — ")) {
-        const parts = topic.split(" — ")[1]?.split(" ");
+      } else if (topicStr.includes(" — ")) {
+        const parts = topicStr.split(" — ")[1]?.split(" ");
         if (parts) {
           dateLabel = parts.slice(0, 3).join(" ");
           timeLabel = parts.slice(3).join(" ");
@@ -185,13 +186,13 @@ export async function getTrainerBookings(): Promise<TrainerBookingMapped[]> {
         id: b.id,
         learnerName,
         learnerEmail,
-        topic: topic.split(" — ")[0] || "Consultation Slot",
+        topic: topicStr.split(" — ")[0] || "Consultation Slot",
         date: dateLabel,
         time: timeLabel,
         duration: `${b.session_duration_hrs || 1} hr${b.session_duration_hrs !== 1 ? "s" : ""}`,
         status: b.status,
         payoutKsh: Math.round(Number(b.amount_ksh || 0) * 0.8),
-        meetingUrl
+        meetingUrl: meetingUrl || null
       });
     }
 

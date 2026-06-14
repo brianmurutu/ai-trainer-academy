@@ -1,4 +1,5 @@
 import { createAdminClient } from "./admin";
+import { parseTrainerBio, stringifyTrainerBio } from "@/lib/trainer-utils";
 
 /**
  * Copies a trainer's application data into the public `trainers` table
@@ -69,3 +70,43 @@ export async function activateTrainerProfile(applicationId: string): Promise<boo
     return false;
   }
 }
+
+/**
+ * Unlocks the video introduction feature for a trainer.
+ * Fetches their profile, parses their bio, sets videoUnlocked to true, and saves.
+ */
+export async function unlockVideoIntro(trainerId: string): Promise<boolean> {
+  const db = createAdminClient();
+  try {
+    const { data: trainer, error: fetchErr } = await db
+      .from("trainers")
+      .select("bio")
+      .eq("id", trainerId)
+      .single();
+
+    if (fetchErr || !trainer) {
+      console.error("[unlockVideoIntro] Trainer not found:", trainerId, fetchErr?.message);
+      return false;
+    }
+
+    const { bio: cleanBio, videoUrl } = parseTrainerBio(trainer.bio);
+    const newBio = stringifyTrainerBio(cleanBio, videoUrl, true);
+
+    const { error: updateErr } = await db
+      .from("trainers")
+      .update({ bio: newBio })
+      .eq("id", trainerId);
+
+    if (updateErr) {
+      console.error("[unlockVideoIntro] Failed to update bio:", updateErr.message);
+      return false;
+    }
+
+    console.log(`[unlockVideoIntro] Successfully unlocked video intro for trainer ${trainerId}`);
+    return true;
+  } catch (err) {
+    console.error("[unlockVideoIntro] Unexpected error:", err);
+    return false;
+  }
+}
+

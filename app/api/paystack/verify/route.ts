@@ -61,6 +61,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/trainer?activated=true", origin));
     }
 
+    if (metadata.payment_type === "video_intro_activation") {
+      const trainerId = metadata.trainer_id;
+      if (trainerId) {
+        const { unlockVideoIntro } = await import("@/lib/supabase/trainer-activation");
+        await unlockVideoIntro(trainerId);
+      }
+      return NextResponse.redirect(new URL("/trainer/settings?video_unlocked=true", origin));
+    }
+
     if (resolvedCourseId) {
       // Course purchase - create enrollment
       if (user) {

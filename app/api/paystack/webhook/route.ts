@@ -68,6 +68,15 @@ export async function POST(request: NextRequest) {
       return new NextResponse(null, { status: 200 });
     }
 
+    if (metadata.payment_type === "video_intro_activation") {
+      const trainerId = metadata.trainer_id as string;
+      if (trainerId) {
+        const { unlockVideoIntro } = await import("@/lib/supabase/trainer-activation");
+        await unlockVideoIntro(trainerId);
+      }
+      return new NextResponse(null, { status: 200 });
+    }
+
     const amount = typeof event.data?.amount === "number" ? event.data.amount : 0;
     const amountKsh = metadata.amount_ksh ? Math.round(parseFloat(metadata.amount_ksh as string)) : Math.round(amount / 100);
     const amountUsd = metadata.amount_usd ? parseFloat(metadata.amount_usd as string) : 0;

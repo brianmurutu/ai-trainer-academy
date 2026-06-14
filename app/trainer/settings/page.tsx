@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { User, DollarSign, Calendar, CreditCard, Save, Check, Globe } from "lucide-react";
+import { parseTrainerBio, stringifyTrainerBio } from "@/lib/trainer-utils";
 
 export default function TrainerSettingsPage() {
   const supabase = createClient();
@@ -39,6 +40,11 @@ export default function TrainerSettingsPage() {
   const [endTime, setEndTime] = useState("17:00");
 
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  
+  const [trainerId, setTrainerId] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoUnlocked, setVideoUnlocked] = useState(false);
+  const [payLoading, setPayLoading] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -47,27 +53,95 @@ export default function TrainerSettingsPage() {
         setUser(user);
         setFullName(user.user_metadata?.full_name || "");
         setEmail(user.email || "");
-        setBio(user.user_metadata?.bio || "");
-        setHourlyRateKsh(user.user_metadata?.hourly_rate_ksh || 3000);
-        setHourlyRateUsd(user.user_metadata?.hourly_rate_usd || 25);
-        setLinkedinUrl(user.user_metadata?.linkedin_url || "");
-        setGithubUrl(user.user_metadata?.github_url || "");
-        setMpesaNumber(user.user_metadata?.mpesa_number || "");
-        setBankName(user.user_metadata?.bank_name || "");
-        setBankAccountName(user.user_metadata?.bank_account_name || "");
-        setBankAccountNumber(user.user_metadata?.bank_account_number || "");
-        setCryptoAddress(user.user_metadata?.crypto_address || "");
+        
+        // Fetch bio and settings from the trainers table
+        const { data: trainer } = await supabase
+          .from("trainers")
+          .select("id, bio, hourly_rate_ksh, hourly_rate_usd, linkedin_url, github_url")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (trainer) {
+          setTrainerId(trainer.id);
+          const { bio: cleanBio, videoUrl: parsedVideoUrl, videoUnlocked: parsedVideoUnlocked } = parseTrainerBio(trainer.bio);
+          setBio(cleanBio);
+          setVideoUrl(parsedVideoUrl);
+          setVideoUnlocked(parsedVideoUnlocked);
+          
+          setHourlyRateKsh(Number(trainer.hourly_rate_ksh) || 3000);
+          setHourlyRateUsd(Number(trainer.hourly_rate_usd) || 25);
+          setLinkedinUrl(trainer.linkedin_url || "");
+          setGithubUrl(trainer.github_url || "");
+        } else {
+          setBio(user.user_metadata?.bio || "");
+          setHourlyRateKsh(user.user_metadata?.hourly_rate_ksh || 3000);
+          setHourlyRateUsd(user.user_metadata?.hourly_rate_usd || 25);
+          setLinkedinUrl(user.user_metadata?.linkedin_url || "");
+          setGithubUrl(user.user_metadata?.github_url || "");
+        }
       }
     }
     loadUser();
+
+    // Check query params for success message
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("video_unlocked") === "true") {
+      setMessage({ type: "success", text: "🎉 Success! Video Introduction feature unlocked successfully. You can now save your video URL!" });
+    }
   }, []);
+
+  const handleUnlockVideo = async () => {
+    if (!trainerId) {
+      setMessage({ type: "error", text: "Trainer profile not loaded yet." });
+      return;
+    }
+    setPayLoading(true);
+    setMessage(null);
+    try {
+      const reference = `vid-${trainerId}-${Date.now()}`;
+      const callbackUrl = `${window.location.origin}/api/paystack/verify?reference=${reference}`;
+
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          amountKsh: 1000,
+          amount: 1000,
+          currency: "KES",
+          reference,
+          sessionTopic: "Video Introduction Feature Upgrade",
+          callbackUrl,
+          metadata: {
+            payment_type: "video_intro_activation",
+            trainer_id: trainerId,
+            amount_ksh: "1000",
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setMessage({ type: "error", text: data.error || "Failed to initialize payment session." });
+        return;
+      }
+
+      window.location.href = data.authorizationUrl;
+    } catch (err) {
+      console.error("Payment initialization failed:", err);
+      setMessage({ type: "error", text: "A connection error occurred. Please try again." });
+    } finally {
+      setPayLoading(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
     try {
-      const { error } = await supabase.auth.updateUser({
+      // 1. Update Auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           full_name: fullName,
           bio,
@@ -77,13 +151,29 @@ export default function TrainerSettingsPage() {
           github_url: githubUrl,
         }
       });
-      if (error) {
-        setMessage({ type: "error", text: error.message });
-      } else {
-        setMessage({ type: "success", text: "Profile updated successfully!" });
-      }
-    } catch {
-      setMessage({ type: "error", text: "Failed to update profile settings." });
+      if (authError) throw authError;
+
+      // 2. Compile bio with video tags
+      const updatedBio = stringifyTrainerBio(bio, videoUrl, videoUnlocked);
+
+      // 3. Update public trainers table row
+      const { error: dbError } = await supabase
+        .from("trainers")
+        .update({
+          full_name: fullName,
+          bio: updatedBio,
+          hourly_rate_ksh: Number(hourlyRateKsh),
+          hourly_rate_usd: Number(hourlyRateUsd),
+          linkedin_url: linkedinUrl,
+          github_url: githubUrl,
+        })
+        .eq("user_id", user.id);
+
+      if (dbError) throw dbError;
+
+      setMessage({ type: "success", text: "Profile updated successfully!" });
+    } catch (error: any) {
+      setMessage({ type: "error", text: error.message || "Failed to update profile settings." });
     } finally {
       setLoading(false);
     }
@@ -253,6 +343,78 @@ export default function TrainerSettingsPage() {
                   fontSize: 14, outline: "none", resize: "vertical"
                 }}
               />
+            </div>
+
+            {/* Video Introduction paid feature wrapper */}
+            <div style={{
+              borderTop: "1px solid var(--line)",
+              paddingTop: 20,
+              marginTop: 10,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy)" }}>Video Introduction</span>
+              
+              {videoUnlocked ? (
+                <div>
+                  <label style={{ display: "block", fontSize: 12, color: "var(--slate)", marginBottom: 6 }}>
+                    Video URL (YouTube, Vimeo, or Loom share link)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={videoUrl}
+                    onChange={e => setVideoUrl(e.target.value)}
+                    style={{
+                      width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--line)",
+                      fontSize: 14, outline: "none"
+                    }}
+                  />
+                  <span style={{ fontSize: 11.5, color: "var(--green)", marginTop: 6, display: "block" }}>
+                    ✓ Feature unlocked! Your introduction video will be embedded on your public profile.
+                  </span>
+                </div>
+              ) : (
+                <div style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: 18,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                }}>
+                  <div style={{ fontSize: 13, color: "var(--navy)", fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Globe size={15} color="var(--accent)" />
+                    Unlock Profile Introduction Video
+                  </div>
+                  <p style={{ fontSize: 12.5, color: "var(--slate)", lineHeight: 1.5 }}>
+                    Trainers with a video introduction get <strong>3× more bookings</strong> on average. Highlight your expertise and engage learners by uploading a Loom, YouTube, or Vimeo intro. Unlock this premium add-on for a one-time fee of <strong>KES 1,000</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={payLoading}
+                    onClick={handleUnlockVideo}
+                    style={{
+                      alignSelf: "flex-start",
+                      background: "var(--accent)",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: 8,
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      cursor: payLoading ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {payLoading ? "Initializing..." : "Unlock for KES 1,000"}
+                  </button>
+                </div>
+              )}
             </div>
 
             <button

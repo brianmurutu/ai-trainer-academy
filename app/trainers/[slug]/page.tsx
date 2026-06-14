@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getTrainerBySlug } from "@/lib/supabase/queries";
 import BookingWidget from "@/components/trainers/BookingWidget";
 import TrainerRateDisplay from "@/components/trainers/TrainerRateDisplay";
+import { parseTrainerBio, getEmbedUrl } from "@/lib/trainer-utils";
 import {
   Star,
   MapPin,
@@ -39,6 +40,8 @@ const TRAINERS: Record<string, {
   linkedinUrl: string;
   githubUrl?: string;
   sampleWorkUrl?: string;
+  videoUrl?: string;
+  videoUnlocked?: boolean;
   courses: { title: string; enrolled: number; rating: number }[];
   reviews: { name: string; initials: string; rating: number; date: string; text: string }[];
   availableSlots: { id: string; date: string; dayLabel: string; time: string; duration: string; durationHrs: number }[];
@@ -228,11 +231,13 @@ export default async function TrainerProfilePage({
       }
     }
 
+    const { bio: cleanBio, videoUrl, videoUnlocked } = parseTrainerBio(dbTrainer.bio);
+
     trainer = {
       slug: dbTrainer.slug,
       name: dbTrainer.full_name,
       tagline: dbTrainer.tagline || "AI Model Trainer & Specialist",
-      bio: dbTrainer.bio || "No bio provided yet.",
+      bio: cleanBio || "No bio provided yet.",
       country: dbTrainer.country || "Kenya",
       specialities: dbTrainer.specialities || [],
       experience: "Verified Trainer",
@@ -245,6 +250,8 @@ export default async function TrainerProfilePage({
       linkedinUrl: dbTrainer.linkedin_url || "",
       githubUrl: dbTrainer.github_url || "",
       sampleWorkUrl: dbTrainer.sample_work_url || "",
+      videoUrl: videoUrl,
+      videoUnlocked: videoUnlocked,
       courses: (dbCourses || []).map(c => ({
         title: c.title,
         enrolled: c.enrolled_count || 0,
@@ -256,7 +263,14 @@ export default async function TrainerProfilePage({
       availableSlots,
     };
   } else {
-    trainer = TRAINERS[slug];
+    const rawTrainer = TRAINERS[slug];
+    if (rawTrainer) {
+      trainer = {
+        ...rawTrainer,
+        videoUrl: "",
+        videoUnlocked: false,
+      };
+    }
   }
 
   if (!trainer) notFound();
@@ -465,6 +479,24 @@ export default async function TrainerProfilePage({
                 </a>
               )}
             </div>
+
+            {/* Video Introduction */}
+            {trainer.videoUnlocked && trainer.videoUrl && (
+              <div style={{
+                background: "white", borderRadius: 14, padding: "22px 24px",
+                border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+              }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--navy)", marginBottom: 14 }}>Video Introduction</h2>
+                <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: 12, border: "1px solid var(--line)", background: "#000" }}>
+                  <iframe
+                    src={getEmbedUrl(trainer.videoUrl)}
+                    title={`${trainer.name} Introduction Video`}
+                    allowFullScreen
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Courses */}
             {trainer.courses.length > 0 && (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Star, MapPin, UserCheck, Edit3 } from "lucide-react";
 import TrainerRateDisplay from "@/components/trainers/TrainerRateDisplay";
+import { getEmbedUrl } from "@/lib/trainer-utils";
 
 type TrainerProfile = {
   name: string;
@@ -14,6 +15,8 @@ type TrainerProfile = {
   hourlyRateUsd: number;
   sessionsCompleted: number;
   rating: number;
+  videoUrl?: string;
+  videoUnlocked?: boolean;
 };
 
 export default function TrainerProfileClient({ initialProfile }: { initialProfile: TrainerProfile }) {
@@ -109,6 +112,21 @@ export default function TrainerProfileClient({ initialProfile }: { initialProfil
               ))}
             </div>
           </div>
+
+          {/* Video Introduction preview */}
+          {profile.videoUnlocked && profile.videoUrl && (
+            <div style={{ marginTop: 24, borderTop: "1px solid var(--line)", paddingTop: 24 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)", marginBottom: 14 }}>Video Introduction</h3>
+              <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: 12, border: "1px solid var(--line)", background: "#000" }}>
+                <iframe
+                  src={getEmbedUrl(profile.videoUrl)}
+                  title="Trainer Video Introduction"
+                  allowFullScreen
+                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Directory Card Preview */}

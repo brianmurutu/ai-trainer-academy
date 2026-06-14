@@ -1,8 +1,8 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
-import { Brain, LayoutList, Users, Settings, BookOpen, ChevronRight } from "lucide-react";
+import { Brain, LayoutList, Users, Settings, BookOpen, ChevronRight, GraduationCap } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -47,6 +47,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     },
     { href: "/admin/courses", label: "Courses", Icon: BookOpen, badge: null },
     { href: "/admin/trainers", label: "Trainers", Icon: Users, badge: null },
+    { href: "/admin/learners", label: "Learners", Icon: GraduationCap, badge: null },
     { href: "/admin/settings", label: "Settings", Icon: Settings, badge: null },
   ];
 

@@ -448,3 +448,84 @@ export async function sendAdminMessage(
 
   return { success: true, message: `Message sent to ${app.full_name} (${app.email}).` };
 }
+
+// ---------------------------------------------------------------------------
+// Learner Account Management
+// ---------------------------------------------------------------------------
+export type LearnerAccount = {
+  id: string;
+  email: string;
+  fullName: string;
+  createdAt: string;
+  lastSignIn: string | null;
+  isBanned: boolean;
+};
+
+export async function getLearners(): Promise<LearnerAccount[]> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    // 1. Fetch all users from Auth
+    const { data: { users }, error: authErr } = await db.auth.admin.listUsers();
+    if (authErr) throw authErr;
+
+    // 2. Fetch all trainers to exclude their user IDs
+    const { data: trainersList, error: trainerErr } = await db
+      .from("trainers")
+      .select("user_id");
+    
+    const trainerUserIds = new Set(
+      trainersList?.map(t => t.user_id).filter(Boolean) || []
+    );
+
+    // 3. Filter out trainers and admins
+    const learners = users
+      .filter(u => {
+        const isTrainer = u.user_metadata?.role === "trainer" || trainerUserIds.has(u.id);
+        const isAdmin = u.user_metadata?.role === "admin" || u.email === "murutubrian@gmail.com";
+        return !isTrainer && !isAdmin;
+      })
+      .map(u => {
+        const isBanned = !!u.user_metadata?.is_banned || (!!u.banned_until && new Date(u.banned_until) > new Date());
+        return {
+          id: u.id,
+          email: u.email || "",
+          fullName: (u.user_metadata?.full_name as string) || u.email?.split("@")[0] || "Learner",
+          createdAt: u.created_at,
+          lastSignIn: u.last_sign_in_at || null,
+          isBanned,
+        };
+      });
+
+    return learners;
+  } catch (err) {
+    console.error("[getLearners] Error:", err);
+    return [];
+  }
+}
+
+export async function toggleBanLearner(learnerId: string, ban: boolean): Promise<AdminActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    // Ban for 10 years (87600 hours) or lift ban ("none")
+    const { error } = await db.auth.admin.updateUserById(learnerId, {
+      ban_duration: ban ? "87600h" : "none",
+      user_metadata: { is_banned: ban },
+    });
+
+    if (error) throw error;
+
+    revalidatePath("/admin/learners");
+    return {
+      success: true,
+      message: ban ? "Learner account suspended successfully." : "Learner account unsuspended successfully.",
+    };
+  } catch (err: any) {
+    console.error("[toggleBanLearner] Error:", err);
+    return { error: err.message || "Failed to update learner account status." };
+  }
+}
+

@@ -14,7 +14,8 @@ async function requireAdmin() {
 
 export default async function AdminSettingsPage() {
   const user = await requireAdmin();
-  const emailSender = process.env.EMAIL_FROM ?? "AI Trainer Academy <noreply@ai-trainer-academy.top>";
+  const rawSender = process.env.EMAIL_FROM ?? "AI Trainer Academy <noreply@ai-trainer-academy.top>";
+  const emailSender = rawSender.replace("ai-trainer-acedmy.co.ke", "ai-trainer-academy.top");
 
   const cardStyle: React.CSSProperties = {
     background: "white",

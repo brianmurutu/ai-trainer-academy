@@ -6,9 +6,10 @@
  */
 import { Resend } from "resend";
 
-const FROM =
+const rawFrom =
   process.env.EMAIL_FROM ??
   "AI Trainer Academy <noreply@ai-trainer-academy.top>";
+const FROM = rawFrom.replace("ai-trainer-acedmy.co.ke", "ai-trainer-academy.top");
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);

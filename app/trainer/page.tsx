@@ -112,7 +112,7 @@ export default async function TrainerPage() {
   }
 
   // BYPASS logic
-  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com";
+  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com" || user.user_metadata?.role === "admin";
 
   if (!isActivated) {
     if (applicationStatus === "approved" && application) {

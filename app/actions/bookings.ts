@@ -511,3 +511,86 @@ export async function generateMeetingLinkAndNotify(bookingId: string): Promise<{
     return { success: false, error: err.message || "Failed to generate meeting link and notify" };
   }
 }
+
+/**
+ * Send a direct message to a trainer for a given booking.
+ */
+export async function messageTrainerAction({
+  bookingId,
+  message,
+}: {
+  bookingId: string;
+  message: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const adminDb = createAdminClient();
+
+    // 1. Fetch booking and verify user is the learner
+    const { data: booking, error: bookingErr } = await adminDb
+      .from("bookings")
+      .select("id, trainer_id, learner_id, session_topic")
+      .eq("id", bookingId)
+      .single();
+
+    if (bookingErr || !booking) {
+      return { success: false, error: "Booking not found" };
+    }
+
+    if (booking.learner_id !== user.id) {
+      return { success: false, error: "You are not authorized to message this trainer." };
+    }
+
+    if (!booking.trainer_id) {
+      return { success: false, error: "No trainer assigned to this booking." };
+    }
+
+    // 2. Fetch trainer details
+    const { data: trainer, error: trainerErr } = await adminDb
+      .from("trainers")
+      .select("id, user_id, full_name")
+      .eq("id", booking.trainer_id)
+      .single();
+
+    if (trainerErr || !trainer) {
+      return { success: false, error: "Trainer not found" };
+    }
+
+    // 3. Fetch trainer's user email
+    let trainerEmail = "";
+    if (trainer.user_id) {
+      const { data: trainerUserData } = await adminDb.auth.admin.getUserById(trainer.user_id);
+      if (trainerUserData?.user) {
+        trainerEmail = trainerUserData.user.email || "";
+      }
+    }
+
+    if (!trainerEmail) {
+      return { success: false, error: "Trainer email not found." };
+    }
+
+    // 4. Send email
+    const learnerName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Learner";
+    const learnerEmail = user.email || "";
+    const sessionTopic = booking.session_topic?.split(" || ")[0] || "1-on-1 Consultation";
+
+    const { sendDirectMessageToTrainer } = await import("@/lib/email");
+
+    await sendDirectMessageToTrainer({
+      trainerName: trainer.full_name,
+      trainerEmail,
+      learnerName,
+      learnerEmail,
+      subject: `Regarding session: ${sessionTopic}`,
+      message,
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("[messageTrainerAction] Error:", err);
+    return { success: false, error: err.message || "Failed to send message." };
+  }
+}

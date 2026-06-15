@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarDays, Clock, Video, User, MessageCircle, ArrowRight, VideoOff, AlertCircle } from "lucide-react";
-import { SessionWithTrainer } from "@/app/actions/bookings";
+import { CalendarDays, Clock, Video, User, MessageCircle, ArrowRight, VideoOff, AlertCircle, Loader2, X, Send, CheckCircle2 } from "lucide-react";
+import { SessionWithTrainer, messageTrainerAction } from "@/app/actions/bookings";
 
 type LearnerSessionsClientProps = {
   initialSessions: SessionWithTrainer[];
@@ -11,6 +11,44 @@ type LearnerSessionsClientProps = {
 
 export default function LearnerSessionsClient({ initialSessions }: LearnerSessionsClientProps) {
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
+
+  // Message states
+  const [messagingBooking, setMessagingBooking] = useState<SessionWithTrainer | null>(null);
+  const [messageText, setMessageText] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [messageSuccess, setMessageSuccess] = useState<string | null>(null);
+  const [messageError, setMessageError] = useState<string | null>(null);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messagingBooking || !messageText.trim()) return;
+
+    setSendingMessage(true);
+    setMessageSuccess(null);
+    setMessageError(null);
+
+    try {
+      const res = await messageTrainerAction({
+        bookingId: messagingBooking.id,
+        message: messageText.trim(),
+      });
+
+      if (res.success) {
+        setMessageSuccess("Message sent to trainer successfully!");
+        setMessageText("");
+        setTimeout(() => {
+          setMessagingBooking(null);
+          setMessageSuccess(null);
+        }, 2200);
+      } else {
+        setMessageError(res.error || "Failed to send message.");
+      }
+    } catch (err: any) {
+      setMessageError(err.message || "Failed to send message.");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   const filtered = initialSessions.filter(s => {
     if (tab === "upcoming") {
@@ -117,6 +155,22 @@ export default function LearnerSessionsClient({ initialSessions }: LearnerSessio
                     </div>
                   ) : tab === "upcoming" ? (
                     <>
+                      <button
+                        onClick={() => {
+                          setMessagingBooking(s);
+                          setMessageText("");
+                          setMessageSuccess(null);
+                          setMessageError(null);
+                        }}
+                        style={{
+                          padding: "8px 14px", border: "1px solid var(--line)", background: "white",
+                          borderRadius: 8, fontSize: 12.5, fontWeight: 500, color: "var(--slate)", cursor: "pointer",
+                          display: "flex", alignItems: "center", gap: 6
+                        }}
+                      >
+                        <MessageCircle size={14} /> Message
+                      </button>
+
                       {isPending ? (
                         <div style={{
                           padding: "8px 14px", background: "#FEF3C7", border: "1px solid #FCD34D",
@@ -126,23 +180,14 @@ export default function LearnerSessionsClient({ initialSessions }: LearnerSessio
                           <Clock size={14} /> Pending Confirmation
                         </div>
                       ) : hasMeetingLink ? (
-                        <>
-                          <button style={{
-                            padding: "8px 14px", border: "1px solid var(--line)", background: "white",
-                            borderRadius: 8, fontSize: 12.5, fontWeight: 500, color: "var(--slate)", cursor: "pointer",
-                            display: "flex", alignItems: "center", gap: 6
-                          }}>
-                            <MessageCircle size={14} /> Message
-                          </button>
-                          <a href={s.meetingUrl!} target="_blank" rel="noopener noreferrer" style={{
-                            padding: "8px 16px", background: "var(--accent)",
-                            color: "white", borderRadius: 8, fontSize: 12.5, fontWeight: 600, textDecoration: "none",
-                            display: "inline-flex", alignItems: "center", gap: 6,
-                            animation: "pulse-accent 2s infinite"
-                          }}>
-                            <Video size={14} /> Join Call
-                          </a>
-                        </>
+                        <a href={s.meetingUrl!} target="_blank" rel="noopener noreferrer" style={{
+                          padding: "8px 16px", background: "var(--accent)",
+                          color: "white", borderRadius: 8, fontSize: 12.5, fontWeight: 600, textDecoration: "none",
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          animation: "pulse-accent 2s infinite"
+                        }}>
+                          <Video size={14} /> Join Call
+                        </a>
                       ) : (
                         <div style={{
                           padding: "8px 14px", background: "#F3F4F6", border: "1px solid #E5E7EB",
@@ -174,6 +219,125 @@ export default function LearnerSessionsClient({ initialSessions }: LearnerSessio
           })}
         </div>
       )}
+      {/* Messaging Modal */}
+      {messagingBooking && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 100,
+          background: "rgba(10,15,30,0.5)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 16
+        }}>
+          <div style={{
+            background: "white", borderRadius: 16, width: "100%", maxWidth: 480,
+            border: "1px solid var(--line)", overflow: "hidden",
+            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)"
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: "16px 20px", borderBottom: "1px solid var(--line)",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              background: "var(--surface)"
+            }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--navy)", margin: 0 }}>
+                  Message {messagingBooking.trainerName}
+                </h3>
+                <span style={{ fontSize: 11, color: "var(--slate)" }}>
+                  Re: {messagingBooking.topic}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMessagingBooking(null)}
+                style={{
+                  background: "none", border: "none", color: "var(--muted)",
+                  cursor: "pointer", padding: 4, display: "flex", alignItems: "center"
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body / Form */}
+            <form onSubmit={handleSendMessage} style={{ padding: 20 }}>
+              {messageError && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
+                  background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8,
+                  fontSize: 12.5, color: "#DC2626", marginBottom: 14
+                }}>
+                  <AlertCircle size={15} />
+                  <span>{messageError}</span>
+                </div>
+              )}
+
+              {messageSuccess && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
+                  background: "#D1FAE5", border: "1px solid #A7F3D0", borderRadius: 8,
+                  fontSize: 12.5, color: "#065F46", marginBottom: 14
+                }}>
+                  <CheckCircle2 size={15} />
+                  <span>{messageSuccess}</span>
+                </div>
+              )}
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--slate)", marginBottom: 6 }}>
+                  Your Message
+                </label>
+                <textarea
+                  required
+                  rows={5}
+                  value={messageText}
+                  onChange={e => setMessageText(e.target.value)}
+                  placeholder={`Write your message to ${messagingBooking.trainerName}...`}
+                  style={{
+                    width: "100%", padding: "10px 12px", borderRadius: 8,
+                    border: "1px solid var(--line)", fontSize: 13.5, outline: "none",
+                    resize: "none", fontFamily: "inherit", lineHeight: 1.5
+                  }}
+                />
+                <span style={{ fontSize: 11, color: "var(--muted)", marginTop: 4, display: "block" }}>
+                  This message will be delivered to the trainer's email. They can reply directly to you.
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setMessagingBooking(null)}
+                  style={{
+                    padding: "8px 16px", borderRadius: 8, border: "1px solid var(--line)",
+                    background: "white", color: "var(--slate)", fontSize: 13, fontWeight: 500,
+                    cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={sendingMessage || !messageText.trim()}
+                  style={{
+                    padding: "8px 18px", borderRadius: 8, border: "none",
+                    background: "var(--accent)", color: "white", fontSize: 13, fontWeight: 600,
+                    cursor: (sendingMessage || !messageText.trim()) ? "not-allowed" : "pointer",
+                    display: "flex", alignItems: "center", gap: 6
+                  }}
+                >
+                  {sendingMessage ? (
+                    <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                  ) : (
+                    <Send size={13} />
+                  )}
+                  Send Message
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Media query styling */}
       <style>{`
@@ -184,6 +348,7 @@ export default function LearnerSessionsClient({ initialSessions }: LearnerSessio
           0%, 100% { box-shadow: 0 0 0 0 rgba(26,111,191,0.4); }
           50% { box-shadow: 0 0 0 6px rgba(26,111,191,0); }
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );

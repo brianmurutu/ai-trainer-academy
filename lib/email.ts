@@ -683,5 +683,49 @@ export async function sendTrainerBookingNotificationEmail({
   });
 }
 
+// ---------------------------------------------------------------------------
+// Learner → Trainer direct message email
+// ---------------------------------------------------------------------------
+export async function sendDirectMessageToTrainer({
+  trainerName,
+  trainerEmail,
+  learnerName,
+  learnerEmail,
+  subject,
+  message,
+}: {
+  trainerName: string;
+  trainerEmail: string;
+  learnerName: string;
+  learnerEmail: string;
+  subject: string;
+  message: string;
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: trainerEmail,
+    replyTo: learnerEmail,
+    subject: `✉️ Message from Learner ${learnerName}: ${subject}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #E2EAF0">
+          <div style="width:36px;height:36px;background:#0D1B2A;border-radius:9px;display:flex;align-items:center;justify-content:center">
+            <span style="color:white;font-size:14px;font-weight:700">AT</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:#0D1B2A">AI Trainer Academy Messaging</span>
+        </div>
+        <h2 style="color:#0D1B2A;font-size:18px;margin-bottom:6px">Hi ${trainerName},</h2>
+        <p style="color:#4A6174;font-size:13.5px;line-height:1.5;margin-bottom:20px">You have received a message from student <strong>${learnerName}</strong> (${learnerEmail}) regarding your session.</p>
+        <div style="background:#F5F8FB;border-left:4px solid #1A6FBF;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px">
+          <p style="color:#1C2B3A;font-size:14px;line-height:1.75;white-space:pre-wrap;margin:0">${message}</p>
+        </div>
+        <p style="color:#7A93A8;font-size:12px">
+          You can reply directly to this email to reply to ${learnerName}.
+        </p>
+      </div>
+    `,
+  });
+}
+
 
 

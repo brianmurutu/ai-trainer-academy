@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
-import { Brain, LayoutList, Users, Settings, BookOpen, ChevronRight, GraduationCap, LifeBuoy } from "lucide-react";
+import { Brain, LayoutList, Users, Settings, BookOpen, ChevronRight, GraduationCap, LifeBuoy, LogOut } from "lucide-react";
 import type { Metadata } from "next";
+import { logoutAction } from "@/app/actions/auth";
 
 export const metadata: Metadata = {
   title: "Admin | AI Trainer Academy",
@@ -154,6 +155,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link
               key={href}
               href={href}
+              className="admin-nav-link"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -214,6 +216,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               padding: "8px 10px",
               background: "rgba(255,255,255,0.04)",
               borderRadius: 7,
+              marginBottom: 6,
             }}
           >
             <div
@@ -258,7 +261,41 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </div>
             </div>
           </div>
+
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="admin-logout-btn"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 9,
+                padding: "8px 10px",
+                borderRadius: 7,
+                border: "none",
+                background: "transparent",
+                color: "rgba(255,255,255,0.35)",
+                cursor: "pointer",
+                transition: "all 0.12s",
+              }}
+            >
+              <LogOut size={14} />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>Log out</span>
+            </button>
+          </form>
         </div>
+
+        <style>{`
+          .admin-nav-link:hover {
+            background: rgba(255,255,255,0.04) !important;
+            color: rgba(255,255,255,0.85) !important;
+          }
+          .admin-logout-btn:hover {
+            background: rgba(255,255,255,0.05) !important;
+            color: rgba(255,255,255,0.85) !important;
+          }
+        `}</style>
       </aside>
 
       {/* Main content */}

@@ -4,18 +4,28 @@ import { useState } from "react";
 import Link from "next/link";
 import { type Course, type Lesson } from "@/lib/courses-data";
 import { ChevronLeft, Play, FileText, CheckCircle2, Circle } from "lucide-react";
+import { updateEnrollmentProgress } from "@/app/actions/courses";
 
 type CoursePlayerClientProps = {
   course: Course;
   userEmail: string;
+  initialCompletedLessons: string[];
 };
 
-export default function CoursePlayerClient({ course, userEmail }: CoursePlayerClientProps) {
+export default function CoursePlayerClient({ course, userEmail, initialCompletedLessons }: CoursePlayerClientProps) {
   // Initialize with the first lesson of the first section
   const firstLesson = course.curriculum[0]?.lessons[0];
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(firstLesson || null);
-  const [completedLessons, setCompletedLessons] = useState<Record<string, boolean>>({
-    [firstLesson?.id || ""]: true, // pre-complete the first lesson
+  const [completedLessons, setCompletedLessons] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    if (initialCompletedLessons && initialCompletedLessons.length > 0) {
+      initialCompletedLessons.forEach((id) => {
+        initial[id] = true;
+      });
+    } else if (firstLesson) {
+      initial[firstLesson.id] = true;
+    }
+    return initial;
   });
   const [activeTab, setActiveTab] = useState<"overview" | "notes" | "ask">("overview");
   const [notes, setNotes] = useState<string>("");
@@ -23,12 +33,18 @@ export default function CoursePlayerClient({ course, userEmail }: CoursePlayerCl
   const [question, setQuestion] = useState<string>("");
   const [askedQuestions, setAskedQuestions] = useState<string[]>([]);
 
-  const toggleLessonCompletion = (lessonId: string, e: React.MouseEvent) => {
+  const toggleLessonCompletion = async (lessonId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // prevent setting active lesson
-    setCompletedLessons(prev => ({
-      ...prev,
-      [lessonId]: !prev[lessonId],
-    }));
+    const updated = {
+      ...completedLessons,
+      [lessonId]: !completedLessons[lessonId],
+    };
+    setCompletedLessons(updated);
+
+    // Call server action to update progress
+    const list = Object.keys(updated).filter(id => updated[id]);
+    const progressPercent = Math.round((list.length / totalLessons) * 100);
+    await updateEnrollmentProgress(course.id, list, progressPercent);
   };
 
   const handleSaveNote = () => {

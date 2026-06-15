@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, randomBytes } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { generateMeetingLinkAndNotify } from "@/app/actions/bookings";
 
 /**
  * GET /api/binance/query-order?merchantTradeNo=xxx
@@ -84,11 +85,17 @@ export async function GET(request: NextRequest) {
     if (resolvedStatus === "PAID") {
       try {
         const db = createAdminClient();
-        await db
+        const { data: bookingData } = await db
           .from("bookings")
           .update({ status: "confirmed" })
           .eq("binance_trade_no", merchantTradeNo)
-          .eq("status", "pending");
+          .eq("status", "pending")
+          .select("id")
+          .maybeSingle();
+
+        if (bookingData?.id) {
+          await generateMeetingLinkAndNotify(bookingData.id);
+        }
       } catch (dbErr) {
         console.error("[Binance query-order] Database update error:", dbErr);
       }

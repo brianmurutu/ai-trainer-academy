@@ -25,114 +25,29 @@ export const metadata: Metadata = {
 };
 
 // ---------------------------------------------------------------------------
-// Mock data — only used as a fallback when Supabase returns empty results
-// so the dashboard always looks populated during development.
+// Helpers
 // ---------------------------------------------------------------------------
-const MOCK_COURSES: CourseCardData[] = [
-  {
-    id: "1",
-    title: "Fine-tuning LLaMA 3 with LoRA",
-    trainer: "Dr. Amara Osei",
-    trainerInitials: "AO",
-    progress: 68,
-    totalLessons: 24,
-    completedLessons: 16,
-    tag: "Fine-tuning",
-    tagColor: "#6366F1",
-    tagBg: "#EEF2FF",
-    lastAccessed: "2 hours ago",
-  },
-  {
-    id: "2",
-    title: "Prompt Engineering Mastery",
-    trainer: "Sana Malik",
-    trainerInitials: "SM",
-    progress: 100,
-    totalLessons: 18,
-    completedLessons: 18,
-    tag: "Prompting",
-    tagColor: "#059669",
-    tagBg: "#D1FAE5",
-    lastAccessed: "Yesterday",
-  },
-  {
-    id: "3",
-    title: "RAG Systems & Vector Databases",
-    trainer: "James Kariuki",
-    trainerInitials: "JK",
-    progress: 21,
-    totalLessons: 30,
-    completedLessons: 6,
-    tag: "RAG",
-    tagColor: "#D97706",
-    tagBg: "#FEF3C7",
-    lastAccessed: "3 days ago",
-  },
-];
+const COLORS = ["#6366F1", "#EC4899", "#0EA5E9", "#10B981", "#F59E0B", "#8B5CF6"];
+function getTrainerColor(name: string): string {
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+  return COLORS[sum % COLORS.length];
+}
 
-const MOCK_SESSIONS = [
-  {
-    id: "1",
-    title: "QLoRA Deep Dive - Part 2",
-    trainer: "Dr. Amara Osei",
-    trainerInitials: "AO",
-    trainerColor: "#6366F1",
-    date: "Today",
-    time: "4:00 PM to 5:30 PM EAT",
-    status: "starting_soon",
-    joinable: true,
-  },
-  {
-    id: "2",
-    title: "Evaluation Metrics for LLMs",
-    trainer: "Naledi Dlamini",
-    trainerInitials: "ND",
-    trainerColor: "#EC4899",
-    date: "Tomorrow",
-    time: "10:00 AM to 11:00 AM EAT",
-    status: "confirmed",
-    joinable: false,
-  },
-  {
-    id: "3",
-    title: "Building a RAG Pipeline from Scratch",
-    trainer: "James Kariuki",
-    trainerInitials: "JK",
-    trainerColor: "#0EA5E9",
-    date: "Fri, Jun 7",
-    time: "2:00 PM to 3:30 PM EAT",
-    status: "confirmed",
-    joinable: false,
-  },
-];
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-const MOCK_CERTIFICATES = [
-  {
-    id: "1",
-    title: "Prompt Engineering Mastery",
-    issuedDate: "May 28, 2025",
-    credentialId: "ATA-PM-28524",
-    color: "#059669",
-    bg: "#D1FAE5",
-  },
-  {
-    id: "2",
-    title: "Introduction to AI Model Training",
-    issuedDate: "Apr 10, 2025",
-    credentialId: "ATA-IM-41025",
-    color: "#6366F1",
-    bg: "#EEF2FF",
-  },
-];
-
-const MOCK_ACTIVITY = [
-  { id: "1", type: "lesson", text: "Completed: LoRA Configuration Explained", time: "2h ago", Icon: CheckCircle2, color: "#059669" },
-  { id: "2", type: "session", text: "Attended: Prompt Chaining Techniques with Sana Malik", time: "Yesterday", Icon: Video, color: "#6366F1" },
-  { id: "3", type: "lesson", text: "Started: QLoRA vs LoRA - Key Differences", time: "2d ago", Icon: Play, color: "#0EA5E9" },
-  { id: "4", type: "cert", text: "Earned certificate: Prompt Engineering Mastery", time: "May 28", Icon: Award, color: "#D97706" },
-  { id: "5", type: "lesson", text: "Completed: Setting Up Your Training Environment", time: "May 25", Icon: CheckCircle2, color: "#059669" },
-  { id: "6", type: "resource", text: "Downloaded: LoRA Paper Summary (PDF)", time: "May 24", Icon: FileText, color: "#8B5CF6" },
-];
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString("en-KE", { month: "short", day: "numeric" });
+}
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -169,10 +84,7 @@ function StatCard({
   );
 }
 
-type SessionItem = typeof MOCK_SESSIONS[0];
-
-function SessionRow({ session }: { session: SessionItem }) {
-  const isSoon = session.status === "starting_soon";
+function SessionRow({ session }: { session: any }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 14,
@@ -191,16 +103,16 @@ function SessionRow({ session }: { session: SessionItem }) {
           {session.trainer} · {session.date} · {session.time}
         </div>
       </div>
-      {isSoon ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", animation: "pulse 2s infinite" }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#22C55E", whiteSpace: "nowrap" }}>Starting soon</span>
-          <Link href={`/sessions/${session.id}/join`} style={{
-            marginLeft: 6, padding: "5px 12px",
-            background: "var(--navy)", color: "white",
-            borderRadius: 7, fontSize: 12, fontWeight: 500,
-            textDecoration: "none", whiteSpace: "nowrap",
-          }}>Join now</Link>
+      {session.meetingUrl ? (
+        <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer" style={{
+          padding: "5px 12px",
+          background: "var(--green)", color: "white",
+          borderRadius: 7, fontSize: 12, fontWeight: 600,
+          textDecoration: "none", whiteSpace: "nowrap",
+        }}>Join Call</a>
+      ) : session.status === "pending" ? (
+        <div style={{ fontSize: 11, color: "#D97706", whiteSpace: "nowrap", padding: "4px 10px", background: "#FEF3C7", borderRadius: 6, fontWeight: 500 }}>
+          Pending
         </div>
       ) : (
         <div style={{ fontSize: 11, color: "var(--muted)", whiteSpace: "nowrap", padding: "4px 10px", background: "#F5F7FA", borderRadius: 6 }}>
@@ -273,64 +185,174 @@ export default async function DashboardPage() {
   // Fetch real data from Supabase
   const { enrollments, bookings, certificates } = await getDashboardData(user.id);
 
-  // Determine whether we have real data or should use mocks
   const hasRealEnrollments = enrollments.length > 0;
   const hasRealBookings = bookings.length > 0;
   const hasRealCertificates = certificates.length > 0;
   const hasAnyRealData = hasRealEnrollments || hasRealBookings || hasRealCertificates;
 
-  // Build CourseCardData from real enrollments (or fall back to mocks)
-  const displayCourses: CourseCardData[] = hasRealEnrollments
-    ? enrollments.map((e) => ({
+  // Build CourseCardData from real enrollments
+  const displayCourses: CourseCardData[] = enrollments
+    .map((e) => {
+      if (!e.course) return null;
+      return {
         id: e.course_id,
-        title: e.course?.title ?? "Untitled Course",
-        trainer: e.course?.trainer_name ?? "",
-        trainerInitials: e.course?.trainer_initials ?? "??",
+        title: e.course.title ?? "Untitled Course",
+        trainer: e.course.trainer_name ?? "",
+        trainerInitials: e.course.trainer_initials ?? "??",
         progress: e.progress_pct,
-        totalLessons: Array.isArray(e.course?.curriculum) ? (e.course.curriculum as unknown[]).length : 0,
+        totalLessons: Array.isArray(e.course.curriculum) ? (e.course.curriculum as unknown[]).length : 0,
         completedLessons: e.completed_lessons.length,
-        tag: e.course?.tag ?? "",
-        tagColor: e.course?.tag_color ?? "#6366F1",
-        tagBg: e.course?.tag_bg ?? "#EEF2FF",
+        tag: e.course.tag ?? "",
+        tagColor: e.course.tag_color ?? "#6366F1",
+        tagBg: e.course.tag_bg ?? "#EEF2FF",
         lastAccessed: new Date(e.created_at).toLocaleDateString("en-KE", { month: "short", day: "numeric" }),
-      }))
-    : MOCK_COURSES;
+      };
+    })
+    .filter((c): c is CourseCardData => c !== null);
 
-  // Build sessions from real bookings or fall back to mocks
-  const displaySessions: SessionItem[] = hasRealBookings
-    ? bookings.map((b) => ({
-        id: b.id,
-        title: b.session_topic ?? "Training Session",
-        trainer: "",
-        trainerInitials: "TR",
-        trainerColor: "#6366F1",
-        date: b.session_date
-          ? new Date(b.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" })
-          : "TBD",
-        time: b.session_date
-          ? new Date(b.session_date).toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" }) + " EAT"
-          : "",
-        status: b.status,
-        joinable: b.status === "starting_soon",
-      }))
-    : MOCK_SESSIONS;
+  // Build sessions from real bookings
+  const displaySessions = bookings.map((b: any) => {
+    const trainerName = b.trainers?.full_name || "Trainer";
+    const initials = trainerName.split(" ").map((n: string) => n[0]).slice(0, 2).join("");
+    const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
 
-  // Build certificates from real data or fall back to mocks
-  const displayCertificates = hasRealCertificates
-    ? certificates.map((c) => ({
-        id: c.id,
-        title: c.course?.title ?? "Course Certificate",
-        issuedDate: c.created_at
-          ? new Date(c.created_at as unknown as string).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })
-          : "Recently",
-        credentialId: `ATA-${c.course_id.slice(0, 6).toUpperCase()}`,
-        color: c.course?.tag_color ?? "#6366F1",
-        bg: c.course?.tag_bg ?? "#EEF2FF",
-      }))
-    : MOCK_CERTIFICATES;
+    return {
+      id: b.id,
+      title: topic || "1-on-1 Consultation",
+      trainer: trainerName,
+      trainerInitials: initials,
+      trainerColor: getTrainerColor(trainerName),
+      date: b.session_date
+        ? new Date(b.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" })
+        : "TBD",
+      time: b.session_date
+        ? new Date(b.session_date).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) + " EAT"
+        : "",
+      status: b.status,
+      meetingUrl: meetingUrl || null,
+    };
+  });
 
-  const totalHours = 34;
+  // Build certificates from real data
+  const displayCertificates = certificates.map((c) => ({
+    id: c.id,
+    title: c.course?.title ?? "Course Certificate",
+    issuedDate: c.created_at
+      ? new Date(c.created_at).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })
+      : "Recently",
+    credentialId: `ATA-${c.course_id.slice(0, 6).toUpperCase()}`,
+    color: c.course?.tag_color ?? "#6366F1",
+    bg: c.course?.tag_bg ?? "#EEF2FF",
+  }));
+
+  // Calculate dynamic stats
+  const calculatedHours = enrollments.reduce((sum, e) => {
+    const duration = parseFloat(e.course?.duration || "0");
+    return sum + (duration * (e.progress_pct / 100));
+  }, 0) + bookings.filter(b => b.status === "confirmed" || b.status === "completed").reduce((sum, b) => sum + (b.session_duration_hrs || 1), 0);
+  const totalHours = Math.round(calculatedHours);
+
   const activeCourses = displayCourses.filter(c => c.progress > 0 && c.progress < 100).length;
+
+  const upcomingSessionsCount = bookings.filter(b => 
+    (b.status === "confirmed" || b.status === "pending") && 
+    b.session_date && 
+    new Date(b.session_date).getTime() > Date.now()
+  ).length;
+
+  // Calculate weekly progress
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const weeklyCalculatedHours = enrollments.reduce((sum, e) => {
+    const duration = parseFloat(e.course?.duration || "0");
+    const progressHours = duration * (e.progress_pct / 100);
+    const enrolledDate = new Date(e.created_at);
+    if (enrolledDate >= oneWeekAgo) {
+      return sum + progressHours;
+    } else {
+      const ageDays = (Date.now() - enrolledDate.getTime()) / (24 * 60 * 60 * 1000);
+      return sum + (progressHours / Math.max(1, ageDays / 7));
+    }
+  }, 0) + bookings.filter(b => (b.status === "confirmed" || b.status === "completed") && b.session_date && new Date(b.session_date) >= oneWeekAgo).reduce((sum, b) => sum + (b.session_duration_hrs || 1), 0);
+
+  const weeklyHours = Math.max(0, Math.round(weeklyCalculatedHours * 10) / 10);
+  const weeklyHoursWhole = Math.floor(weeklyHours);
+  const weeklyMinutes = Math.round((weeklyHours % 1) * 60);
+  const weeklyProgressStr = `${weeklyHoursWhole}h ${weeklyMinutes}m`;
+  const goalHours = 8;
+  const goalPct = Math.min(100, Math.round((weeklyHours / goalHours) * 100));
+
+  // Build real activities dynamically
+  const activities: any[] = [];
+  enrollments.forEach(e => {
+    const enrolledDate = new Date(e.created_at);
+    activities.push({
+      id: `act-enroll-${e.id}`,
+      text: `Enrolled in: ${e.course?.title ?? "Course"}`,
+      time: getRelativeTime(enrolledDate),
+      Icon: Play,
+      color: e.course?.tag_color ?? "#6366F1",
+      timestamp: enrolledDate.getTime(),
+    });
+
+    if (e.progress_pct === 100) {
+      activities.push({
+        id: `act-cert-${e.id}`,
+        text: `Completed: ${e.course?.title ?? "Course"} (Earned Certificate)`,
+        time: getRelativeTime(enrolledDate),
+        Icon: Award,
+        color: "#D97706",
+        timestamp: enrolledDate.getTime() + 1000,
+      });
+    } else if (e.progress_pct > 0) {
+      activities.push({
+        id: `act-prog-${e.id}`,
+        text: `Progressed in: ${e.course?.title ?? "Course"} (${e.progress_pct}%)`,
+        time: getRelativeTime(enrolledDate),
+        Icon: CheckCircle2,
+        color: "#059669",
+        timestamp: enrolledDate.getTime() + 500,
+      });
+    }
+  });
+
+  bookings.forEach(b => {
+    const bookingDate = new Date(b.created_at);
+    const statusLabel = b.status === "confirmed" ? "Confirmed" : b.status === "completed" ? "Completed" : b.status === "pending" ? "Booked" : "Cancelled";
+    const trainerName = b.trainers?.full_name || "Trainer";
+    const topicStr = b.session_topic?.split(" || ")[0] || "Consultation Call";
+    activities.push({
+      id: `act-booking-${b.id}`,
+      text: `${statusLabel}: ${topicStr} with ${trainerName}`,
+      time: getRelativeTime(bookingDate),
+      Icon: Video,
+      color: b.status === "confirmed" ? "#059669" : b.status === "cancelled" ? "#DC2626" : "#6366F1",
+      timestamp: bookingDate.getTime(),
+    });
+  });
+
+  activities.sort((a, b) => b.timestamp - a.timestamp);
+  const displayActivities = activities.slice(0, 5);
+
+  // Fetch dynamic trainer recommendation
+  const { data: recommendedTrainer } = await supabase
+    .from("trainers")
+    .select("full_name, tagline, rating, sessions_completed, slug")
+    .eq("google_calendar_connected", true)
+    .order("rating", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let trainerRec = recommendedTrainer;
+  if (!trainerRec) {
+    const { data: fallbackRec } = await supabase
+      .from("trainers")
+      .select("full_name, tagline, rating, sessions_completed, slug")
+      .order("rating", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    trainerRec = fallbackRec;
+  }
 
   return (
     <div style={{ padding: "32px 32px 48px" }} className="responsive-container">
@@ -357,7 +379,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Get started CTA if everything is empty (not even mock is used) */}
+      {/* Get started CTA if everything is empty */}
       {!hasAnyRealData && displayCourses.length === 0 && (
         <GetStartedCTA />
       )}
@@ -369,9 +391,9 @@ export default async function DashboardPage() {
         gap: 14, marginBottom: 32,
       }} className="stats-row-grid">
         <StatCard label="Enrolled Courses" value={displayCourses.length} sub={`${activeCourses} in progress`} Icon={BookOpen} iconColor="#6366F1" iconBg="#EEF2FF" />
-        <StatCard label="Hours Learned" value={totalHours} sub="This month" Icon={Clock} iconColor="#0EA5E9" iconBg="#E0F2FE" />
+        <StatCard label="Hours Learned" value={totalHours} sub="Total time" Icon={Clock} iconColor="#0EA5E9" iconBg="#E0F2FE" />
         <StatCard label="Certificates" value={displayCertificates.length} sub="Earned and verified" Icon={Award} iconColor="#D97706" iconBg="#FEF3C7" />
-        <StatCard label="Upcoming Sessions" value={displaySessions.length} sub="Next 7 days" Icon={CalendarDays} iconColor="#059669" iconBg="#D1FAE5" />
+        <StatCard label="Upcoming Sessions" value={upcomingSessionsCount} sub="Upcoming schedules" Icon={CalendarDays} iconColor="#059669" iconBg="#D1FAE5" />
       </div>
 
       {/* Main grid */}
@@ -451,12 +473,12 @@ export default async function DashboardPage() {
               <TrendingUp size={15} color="rgba(255,255,255,0.5)" />
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>Weekly progress</span>
             </div>
-            <div style={{ fontSize: 30, fontWeight: 600, color: "white", letterSpacing: "-0.5px", lineHeight: 1 }}>5h 40m</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 4 }}>+2h 10m from last week</div>
+            <div style={{ fontSize: 30, fontWeight: 600, color: "white", letterSpacing: "-0.5px", lineHeight: 1 }}>{weeklyProgressStr}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 4 }}>Hours logged this week</div>
             <div style={{ marginTop: 16, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 3 }}>
-              <div style={{ height: "100%", width: "72%", background: "var(--accent)", borderRadius: 3 }} />
+              <div style={{ height: "100%", width: `${goalPct}%`, background: "var(--accent)", borderRadius: 3 }} />
             </div>
-            <div style={{ marginTop: 6, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>72% of your weekly 8h goal</div>
+            <div style={{ marginTop: 6, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{goalPct}% of your weekly {goalHours}h goal</div>
           </div>
 
           {/* Certificates */}
@@ -468,32 +490,41 @@ export default async function DashboardPage() {
               </Link>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {displayCertificates.map(cert => (
-                <div key={cert.id} style={{
-                  background: "white", borderRadius: 12, padding: "14px 16px",
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                  display: "flex", gap: 12, alignItems: "center",
+              {displayCertificates.length === 0 ? (
+                <div style={{
+                  padding: "20px", borderRadius: 12, background: "white",
+                  border: "1px solid rgba(0,0,0,0.06)", textAlign: "center",
                 }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 10,
-                    background: cert.bg, display: "flex",
-                    alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Award size={19} color={cert.color} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: "var(--navy)", lineHeight: 1.35 }}>{cert.title}</div>
-                    <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>Issued {cert.issuedDate}</div>
-                    <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 1, fontFamily: "monospace" }}>{cert.credentialId}</div>
-                  </div>
+                  <p style={{ fontSize: 12.5, color: "var(--muted)", margin: 0 }}>No completed courses yet.</p>
                 </div>
-              ))}
+              ) : (
+                displayCertificates.map(cert => (
+                  <div key={cert.id} style={{
+                    background: "white", borderRadius: 12, padding: "14px 16px",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                    display: "flex", gap: 12, alignItems: "center",
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10,
+                      background: cert.bg, display: "flex",
+                      alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Award size={19} color={cert.color} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--navy)", lineHeight: 1.35 }}>{cert.title}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>Issued {cert.issuedDate}</div>
+                      <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 1, fontFamily: "monospace" }}>{cert.credentialId}</div>
+                    </div>
+                  </div>
+                ))
+              )}
               <div style={{
                 padding: "12px 14px", borderRadius: 12,
                 border: "1.5px dashed var(--line)", textAlign: "center",
               }}>
-                <p style={{ fontSize: 12, color: "var(--muted)" }}>Complete a course to earn your next certificate</p>
+                <p style={{ fontSize: 12, color: "var(--muted)", margin: 0 }}>Complete a course to earn your next certificate</p>
               </div>
             </div>
           </section>
@@ -506,47 +537,58 @@ export default async function DashboardPage() {
           }}>
             <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--navy)", marginBottom: 14 }}>Recent Activity</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {MOCK_ACTIVITY.map((item, i) => (
-                <div key={item.id} style={{
-                  display: "flex", gap: 12, alignItems: "flex-start",
-                  paddingBottom: i < MOCK_ACTIVITY.length - 1 ? 12 : 0,
-                  marginBottom: i < MOCK_ACTIVITY.length - 1 ? 12 : 0,
-                  borderBottom: i < MOCK_ACTIVITY.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-                }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: "50%",
-                    background: `${item.color}18`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <item.Icon size={13} color={item.color} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.4 }}>{item.text}</div>
-                    <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{item.time}</div>
-                  </div>
-                </div>
-              ))}
+              {displayActivities.length === 0 ? (
+                <p style={{ fontSize: 12.5, color: "var(--muted)", margin: 0, textAlign: "center", padding: "10px 0" }}>No recent activities.</p>
+              ) : (
+                displayActivities.map((item, i) => {
+                  const IconComponent = item.Icon;
+                  return (
+                    <div key={item.id} style={{
+                      display: "flex", gap: 12, alignItems: "flex-start",
+                      paddingBottom: i < displayActivities.length - 1 ? 12 : 0,
+                      marginBottom: i < displayActivities.length - 1 ? 12 : 0,
+                      borderBottom: i < displayActivities.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                    }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: "50%",
+                        background: `${item.color}18`,
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <IconComponent size={13} color={item.color} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.4 }}>{item.text}</div>
+                        <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{item.time}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </section>
 
           {/* Trainer recommendation */}
-          <div style={{
-            background: "var(--accent-light)", borderRadius: 14, padding: "18px 20px",
-            border: "1px solid rgba(26,111,191,0.15)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-              <Star size={14} color="var(--accent)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)" }}>Top pick for you</span>
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)", marginBottom: 4 }}>Naledi Dlamini</div>
-            <div style={{ fontSize: 12, color: "var(--slate)", marginBottom: 10 }}>AI Safety and RLHF specialist · 4.9 rating · 142 sessions</div>
-            <Link href="/trainers/naledi-dlamini" style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              fontSize: 13, color: "var(--accent)", textDecoration: "none", fontWeight: 500,
+          {trainerRec && (
+            <div style={{
+              background: "var(--accent-light)", borderRadius: 14, padding: "18px 20px",
+              border: "1px solid rgba(26,111,191,0.15)",
             }}>
-              View profile <ChevronRight size={13} />
-            </Link>
-          </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+                <Star size={14} color="var(--accent)" />
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)" }}>Top pick for you</span>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--navy)", marginBottom: 4 }}>{trainerRec.full_name}</div>
+              <div style={{ fontSize: 12, color: "var(--slate)", marginBottom: 10 }}>
+                {trainerRec.tagline} · {trainerRec.rating || 5.0} rating · {trainerRec.sessions_completed || 0} sessions completed
+              </div>
+              <Link href={`/trainers/${trainerRec.slug}`} style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                fontSize: 13, color: "var(--accent)", textDecoration: "none", fontWeight: 500,
+              }}>
+                View profile <ChevronRight size={13} />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendCoursePurchaseEmail } from "@/lib/email";
+import { generateMeetingLinkAndNotify } from "@/app/actions/bookings";
 
 /**
  * GET /api/paystack/verify?reference=xxx[&courseId=xxx]
@@ -165,7 +166,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const { error } = await db.from("bookings").upsert(
+      const { data: bookingData, error } = await db.from("bookings").upsert(
         {
           paystack_reference: reference,
           trainer_id: trainerId,
@@ -179,10 +180,12 @@ export async function GET(request: NextRequest) {
           status: "confirmed",
         },
         { onConflict: "paystack_reference" }
-      );
+      ).select("id").single();
 
       if (error) {
         console.error("[Paystack verify] bookings upsert error:", error.message);
+      } else if (bookingData?.id) {
+        await generateMeetingLinkAndNotify(bookingData.id);
       }
 
       return NextResponse.redirect(

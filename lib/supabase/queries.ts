@@ -69,7 +69,12 @@ export type BookingRow = {
   status: string;
   session_date: string | null;
   session_topic: string | null;
+  session_duration_hrs: number | null;
   created_at: string;
+  trainers?: {
+    full_name: string;
+    tagline: string | null;
+  } | null;
 };
 
 export type EnrollmentRow = {
@@ -347,9 +352,22 @@ export async function getDashboardData(userId: string): Promise<{
     // Bookings
     const { data: bookingsRaw, error: bookErr } = await supabase
       .from("bookings")
-      .select(
-        "id, trainer_id, course_id, amount_ksh, amount_usd, status, session_date, session_topic, created_at"
-      )
+      .select(`
+        id,
+        trainer_id,
+        course_id,
+        amount_ksh,
+        amount_usd,
+        status,
+        session_date,
+        session_topic,
+        session_duration_hrs,
+        created_at,
+        trainers (
+          full_name,
+          tagline
+        )
+      `)
       .eq("learner_id", userId)
       .order("session_date", { ascending: true });
 
@@ -357,7 +375,25 @@ export async function getDashboardData(userId: string): Promise<{
       console.error("[getDashboardData] bookings error:", bookErr.message);
     }
 
-    const bookings: BookingRow[] = (bookingsRaw ?? []) as BookingRow[];
+    const bookings: BookingRow[] = (bookingsRaw ?? []).map((row: any) => {
+      const trainer = Array.isArray(row.trainers) ? row.trainers[0] : row.trainers;
+      return {
+        id: row.id,
+        trainer_id: row.trainer_id,
+        course_id: row.course_id,
+        amount_ksh: row.amount_ksh,
+        amount_usd: row.amount_usd,
+        status: row.status,
+        session_date: row.session_date,
+        session_topic: row.session_topic,
+        session_duration_hrs: row.session_duration_hrs ?? null,
+        created_at: row.created_at,
+        trainers: trainer ? {
+          full_name: trainer.full_name,
+          tagline: trainer.tagline ?? null,
+        } : null,
+      };
+    });
 
     return { enrollments, bookings, certificates };
   } catch (err) {

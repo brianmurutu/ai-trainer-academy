@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { generateMeetingLinkAndNotify } from "@/app/actions/bookings";
 
 /**
  * POST /api/paystack/webhook
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { error } = await db.from("bookings").upsert(
+    const { data: bookingData, error } = await db.from("bookings").upsert(
       {
         paystack_reference: reference,
         course_id: courseId,
@@ -110,12 +111,15 @@ export async function POST(request: NextRequest) {
         status: "confirmed",
       },
       { onConflict: "paystack_reference" }
-    );
+    ).select("id").single();
 
     if (error) {
       console.error("[Paystack webhook] charge.success upsert error:", error.message);
     } else {
       console.log(`[Paystack webhook] charge.success processed: ${reference}`);
+      if (!courseId && bookingData?.id) {
+        await generateMeetingLinkAndNotify(bookingData.id);
+      }
     }
   } else if (eventType === "charge.failed" && reference) {
     const { error } = await db

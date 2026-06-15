@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Bell, Check, Trash2, Calendar, BookOpen, User } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 type NotificationItem = {
   id: string;
@@ -11,6 +12,21 @@ type NotificationItem = {
   time: string;
   read: boolean;
 };
+
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString("en-KE", { month: "short", day: "numeric" });
+}
 
 export default function NotificationsPanel() {
   const [open, setOpen] = useState(false);
@@ -42,6 +58,131 @@ export default function NotificationsPanel() {
   ]);
 
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Load real notifications from database
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const role = user.user_metadata?.role || "learner";
+        const newNotifs: NotificationItem[] = [];
+
+        if (role === "trainer") {
+          const { data: bookings } = await supabase
+            .from("bookings")
+            .select("id, status, session_date, session_topic, created_at")
+            .eq("trainer_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+          if (bookings) {
+            bookings.forEach((b: any) => {
+              const dateStr = b.session_date ? new Date(b.session_date).toLocaleDateString("en-KE", { month: "short", day: "numeric" }) : "";
+              const topic = b.session_topic?.split(" || ")[0] || "Consultation Call";
+              const createdDate = new Date(b.created_at);
+              if (b.status === "pending") {
+                newNotifs.push({
+                  id: `notif-b-${b.id}`,
+                  type: "session",
+                  title: "New Session Request",
+                  message: `A learner booked a session on ${topic} for ${dateStr}.`,
+                  time: getRelativeTime(createdDate),
+                  read: false
+                });
+              } else if (b.status === "confirmed") {
+                newNotifs.push({
+                  id: `notif-b-${b.id}`,
+                  type: "session",
+                  title: "Session Confirmed",
+                  message: `Session for ${topic} on ${dateStr} is confirmed and meeting link is generated.`,
+                  time: getRelativeTime(createdDate),
+                  read: false
+                });
+              }
+            });
+          }
+        } else {
+          const { data: bookings } = await supabase
+            .from("bookings")
+            .select("id, status, session_date, session_topic, created_at, trainers(full_name)")
+            .eq("learner_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+          if (bookings) {
+            bookings.forEach((b: any) => {
+              const dateStr = b.session_date ? new Date(b.session_date).toLocaleDateString("en-KE", { month: "short", day: "numeric" }) : "";
+              const trainerName = b.trainers?.full_name || "Trainer";
+              const topic = b.session_topic?.split(" || ")[0] || "Consultation Call";
+              const createdDate = new Date(b.created_at);
+              if (b.status === "confirmed") {
+                newNotifs.push({
+                  id: `notif-b-${b.id}`,
+                  type: "session",
+                  title: "Session Confirmed",
+                  message: `Your session with ${trainerName} on ${dateStr} is confirmed. Join link is ready!`,
+                  time: getRelativeTime(createdDate),
+                  read: false
+                });
+              } else if (b.status === "pending") {
+                newNotifs.push({
+                  id: `notif-b-${b.id}`,
+                  type: "session",
+                  title: "Booking Requested",
+                  message: `Your booking for ${topic} with ${trainerName} is pending payment/confirmation.`,
+                  time: getRelativeTime(createdDate),
+                  read: false
+                });
+              }
+            });
+          }
+
+          const { data: enrollments } = await supabase
+            .from("enrollments")
+            .select("id, progress_pct, completed_lessons, created_at, courses(title)")
+            .eq("learner_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(3);
+
+          if (enrollments) {
+            enrollments.forEach((e: any) => {
+              const courseTitle = e.courses?.title || "Course";
+              const createdDate = new Date(e.created_at);
+              if (e.progress_pct === 100) {
+                newNotifs.push({
+                  id: `notif-e-${e.id}`,
+                  type: "course",
+                  title: "Course Completed 🎉",
+                  message: `Congratulations! You have completed ${courseTitle} and earned your certificate.`,
+                  time: getRelativeTime(createdDate),
+                  read: false
+                });
+              } else if (e.progress_pct > 0) {
+                newNotifs.push({
+                  id: `notif-e-${e.id}`,
+                  type: "course",
+                  title: "Course In Progress",
+                  message: `You are at ${e.progress_pct}% progress in ${courseTitle}. Keep it up!`,
+                  time: getRelativeTime(createdDate),
+                  read: false
+                });
+              }
+            });
+          }
+        }
+
+        if (newNotifs.length > 0) {
+          setNotifications(newNotifs);
+        }
+      } catch (err) {
+        console.error("Failed to load notifications from database:", err);
+      }
+    }
+    loadNotifications();
+  }, []);
 
   // Click outside to close panel
   useEffect(() => {

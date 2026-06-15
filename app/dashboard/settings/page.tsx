@@ -26,6 +26,7 @@ export default function LearnerSettingsPage() {
   });
 
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadUser() {
@@ -35,6 +36,30 @@ export default function LearnerSettingsPage() {
         setFullName(user.user_metadata?.full_name || "");
         setEmail(user.email || "");
         setBio(user.user_metadata?.bio || "");
+
+        // Fetch user's real payments
+        const { data: bookingsData } = await supabase
+          .from("bookings")
+          .select("id, session_topic, amount_ksh, amount_usd, created_at, payment_method")
+          .eq("learner_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (bookingsData) {
+          const mapped = bookingsData.map(b => {
+            const item = b.session_topic?.split(" || ")[0] || "Consultation Session";
+            const amount = b.amount_ksh ? `KSH ${b.amount_ksh}` : `$${b.amount_usd || 0}`;
+            const date = new Date(b.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+            const method = b.payment_method === "binance_pay" ? "Crypto (USDT)" : b.payment_method === "paystack" ? "Card (Paystack)" : "Free / Manual";
+            return {
+              id: `TX-${b.id.slice(0, 5).toUpperCase()}`,
+              item,
+              amount,
+              date,
+              method
+            };
+          });
+          setPayments(mapped);
+        }
       }
     }
     loadUser();
@@ -82,10 +107,7 @@ export default function LearnerSettingsPage() {
     }
   };
 
-  const mockPayments = [
-    { id: "TX-10492", item: "Fine-tuning LLaMA 3 with LoRA", amount: "$120.00", date: "June 4, 2026", method: "Crypto (USDT)" },
-    { id: "TX-10403", item: "Prompt Engineering Mastery", amount: "$45.00", date: "May 28, 2026", method: "Card (Paystack)" }
-  ];
+  // Payments are fetched dynamically from Supabase
 
   return (
     <div style={{ padding: "32px", maxWidth: 800, margin: "0 auto" }}>
@@ -267,15 +289,23 @@ export default function LearnerSettingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {mockPayments.map((p, idx) => (
-                  <tr key={idx} style={{ borderBottom: idx < mockPayments.length - 1 ? "1px solid var(--line)" : "none", color: "var(--ink)" }}>
-                    <td style={{ padding: "14px 16px", fontWeight: 600 }}>{p.id}</td>
-                    <td style={{ padding: "14px 16px" }}>{p.item}</td>
-                    <td style={{ padding: "14px 16px" }}>{p.method}</td>
-                    <td style={{ padding: "14px 16px" }}>{p.date}</td>
-                    <td style={{ padding: "14px 16px", fontWeight: 600, color: "var(--navy)" }}>{p.amount}</td>
+                {payments.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: "24px 16px", textAlign: "center", color: "var(--muted)" }}>
+                      No payment receipts found. Complete a booking to see invoices here.
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  payments.map((p, idx) => (
+                    <tr key={idx} style={{ borderBottom: idx < payments.length - 1 ? "1px solid var(--line)" : "none", color: "var(--ink)" }}>
+                      <td style={{ padding: "14px 16px", fontWeight: 600 }}>{p.id}</td>
+                      <td style={{ padding: "14px 16px" }}>{p.item}</td>
+                      <td style={{ padding: "14px 16px" }}>{p.method}</td>
+                      <td style={{ padding: "14px 16px" }}>{p.date}</td>
+                      <td style={{ padding: "14px 16px", fontWeight: 600, color: "var(--navy)" }}>{p.amount}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getValidTrainerToken, createGoogleMeetEvent } from "@/lib/google";
+import { sendSessionBookingConfirmationEmail, sendTrainerBookingNotificationEmail } from "@/lib/email";
 
 export type SessionWithTrainer = {
   id: string;
@@ -345,5 +346,168 @@ export async function declineTrainerBooking(bookingId: string): Promise<{ succes
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to decline booking" };
+  }
+}
+
+/**
+ * Automatically generate a meeting link (Google Meet or Jitsi fallback)
+ * and deliver it via email to learner and trainer when a session booking is confirmed.
+ */
+export async function generateMeetingLinkAndNotify(bookingId: string): Promise<{ success: boolean; error?: string; meetingUrl?: string }> {
+  try {
+    const adminDb = createAdminClient();
+
+    // 1. Fetch booking details
+    const { data: booking, error: bookingErr } = await adminDb
+      .from("bookings")
+      .select("id, session_topic, trainer_id, session_date, session_duration_hrs, learner_id, course_id")
+      .eq("id", bookingId)
+      .single();
+
+    if (bookingErr || !booking) {
+      console.error(`[generateMeetingLinkAndNotify] Booking ${bookingId} not found:`, bookingErr?.message);
+      return { success: false, error: "Booking not found" };
+    }
+
+    // If it's a course purchase rating (contains course_id) or trainer_id is null, skip meeting generation
+    if (booking.course_id || !booking.trainer_id) {
+      return { success: true };
+    }
+
+    // 2. Check if a meeting URL is already present in session_topic
+    const topicParts = booking.session_topic?.split(" || ") ?? [];
+    const originalTopic = topicParts[0] || booking.session_topic || "1-on-1 Consultation";
+    const existingMeetingUrl = topicParts[1];
+
+    if (existingMeetingUrl && existingMeetingUrl.startsWith("http")) {
+      console.log(`[generateMeetingLinkAndNotify] Meeting URL already exists for booking ${bookingId}: ${existingMeetingUrl}`);
+      return { success: true, meetingUrl: existingMeetingUrl };
+    }
+
+    // 3. Fetch trainer details
+    const { data: trainer, error: trainerErr } = await adminDb
+      .from("trainers")
+      .select("id, user_id, full_name")
+      .eq("id", booking.trainer_id)
+      .single();
+
+    if (trainerErr || !trainer) {
+      console.error(`[generateMeetingLinkAndNotify] Trainer ${booking.trainer_id} not found:`, trainerErr?.message);
+      return { success: false, error: "Trainer not found" };
+    }
+
+    // 4. Fetch learner details
+    let learnerEmail = "learner@example.com";
+    let learnerName = "Learner";
+    if (booking.learner_id) {
+      try {
+        const { data: userData } = await adminDb.auth.admin.getUserById(booking.learner_id);
+        if (userData?.user) {
+          learnerName = userData.user.user_metadata?.full_name || userData.user.email?.split("@")[0] || "Learner";
+          learnerEmail = userData.user.email || "learner@example.com";
+        }
+      } catch (err) {
+        console.error("[generateMeetingLinkAndNotify] Failed to fetch learner profile details:", err);
+      }
+    }
+
+    // 5. Fetch trainer's user email
+    let trainerEmail = "trainer@example.com";
+    if (trainer.user_id) {
+      try {
+        const { data: trainerUserData } = await adminDb.auth.admin.getUserById(trainer.user_id);
+        if (trainerUserData?.user) {
+          trainerEmail = trainerUserData.user.email || "trainer@example.com";
+        }
+      } catch (err) {
+        console.error("[generateMeetingLinkAndNotify] Failed to fetch trainer user details:", err);
+      }
+    }
+
+    let finalMeetingUrl = "";
+
+    // 6. Check if Google Calendar is connected
+    const accessToken = await getValidTrainerToken(trainer.id);
+
+    if (accessToken) {
+      const sessionDate = booking.session_date || new Date().toISOString();
+      const durationHrs = booking.session_duration_hrs || 1;
+
+      try {
+        finalMeetingUrl = await createGoogleMeetEvent({
+          accessToken,
+          learnerEmail,
+          learnerName,
+          topic: originalTopic,
+          sessionDate,
+          durationHrs,
+          bookingId
+        });
+      } catch (googleErr) {
+        console.error("[generateMeetingLinkAndNotify] Google Meet event generation failed, falling back to Jitsi:", googleErr);
+      }
+    }
+
+    // Fallback to Jitsi if Google Meet URL wasn't generated
+    if (!finalMeetingUrl) {
+      finalMeetingUrl = `https://meet.jit.si/ATA-Session-${bookingId}`;
+    }
+
+    // 7. Update booking with meeting URL
+    const updatedTopic = `${originalTopic} || ${finalMeetingUrl.trim()}`;
+    const { error: updateErr } = await adminDb
+      .from("bookings")
+      .update({
+        session_topic: updatedTopic
+      })
+      .eq("id", bookingId);
+
+    if (updateErr) {
+      console.error(`[generateMeetingLinkAndNotify] Failed to update booking ${bookingId} with meeting URL:`, updateErr.message);
+      return { success: false, error: updateErr.message };
+    }
+
+    // 8. Deliver meeting links to learners and trainers via email
+    try {
+      const formattedDate = booking.session_date
+        ? new Date(booking.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+        : "TBD";
+      const formattedTime = booking.session_date
+        ? new Date(booking.session_date).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) + " EAT"
+        : "TBD";
+
+      // Send confirmation to Learner
+      await sendSessionBookingConfirmationEmail({
+        recipientEmail: learnerEmail,
+        recipientName: learnerName,
+        trainerName: trainer.full_name,
+        sessionTopic: originalTopic,
+        sessionDate: `${formattedDate} at ${formattedTime}`,
+        duration: `${booking.session_duration_hrs || 1} hour${booking.session_duration_hrs !== 1 ? "s" : ""}`,
+        meetingUrl: finalMeetingUrl
+      });
+
+      // Send notification to Trainer
+      await sendTrainerBookingNotificationEmail({
+        recipientEmail: trainerEmail,
+        trainerName: trainer.full_name,
+        learnerName: learnerName,
+        learnerEmail: learnerEmail,
+        sessionTopic: originalTopic,
+        sessionDate: `${formattedDate} at ${formattedTime}`,
+        duration: `${booking.session_duration_hrs || 1} hour${booking.session_duration_hrs !== 1 ? "s" : ""}`,
+        meetingUrl: finalMeetingUrl
+      });
+    } catch (emailErr) {
+      console.error("[generateMeetingLinkAndNotify] Failed to send email confirmation/notification:", emailErr);
+    }
+
+    revalidatePath("/trainer/bookings");
+    revalidatePath("/dashboard/sessions");
+
+    return { success: true, meetingUrl: finalMeetingUrl };
+  } catch (err: any) {
+    console.error("[generateMeetingLinkAndNotify] Unexpected error:", err);
+    return { success: false, error: err.message || "Failed to generate meeting link and notify" };
   }
 }

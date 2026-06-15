@@ -539,4 +539,149 @@ export async function sendNewTicketNotificationEmail({
   });
 }
 
+// ---------------------------------------------------------------------------
+// Email the learner to confirm a session booking with meeting link
+// ---------------------------------------------------------------------------
+export async function sendSessionBookingConfirmationEmail({
+  recipientEmail,
+  recipientName,
+  trainerName,
+  sessionTopic,
+  sessionDate,
+  duration,
+  meetingUrl,
+}: {
+  recipientEmail: string;
+  recipientName: string;
+  trainerName: string;
+  sessionTopic: string;
+  sessionDate: string;
+  duration: string;
+  meetingUrl: string;
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: recipientEmail,
+    subject: `📅 Confirmed: Session with ${trainerName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">Hi ${recipientName},</h2>
+        <p style="color:#4A6174;font-size:15px;line-height:1.6;margin-bottom:16px">
+          Your 1-on-1 consultation session with <strong>${trainerName}</strong> is confirmed and scheduled!
+        </p>
+        
+        <div style="margin-top:20px;padding:20px;background:#F5F8FB;border-radius:8px;border-left:4px solid #1A6FBF;margin-bottom:24px">
+          <p style="margin:0 0 8px;color:#0D1B2A;font-weight:600;font-size:14px">📅 Session Details:</p>
+          <table style="width:100%;font-size:13.5px;color:#4A6174;border-collapse:collapse">
+            <tr>
+              <td style="padding:4px 0;font-weight:600;width:100px">Topic:</td>
+              <td style="padding:4px 0">${sessionTopic}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-weight:600">Date & Time:</td>
+              <td style="padding:4px 0;color:#0D1B2A;font-weight:600">${sessionDate}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-weight:600">Duration:</td>
+              <td style="padding:4px 0">${duration}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="text-align:center;margin:32px 0">
+          <a href="${meetingUrl}"
+             target="_blank"
+             style="display:inline-block;background:#059669;color:white;text-decoration:none;
+                    padding:14px 28px;border-radius:8px;font-weight:600;font-size:14px;box-shadow:0 2px 5px rgba(5,150,105,0.2)">
+            Join Video Call →
+          </a>
+          <p style="margin:8px 0 0;font-size:11px;color:#7A93A8">
+            Or copy this link: <a href="${meetingUrl}" style="color:#1A6FBF">${meetingUrl}</a>
+          </p>
+        </div>
+
+        <p style="color:#7A93A8;font-size:12px;margin-top:32px;border-top:1px solid #E2EAF0;padding-top:16px">
+          If you need to reschedule or have questions, please reach out via support tickets or directly chat with the trainer in your portal.
+        </p>
+      </div>
+    `,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Email the trainer to notify them of a booked session with meeting link
+// ---------------------------------------------------------------------------
+export async function sendTrainerBookingNotificationEmail({
+  recipientEmail,
+  trainerName,
+  learnerName,
+  learnerEmail,
+  sessionTopic,
+  sessionDate,
+  duration,
+  meetingUrl,
+}: {
+  recipientEmail: string;
+  trainerName: string;
+  learnerName: string;
+  learnerEmail: string;
+  sessionTopic: string;
+  sessionDate: string;
+  duration: string;
+  meetingUrl: string;
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: recipientEmail,
+    subject: `📅 New Session Booked: ${learnerName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">Hi ${trainerName},</h2>
+        <p style="color:#4A6174;font-size:15px;line-height:1.6;margin-bottom:16px">
+          A learner has booked a 1-on-1 consultation session with you:
+        </p>
+        
+        <div style="margin-top:20px;padding:20px;background:#F5F8FB;border-radius:8px;border-left:4px solid #1A6FBF;margin-bottom:24px">
+          <p style="margin:0 0 8px;color:#0D1B2A;font-weight:600;font-size:14px">📅 Session Details:</p>
+          <table style="width:100%;font-size:13.5px;color:#4A6174;border-collapse:collapse">
+            <tr>
+              <td style="padding:4px 0;font-weight:600;width:100px">Student:</td>
+              <td style="padding:4px 0">${learnerName} (${learnerEmail})</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-weight:600">Topic:</td>
+              <td style="padding:4px 0">${sessionTopic}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-weight:600">Date & Time:</td>
+              <td style="padding:4px 0;color:#0D1B2A;font-weight:600">${sessionDate}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-weight:600">Duration:</td>
+              <td style="padding:4px 0">${duration}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="text-align:center;margin:32px 0">
+          <a href="${meetingUrl}"
+             target="_blank"
+             style="display:inline-block;background:#0D1B2A;color:white;text-decoration:none;
+                    padding:14px 28px;border-radius:8px;font-weight:600;font-size:14px">
+            Join Video Call →
+          </a>
+          <p style="margin:8px 0 0;font-size:11px;color:#7A93A8">
+            Or copy this link: <a href="${meetingUrl}" style="color:#1A6FBF">${meetingUrl}</a>
+          </p>
+        </div>
+
+        <p style="color:#7A93A8;font-size:12px;margin-top:32px;border-top:1px solid #E2EAF0;padding-top:16px">
+          This event has been sync'd to your calendar if connected. Check your trainer bookings dashboard to manage calls.
+        </p>
+      </div>
+    `,
+  });
+}
+
+
 

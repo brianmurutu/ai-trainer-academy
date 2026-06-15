@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getCourseById } from "@/lib/supabase/queries";
 import { mapCourseRowToCourse } from "@/lib/courses-data";
 import { createClient } from "@/lib/supabase/server";
@@ -33,9 +33,25 @@ export default async function CoursePlayerPage({
   // Get user info if authenticated
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const userEmail = user?.email || "";
+  if (!user) redirect("/login");
+  const userEmail = user.email || "";
+
+  // Fetch enrollment data to get progress and completed lessons
+  const { data: enrollment } = await supabase
+    .from("enrollments")
+    .select("completed_lessons")
+    .eq("course_id", id)
+    .eq("learner_id", user.id)
+    .maybeSingle();
+
+  const initialCompletedLessons = enrollment?.completed_lessons ?? [];
 
   return (
-    <CoursePlayerClient course={course} userEmail={userEmail} />
+    <CoursePlayerClient 
+      course={course} 
+      userEmail={userEmail} 
+      initialCompletedLessons={initialCompletedLessons}
+    />
   );
 }
+

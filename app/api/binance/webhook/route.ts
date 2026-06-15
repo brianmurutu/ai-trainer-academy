@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { generateMeetingLinkAndNotify } from "@/app/actions/bookings";
 
 /**
  * POST /api/binance/webhook
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
 
       const db = createAdminClient();
       // Upsert into bookings using the Binance trade number as a unique key
-      const { error } = await db.from("bookings").upsert(
+      const { data: bookingData, error } = await db.from("bookings").upsert(
         {
           binance_trade_no: merchantTradeNo,
           amount_usd: parseFloat(orderAmount),
@@ -74,11 +75,14 @@ export async function POST(request: NextRequest) {
           status: "confirmed",
         },
         { onConflict: "binance_trade_no" }
-      );
+      ).select("id").single();
       if (error) {
         console.error("[Binance webhook] bookings upsert error:", error.message);
       } else {
         console.log(`[Binance Pay] Booking confirmed: ${merchantTradeNo}`);
+        if (bookingData?.id) {
+          await generateMeetingLinkAndNotify(bookingData.id);
+        }
       }
     }
 

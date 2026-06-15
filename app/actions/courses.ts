@@ -430,3 +430,41 @@ export async function rateCourseAction(
     return { success: false, error: err.message || "Failed to submit rating." };
   }
 }
+
+/**
+ * Update the completed lessons and progress percentage for a learner's enrollment.
+ */
+export async function updateEnrollmentProgress(
+  courseId: string,
+  completedLessons: string[],
+  progressPct: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const db = createAdminClient();
+    const { error } = await db
+      .from("enrollments")
+      .update({
+        completed_lessons: completedLessons,
+        progress_pct: progressPct,
+      })
+      .eq("course_id", courseId)
+      .eq("learner_id", user.id);
+
+    if (error) {
+      console.error("[updateEnrollmentProgress] Error updating enrollment:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/courses");
+    revalidatePath(`/dashboard/courses/${courseId}`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update progress." };
+  }
+}
+

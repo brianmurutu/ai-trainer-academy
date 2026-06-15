@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: "AI Trainer Academy | Learn to Train AI Models",
   description: "Connect with verified AI training experts. Learn fine-tuning, prompt engineering, RLHF, and dataset curation from real practitioners. Pay in KSH, USD, or crypto.",
   keywords: "AI model training, fine-tuning, prompt engineering, RLHF, AI courses, machine learning training, AI education Kenya",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   openGraph: {
     title: "AI Trainer Academy",
     description: "The #1 platform for AI model training education. Learn from verified experts.",

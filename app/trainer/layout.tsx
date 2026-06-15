@@ -31,7 +31,7 @@ export default async function TrainerLayout({
 
   // Learner accounts belong in /dashboard
   const role = (user.user_metadata?.role as string) ?? "learner";
-  if (role !== "trainer" && role !== "admin") redirect("/dashboard");
+  if (role !== "trainer") redirect("/dashboard");
 
   const fullName: string =
     (user.user_metadata?.full_name as string) ||

@@ -98,21 +98,43 @@ export default async function TrainerPage() {
 
   const applicationStatus = application?.status || "pending";
 
-  // Auto-activate bypassed users if profile is missing but application is present
-  if (!trainerProfile && user.email === "brian@yagwatech.com" && application) {
-    const success = await activateTrainerProfile(application.id);
-    if (success) {
-      const { data: updatedProfile } = await supabase
+  // Auto-activate bypassed users if profile is missing
+  if (!trainerProfile && user.email === "brian@yagwatech.com") {
+    if (application) {
+      const success = await activateTrainerProfile(application.id);
+      if (success) {
+        const { data: updatedProfile } = await supabase
+          .from("trainers")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        trainerProfile = updatedProfile;
+      }
+    } else {
+      // Create a default trainer profile row directly so the dashboard runs with a valid profile
+      const slug = fullName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const { data: newProfile } = await supabase
         .from("trainers")
+        .upsert({
+          user_id: user.id,
+          full_name: fullName,
+          slug,
+          bio: "AI Trainer Academy instructor.",
+          hourly_rate_ksh: 2500,
+          hourly_rate_usd: 20,
+          specialities: ["General AI"],
+        })
         .select("id")
-        .eq("user_id", user.id)
         .maybeSingle();
-      trainerProfile = updatedProfile;
+
+      if (newProfile) {
+        trainerProfile = newProfile;
+      }
     }
   }
 
   // BYPASS logic
-  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com" || user.user_metadata?.role === "admin";
+  const isActivated = !!trainerProfile || user.email === "brian@yagwatech.com";
 
   if (!isActivated) {
     if (applicationStatus === "approved" && application) {
@@ -643,7 +665,7 @@ export default async function TrainerPage() {
                 <div style={{ padding: "10px", textAlign: "center", color: "var(--muted)", fontSize: 12 }}>
                   No courses published yet.
                 </div>
-              ) : courses.map((c: any) => (
+              ) : courses.map((c: { id: string; title: string; enrolled: number; rating: number; lessons: number; status: string }) => (
                 <div key={c.id} style={{
                   padding: "12px 14px", borderRadius: 10,
                   background: c.status === "draft" ? "var(--surface)" : "white",

@@ -14,6 +14,7 @@ import {
   Brain,
   Menu,
   X,
+  LifeBuoy,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/sessions", label: "Sessions", Icon: CalendarDays, segment: "sessions" },
   { href: "/dashboard/certificates", label: "Certificates", Icon: Award, segment: "certificates" },
   { href: "/trainers", label: "Find Trainers", Icon: Search, segment: null },
+  { href: "/dashboard/support", label: "Support Tickets", Icon: LifeBuoy, segment: "support" },
   { href: "/dashboard/settings", label: "Settings", Icon: Settings, segment: "settings" },
 ];
 

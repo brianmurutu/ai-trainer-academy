@@ -162,20 +162,28 @@ export default function TrainerSettingsPage() {
       // 2. Compile bio with video tags
       const updatedBio = stringifyTrainerBio(bio, videoUrl, videoUnlocked);
 
-      // 3. Update public trainers table row
-      const { error: dbError } = await supabase
+      // 3. Upsert public trainers table row
+      const slug = fullName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+      const { data: upsertData, error: dbError } = await supabase
         .from("trainers")
-        .update({
+        .upsert({
+          user_id: user.id,
           full_name: fullName,
+          slug,
           bio: updatedBio,
           hourly_rate_ksh: Number(hourlyRateKsh),
           hourly_rate_usd: Number(hourlyRateUsd),
           linkedin_url: linkedinUrl,
           github_url: githubUrl,
         })
-        .eq("user_id", user.id);
+        .select("id")
+        .maybeSingle();
 
       if (dbError) throw dbError;
+      if (upsertData?.id) {
+        setTrainerId(upsertData.id);
+      }
 
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (error) {

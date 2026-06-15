@@ -2,7 +2,15 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sendApprovalEmail, sendRejectionEmail, sendSuspensionEmail, sendAdminMessageEmail } from "@/lib/email";
+import {
+  sendApprovalEmail,
+  sendRejectionEmail,
+  sendSuspensionEmail,
+  sendAdminMessageEmail,
+  sendDirectUserEmail,
+  sendConfirmationResendEmail,
+  sendTicketStatusUpdateEmail,
+} from "@/lib/email";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -528,4 +536,365 @@ export async function toggleBanLearner(learnerId: string, ban: boolean): Promise
     return { error: err.message || "Failed to update learner account status." };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Support Tickets Administration
+// ---------------------------------------------------------------------------
+
+export type AdminTicket = {
+  id: string;
+  user_id: string;
+  subject: string;
+  message: string;
+  status: "open" | "resolved" | "closed";
+  created_at: string;
+  updated_at: string;
+  userEmail: string;
+  userFullName: string;
+};
+
+export async function getAdminTickets(status?: string): Promise<AdminTicket[]> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    let query = db.from("support_tickets").select("*");
+    if (status && status !== "all") {
+      query = query.eq("status", status);
+    }
+    query = query.order("created_at", { ascending: false });
+
+    const { data: tickets, error: fetchErr } = await query;
+    if (fetchErr) throw fetchErr;
+
+    if (!tickets || tickets.length === 0) return [];
+
+    // Fetch users to map user_id -> email/name
+    const { data: { users }, error: authErr } = await db.auth.admin.listUsers();
+    const userMap = new Map<string, { email: string; name: string }>();
+    if (!authErr && users) {
+      users.forEach(u => {
+        userMap.set(u.id, {
+          email: u.email || "",
+          name: (u.user_metadata?.full_name as string) || u.email?.split("@")[0] || "Learner",
+        });
+      });
+    }
+
+    return tickets.map((t: any) => {
+      const userInfo = userMap.get(t.user_id) || { email: "", name: "Unknown User" };
+      return {
+        ...t,
+        userEmail: userInfo.email,
+        userFullName: userInfo.name,
+      };
+    });
+  } catch (err) {
+    console.error("[getAdminTickets] Error:", err);
+    return [];
+  }
+}
+
+export async function updateTicketStatus(
+  ticketId: string,
+  status: "open" | "resolved" | "closed",
+  resolutionNote?: string
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    const { data: ticket, error: fetchErr } = await db
+      .from("support_tickets")
+      .select("*")
+      .eq("id", ticketId)
+      .single();
+
+    if (fetchErr || !ticket) return { error: "Ticket not found." };
+
+    const { error: updateErr } = await db
+      .from("support_tickets")
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", ticketId);
+
+    if (updateErr) throw updateErr;
+
+    // Send email to learner
+    try {
+      const { data: { user }, error: userErr } = await db.auth.admin.getUserById(ticket.user_id);
+      if (!userErr && user) {
+        await sendTicketStatusUpdateEmail({
+          email: user.email || "",
+          name: (user.user_metadata?.full_name as string) || user.email?.split("@")[0] || "Learner",
+          ticketSubject: ticket.subject,
+          status,
+          resolutionNote,
+        });
+      }
+    } catch (emailErr) {
+      console.error("[updateTicketStatus] Failed to send status update email:", emailErr);
+    }
+
+    revalidatePath("/admin/tickets");
+    revalidatePath("/dashboard/support");
+
+    return {
+      success: true,
+      message: `Support ticket has been marked as ${status} and user notified.`,
+    };
+  } catch (err: any) {
+    console.error("[updateTicketStatus] Error:", err);
+    return { error: err.message || "Failed to update ticket status." };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Edit Details & Auth management
+// ---------------------------------------------------------------------------
+
+export async function updateLearnerDetails(
+  learnerId: string,
+  email: string,
+  fullName: string
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    if (!email?.trim() || !fullName?.trim()) {
+      return { error: "Email and full name are required." };
+    }
+
+    const { error } = await db.auth.admin.updateUserById(learnerId, {
+      email: email.trim(),
+      user_metadata: { full_name: fullName.trim() },
+    });
+
+    if (error) throw error;
+
+    revalidatePath("/admin/learners");
+    return {
+      success: true,
+      message: "Learner details updated successfully in Auth.",
+    };
+  } catch (err: any) {
+    console.error("[updateLearnerDetails] Error:", err);
+    return { error: err.message || "Failed to update learner details." };
+  }
+}
+
+export async function resendConfirmationEmail(
+  email: string,
+  fullName: string
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    if (!email) return { error: "Email is required." };
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const { data, error } = await db.auth.admin.generateLink({
+      type: "invite",
+      email: email.trim(),
+      options: {
+        redirectTo: `${siteUrl}/auth/callback`,
+      },
+    });
+
+    if (error) throw error;
+    if (!data?.properties?.action_link) {
+      throw new Error("Supabase auth did not return a confirmation link.");
+    }
+
+    await sendConfirmationResendEmail({
+      email: email.trim(),
+      name: fullName || "User",
+      confirmationLink: data.properties.action_link,
+    });
+
+    return {
+      success: true,
+      message: `Account confirmation link successfully sent to ${email}.`,
+    };
+  } catch (err: any) {
+    console.error("[resendConfirmationEmail] Error:", err);
+    return { error: err.message || "Failed to generate and send confirmation link." };
+  }
+}
+
+export async function sendDirectUserEmailAction(
+  email: string,
+  fullName: string,
+  subject: string,
+  body: string,
+  userType: "trainer" | "learner"
+): Promise<AdminActionState> {
+  await requireAdmin();
+
+  try {
+    if (!email || !subject || !body) {
+      return { error: "Email, subject, and body are required." };
+    }
+
+    await sendDirectUserEmail({
+      recipientEmail: email,
+      recipientName: fullName,
+      subject,
+      body,
+      userType,
+    });
+
+    return {
+      success: true,
+      message: `Email successfully sent to ${fullName} (${email}).`,
+    };
+  } catch (err: any) {
+    console.error("[sendDirectUserEmailAction] Error:", err);
+    return { error: err.message || "Failed to send email." };
+  }
+}
+
+export async function broadcastEmail(
+  subject: string,
+  body: string,
+  userType: "trainer" | "learner"
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    if (!subject?.trim() || !body?.trim()) {
+      return { error: "Subject and body are required." };
+    }
+
+    let emails: { email: string; name: string }[] = [];
+
+    if (userType === "trainer") {
+      const { data: trainers, error: fetchErr } = await db
+        .from("trainer_applications")
+        .select("email, full_name")
+        .eq("status", "approved");
+      
+      if (fetchErr) throw fetchErr;
+      emails = (trainers || []).map(t => ({ email: t.email, name: t.full_name }));
+    } else {
+      // Get all learners
+      const learners = await getLearners();
+      emails = learners.map(l => ({ email: l.email, name: l.fullName }));
+    }
+
+    if (emails.length === 0) {
+      return { error: `No active ${userType} accounts found to email.` };
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Loop through recipients sequentially to respect rate limits
+    for (const recipient of emails) {
+      try {
+        await sendDirectUserEmail({
+          recipientEmail: recipient.email,
+          recipientName: recipient.name,
+          subject,
+          body,
+          userType,
+        });
+        successCount++;
+        // Minor delay of 100ms to avoid burst limits
+        await new Promise(r => setTimeout(r, 100));
+      } catch (err) {
+        console.error(`[broadcastEmail] Failed to send to ${recipient.email}:`, err);
+        failCount++;
+      }
+    }
+
+    return {
+      success: true,
+      message: `Broadcast complete! Sent ${successCount} emails successfully.${failCount > 0 ? ` Failed to send to ${failCount} recipients.` : ""}`,
+    };
+  } catch (err: any) {
+    console.error("[broadcastEmail] Error:", err);
+    return { error: err.message || "Failed to broadcast email." };
+  }
+}
+
+export async function updateTrainerDetails(
+  trainerId: string,
+  email: string,
+  fullName: string,
+  hourlyRateKsh: number,
+  hourlyRateUsd: number
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const db = createAdminClient();
+
+  try {
+    if (!email?.trim() || !fullName?.trim()) {
+      return { error: "Email and full name are required." };
+    }
+
+    // 1. Find the application to get user_id or detail match
+    const { data: app, error: fetchErr } = await db
+      .from("trainer_applications")
+      .select("user_id, id")
+      .eq("id", trainerId)
+      .single();
+
+    if (fetchErr || !app) {
+      return { error: "Trainer application not found." };
+    }
+
+    // 2. Update trainer_applications table
+    const { error: appUpdErr } = await db
+      .from("trainer_applications")
+      .update({
+        email: email.trim(),
+        full_name: fullName.trim(),
+        hourly_rate_ksh: hourlyRateKsh,
+        hourly_rate_usd: hourlyRateUsd,
+      })
+      .eq("id", trainerId);
+
+    if (appUpdErr) throw appUpdErr;
+
+    // 3. Update auth metadata & email if user exists
+    if (app.user_id) {
+      const { error: authErr } = await db.auth.admin.updateUserById(app.user_id, {
+        email: email.trim(),
+        user_metadata: { full_name: fullName.trim() },
+      });
+      if (authErr) console.error("[updateTrainerDetails] Auth update failed:", authErr.message);
+
+      // 4. Update trainers directory table
+      const { error: dirErr } = await db
+        .from("trainers")
+        .update({
+          full_name: fullName.trim(),
+          hourly_rate_ksh: hourlyRateKsh,
+          hourly_rate_usd: hourlyRateUsd,
+        })
+        .eq("user_id", app.user_id);
+
+      if (dirErr) console.error("[updateTrainerDetails] Trainers table update failed:", dirErr.message);
+    }
+
+    revalidatePath("/admin/trainers");
+    revalidatePath("/admin/applications");
+    revalidatePath("/trainers");
+
+    return {
+      success: true,
+      message: "Trainer details updated successfully.",
+    };
+  } catch (err: any) {
+    console.error("[updateTrainerDetails] Error:", err);
+    return { error: err.message || "Failed to update trainer details." };
+  }
+}
+
 

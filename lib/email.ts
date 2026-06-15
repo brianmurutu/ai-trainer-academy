@@ -363,4 +363,180 @@ export async function sendAdminMessageEmail({
   });
 }
 
+// ---------------------------------------------------------------------------
+// General admin -> user (trainer or learner) direct email
+// ---------------------------------------------------------------------------
+export async function sendDirectUserEmail({
+  recipientName,
+  recipientEmail,
+  subject,
+  body,
+  userType,
+}: {
+  recipientName: string;
+  recipientEmail: string;
+  subject: string;
+  body: string;
+  userType: "trainer" | "learner";
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const dashboardPath = userType === "trainer" ? "/trainer" : "/dashboard";
+
+  await getResend().emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: process.env.ADMIN_EMAIL ?? undefined,
+    subject,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #E2EAF0">
+          <div style="width:36px;height:36px;background:#0D1B2A;border-radius:9px;display:flex;align-items:center;justify-content:center">
+            <span style="color:white;font-size:14px;font-weight:700">AT</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:#0D1B2A">AI Trainer Academy Support</span>
+        </div>
+        <h2 style="color:#0D1B2A;font-size:18px;margin-bottom:6px">Hi ${recipientName},</h2>
+        <p style="color:#4A6174;font-size:13px;margin-bottom:20px">You have a new message from the AI Trainer Academy administration team.</p>
+        <div style="background:#F5F8FB;border-left:4px solid #1A6FBF;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px">
+          <p style="color:#1C2B3A;font-size:14px;line-height:1.75;white-space:pre-wrap;margin:0">${body}</p>
+        </div>
+        <p style="color:#7A93A8;font-size:12px">
+          To reply, simply respond directly to this email or check your
+          <a href="${siteUrl}${dashboardPath}" style="color:#1A6FBF;text-decoration:none">dashboard</a>.
+        </p>
+        <p style="color:#B0BEC5;font-size:11px;margin-top:20px;border-top:1px solid #E2EAF0;padding-top:12px">
+          AI Trainer Academy · You're receiving this because you're a registered ${userType}.
+        </p>
+      </div>
+    `,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Resend Signup Confirmation Link
+// ---------------------------------------------------------------------------
+export async function sendConfirmationResendEmail({
+  email,
+  name,
+  confirmationLink,
+}: {
+  email: string;
+  name: string;
+  confirmationLink: string;
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: "✉️ Confirm your AI Trainer Academy account",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:12px">Confirm your email address</h2>
+        <p style="color:#4A6174;font-size:15px;line-height:1.6;margin-bottom:20px">
+          Hi ${name},<br/>
+          An administrator has requested a fresh account verification link for your email address. Please click the button below to confirm your account and log in:
+        </p>
+        <a href="${confirmationLink}"
+           style="display:inline-block;background:#1A6FBF;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;margin-bottom:20px">
+          Confirm Account & Log In →
+        </a>
+        <p style="color:#7A93A8;font-size:12px;border-top:1px solid #E2EAF0;padding-top:16px;margin-top:16px">
+          If you did not request this, you can safely ignore this email. The link is valid for 24 hours.
+        </p>
+      </div>
+    `,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Notify learner of support ticket resolution / status update
+// ---------------------------------------------------------------------------
+export async function sendTicketStatusUpdateEmail({
+  email,
+  name,
+  ticketSubject,
+  status,
+  resolutionNote,
+}: {
+  email: string;
+  name: string;
+  ticketSubject: string;
+  status: string;
+  resolutionNote?: string;
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: `🎫 Support Ticket Update: ${ticketSubject}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:12px">Your support ticket has been ${status}</h2>
+        <p style="color:#4A6174;font-size:15px;line-height:1.6;margin-bottom:16px">
+          Hi ${name},<br/>
+          Your support ticket regarding <strong>"${ticketSubject}"</strong> has been updated to <strong style="color:${status === "resolved" ? "#059669" : "#4A6174"}">${status}</strong> by our admin team.
+        </p>
+        ${resolutionNote ? `
+        <div style="background:#F5F8FB;border-left:4px solid #059669;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px">
+          <h4 style="margin:0 0 6px;color:#0D1B2A;font-size:13px">Resolution Note:</h4>
+          <p style="color:#1C2B3A;font-size:13.5px;line-height:1.6;margin:0;white-space:pre-wrap">${resolutionNote}</p>
+        </div>
+        ` : ""}
+        <p style="color:#7A93A8;font-size:12px;border-top:1px solid #E2EAF0;padding-top:16px">
+          You can check the full ticket history in your <a href="${siteUrl}/dashboard/support" style="color:#1A6FBF;text-decoration:none">learner dashboard support center</a>.
+        </p>
+      </div>
+    `,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Notify admin of a new support ticket
+// ---------------------------------------------------------------------------
+export async function sendNewTicketNotificationEmail({
+  learnerName,
+  learnerEmail,
+  ticketSubject,
+  ticketMessage,
+  ticketId,
+}: {
+  learnerName: string;
+  learnerEmail: string;
+  ticketSubject: string;
+  ticketMessage: string;
+  ticketId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const viewUrl = `${siteUrl}/admin/tickets`;
+
+  await getResend().emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `🎫 New Support Ticket Raised — ${learnerName}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #E2EAF0;border-radius:12px">
+        <h2 style="color:#0D1B2A;margin-bottom:8px">New Support Ticket Raised</h2>
+        <p style="color:#4A6174;margin-bottom:20px;font-size:15px">
+          <strong>Learner:</strong> ${learnerName} (${learnerEmail})<br/>
+          <strong>Subject:</strong> ${ticketSubject}
+        </p>
+        <div style="margin-top:20px;padding:16px;background:#F5F8FB;border-radius:8px;border-left:4px solid #1A6FBF;margin-bottom:24px">
+          <h4 style="margin:0 0 8px;color:#0D1B2A">Message Body:</h4>
+          <p style="margin:0;color:#4A6174;font-size:14px;white-space:pre-wrap">${ticketMessage}</p>
+        </div>
+        <a href="${viewUrl}"
+           style="display:inline-block;background:#1A6FBF;color:white;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          View & Process Tickets →
+        </a>
+        <p style="color:#7A93A8;font-size:12px;margin-top:24px">Ticket ID: ${ticketId}</p>
+      </div>
+    `,
+  });
+}
+
 

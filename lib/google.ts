@@ -8,14 +8,15 @@ const REDIRECT_URI = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:30
  * Generate the Google OAuth authorization URL.
  * Offline access is requested to retrieve a refresh token.
  */
-export function getGoogleAuthUrl(state: string): string {
+export function getGoogleAuthUrl(state: string, origin?: string): string {
   if (!CLIENT_ID) {
     throw new Error("Missing GOOGLE_CLIENT_ID environment variable.");
   }
 
+  const redirectUri = origin ? `${origin}/api/auth/google/callback` : REDIRECT_URI;
   const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
   const options = {
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: redirectUri,
     client_id: CLIENT_ID,
     access_type: "offline",
     response_type: "code",
@@ -34,7 +35,7 @@ export function getGoogleAuthUrl(state: string): string {
 /**
  * Exchange an OAuth authorization code for Google access and refresh tokens.
  */
-export async function exchangeCodeForTokens(code: string): Promise<{
+export async function exchangeCodeForTokens(code: string, origin?: string): Promise<{
   accessToken: string;
   refreshToken?: string;
   expiresAt: string;
@@ -43,12 +44,13 @@ export async function exchangeCodeForTokens(code: string): Promise<{
     throw new Error("Missing Google Client credentials in environment variables.");
   }
 
+  const redirectUri = origin ? `${origin}/api/auth/google/callback` : REDIRECT_URI;
   const url = "https://oauth2.googleapis.com/token";
   const body = {
     code,
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: redirectUri,
     grant_type: "authorization_code"
   };
 
@@ -229,6 +231,7 @@ export async function createGoogleMeetEvent({
   // Find the Meet conference entrypoint URL
   const conference = data.conferenceData;
   const entryPoints = conference?.entryPoints || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const meetEntryPoint = entryPoints.find((ep: any) => ep.entryPointType === "video");
   
   if (!meetEntryPoint?.uri) {

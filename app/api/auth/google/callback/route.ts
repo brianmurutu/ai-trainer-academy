@@ -3,21 +3,19 @@ import { exchangeCodeForTokens } from "@/lib/google";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
   const state = searchParams.get("state"); // This is the user's ID passed from the redirect
   const error = searchParams.get("error");
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
   if (error || !code || !state) {
     console.error("[Google Callback GET] OAuth error or missing code/state:", { error, code, state });
-    return NextResponse.redirect(`${siteUrl}/trainer/settings?error=google_auth_failed`);
+    return NextResponse.redirect(`${origin}/trainer/settings?error=google_auth_failed`);
   }
 
   try {
     // Exchange the code for access/refresh tokens
-    const { accessToken, refreshToken, expiresAt } = await exchangeCodeForTokens(code);
+    const { accessToken, refreshToken, expiresAt } = await exchangeCodeForTokens(code, origin);
 
     const db = createAdminClient();
 
@@ -73,9 +71,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(`${siteUrl}/trainer/settings?google_connected=true`);
+    return NextResponse.redirect(`${origin}/trainer/settings?google_connected=true`);
   } catch (err) {
     console.error("[Google Callback GET] Error during token exchange/save:", err);
-    return NextResponse.redirect(`${siteUrl}/trainer/settings?error=token_exchange_failed`);
+    return NextResponse.redirect(`${origin}/trainer/settings?error=token_exchange_failed`);
   }
 }

@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getGoogleAuthUrl } from "@/lib/google";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const {
@@ -14,8 +14,9 @@ export async function GET() {
       return NextResponse.redirect(`${siteUrl}/login?error=unauthorized`);
     }
 
+    const origin = request.nextUrl.origin;
     // Pass the user ID as state to verify and link on callback
-    const authUrl = getGoogleAuthUrl(user.id);
+    const authUrl = getGoogleAuthUrl(user.id, origin);
     return NextResponse.redirect(authUrl);
   } catch (error) {
     console.error("[Google Redirect GET] error:", error);

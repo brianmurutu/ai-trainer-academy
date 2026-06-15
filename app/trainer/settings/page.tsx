@@ -46,6 +46,7 @@ export default function TrainerSettingsPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoUnlocked, setVideoUnlocked] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -58,7 +59,7 @@ export default function TrainerSettingsPage() {
         // Fetch bio and settings from the trainers table
         const { data: trainer } = await supabase
           .from("trainers")
-          .select("id, bio, hourly_rate_ksh, hourly_rate_usd, linkedin_url, github_url")
+          .select("id, bio, hourly_rate_ksh, hourly_rate_usd, linkedin_url, github_url, google_calendar_connected")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -72,6 +73,7 @@ export default function TrainerSettingsPage() {
           setHourlyRateUsd(trainer.hourly_rate_usd || 25);
           setLinkedinUrl(trainer.linkedin_url || "");
           setGithubUrl(trainer.github_url || "");
+          setGoogleConnected(!!trainer.google_calendar_connected);
         } else {
           setBio(user.user_metadata?.bio || "");
           setHourlyRateKsh(user.user_metadata?.hourly_rate_ksh || 3000);
@@ -88,6 +90,18 @@ export default function TrainerSettingsPage() {
     if (params.get("video_unlocked") === "true") {
       setTimeout(() => {
         setMessage({ type: "success", text: "🎉 Success! Video Introduction feature unlocked successfully. You can now save your video URL!" });
+      }, 0);
+    } else if (params.get("google_connected") === "true") {
+      setTimeout(() => {
+        setMessage({ type: "success", text: "🎉 Google Calendar successfully connected! Google Meet links will now be generated automatically for accepted bookings." });
+      }, 0);
+    } else if (params.get("error") === "google_auth_failed") {
+      setTimeout(() => {
+        setMessage({ type: "error", text: "Google Calendar authorization failed. Please try again." });
+      }, 0);
+    } else if (params.get("error") === "token_exchange_failed") {
+      setTimeout(() => {
+        setMessage({ type: "error", text: "Failed to exchange tokens with Google. Please try again." });
       }, 0);
     }
   }, [supabase]);
@@ -134,6 +148,33 @@ export default function TrainerSettingsPage() {
       setMessage({ type: "error", text: "A connection error occurred. Please try again." });
     } finally {
       setPayLoading(false);
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    if (!user) return;
+    setLoading(true);
+    setMessage(null);
+    try {
+      const { error } = await supabase
+        .from("trainers")
+        .update({
+          google_access_token: null,
+          google_refresh_token: null,
+          google_token_expires_at: null,
+          google_calendar_connected: false
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setGoogleConnected(false);
+      setMessage({ type: "success", text: "Google Calendar disconnected successfully." });
+    } catch (err) {
+      console.error("Failed to disconnect Google Calendar:", err);
+      setMessage({ type: "error", text: "Failed to disconnect Google Calendar. Please try again." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -536,6 +577,99 @@ export default function TrainerSettingsPage() {
               <Save size={15} /> Save Payout Settings
             </button>
           </form>
+        </div>
+
+        {/* Google Calendar Integration */}
+        <div style={{
+          background: "white", borderRadius: 12, border: "1px solid var(--line)", padding: 28
+        }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--navy)", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+            <Globe size={18} color="var(--accent)" /> Google Meet Integration
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <span style={{ display: "block", fontSize: 13, color: "var(--slate)" }}>
+              Connect your Google Calendar to automatically create Google Meet events and send meeting invites to students when you accept a call booking.
+            </span>
+            
+            {googleConnected ? (
+              <div style={{
+                background: "var(--surface)",
+                border: "1px solid var(--green-light)",
+                borderRadius: 10,
+                padding: 18,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}>
+                <div>
+                  <div style={{ fontSize: 13, color: "var(--green)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                    ✓ Google Calendar Connected
+                  </div>
+                  <span style={{ fontSize: 12, color: "var(--slate)", marginTop: 4, display: "block" }}>
+                    Google Meet links will be generated automatically for your accepted sessions.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDisconnectGoogle}
+                  disabled={loading}
+                  style={{
+                    background: "transparent",
+                    color: "#DC2626",
+                    border: "1px solid #DC2626",
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s"
+                  }}
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                borderRadius: 10,
+                padding: 18,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}>
+                <div style={{ fontSize: 13, color: "var(--navy)", fontWeight: 500 }}>
+                  Automatically Generate Google Meet Links
+                </div>
+                <p style={{ fontSize: 12.5, color: "var(--slate)", lineHeight: 1.5 }}>
+                  Link your professional Google Account. When you confirm bookings, a unique Google Meet video call URL is created and saved to the booking. The client is also added as an attendee on your Google Calendar event.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = "/api/auth/google";
+                  }}
+                  style={{
+                    alignSelf: "flex-start",
+                    background: "var(--navy)",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  Connect Google Calendar
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Availability Calendar */}

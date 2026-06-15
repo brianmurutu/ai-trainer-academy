@@ -6,9 +6,10 @@ import { acceptTrainerBooking, declineTrainerBooking, TrainerBookingMapped } fro
 
 type TrainerBookingsClientProps = {
   initialBookings: TrainerBookingMapped[];
+  googleCalendarConnected: boolean;
 };
 
-export default function TrainerBookingsClient({ initialBookings }: TrainerBookingsClientProps) {
+export default function TrainerBookingsClient({ initialBookings, googleCalendarConnected }: TrainerBookingsClientProps) {
   const [bookings, setBookings] = useState<TrainerBookingMapped[]>(initialBookings);
   const [tab, setTab] = useState<"pending" | "confirmed">("pending");
   
@@ -21,6 +22,26 @@ export default function TrainerBookingsClient({ initialBookings }: TrainerBookin
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleAcceptImmediately = async (booking: TrainerBookingMapped) => {
+    setLoadingId(booking.id);
+    setActionError(null);
+    try {
+      const fallbackUrl = `https://meet.jit.si/ATA-Session-${booking.id}`;
+      const res = await acceptTrainerBooking(booking.id, fallbackUrl);
+      if (res.success) {
+        setBookings(prev => 
+          prev.map(b => b.id === booking.id ? { ...b, status: "confirmed", meetingUrl: res.meetingUrl || fallbackUrl } : b)
+        );
+      } else {
+        alert(res.error || "Failed to accept booking.");
+      }
+    } catch {
+      alert("An unexpected error occurred.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   const handleOpenAcceptModal = (booking: TrainerBookingMapped) => {
     setSelectedBooking(booking);
@@ -122,6 +143,25 @@ export default function TrainerBookingsClient({ initialBookings }: TrainerBookin
         })}
       </div>
 
+      {googleCalendarConnected && tab === "pending" && (
+        <div style={{
+          background: "rgba(16, 185, 129, 0.05)",
+          border: "1px solid var(--green)",
+          borderRadius: 10,
+          padding: "12px 16px",
+          marginBottom: 20,
+          fontSize: 13,
+          color: "var(--green)",
+          fontWeight: 500,
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }}>
+          <Video size={16} color="var(--green)" />
+          <span>Google Calendar is connected. Accepting a booking will automatically generate a Google Meet link and update the session details.</span>
+        </div>
+      )}
+
       {/* List */}
       {filtered.length === 0 ? (
         <div style={{
@@ -189,7 +229,7 @@ export default function TrainerBookingsClient({ initialBookings }: TrainerBookin
                       Decline
                     </button>
                     <button
-                      onClick={() => handleOpenAcceptModal(b)}
+                      onClick={() => googleCalendarConnected ? handleAcceptImmediately(b) : handleOpenAcceptModal(b)}
                       disabled={loadingId !== null}
                       style={{
                         padding: "8px 16px", background: "var(--green)", border: "none",
@@ -197,7 +237,12 @@ export default function TrainerBookingsClient({ initialBookings }: TrainerBookin
                         display: "flex", alignItems: "center", gap: 6
                       }}
                     >
-                      <Check size={14} /> Accept Booking
+                      {loadingId === b.id ? (
+                        <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                      ) : (
+                        <Check size={14} />
+                      )}
+                      {googleCalendarConnected ? "Accept & Auto-schedule" : "Accept Booking"}
                     </button>
                   </>
                 ) : (

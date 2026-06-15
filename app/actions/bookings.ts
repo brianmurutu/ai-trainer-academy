@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getValidTrainerToken, createGoogleMeetEvent } from "@/lib/google";
 
 export type SessionWithTrainer = {
   id: string;
@@ -71,6 +72,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
       return [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return bookings.map((b: any) => {
       const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
       const topicStr = topic || "";
@@ -206,7 +208,7 @@ export async function getTrainerBookings(): Promise<TrainerBookingMapped[]> {
 /**
  * Accept a booking slot and assign a Google Meet/Jitsi meeting link.
  */
-export async function acceptTrainerBooking(bookingId: string, meetingUrl: string): Promise<{ success: boolean; error?: string }> {
+export async function acceptTrainerBooking(bookingId: string, meetingUrl: string): Promise<{ success: boolean; error?: string; meetingUrl?: string }> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -223,7 +225,7 @@ export async function acceptTrainerBooking(bookingId: string, meetingUrl: string
     const adminDb = createAdminClient();
     const { data: booking } = await adminDb
       .from("bookings")
-      .select("session_topic, trainer_id")
+      .select("session_topic, trainer_id, session_date, session_duration_hrs, learner_id")
       .eq("id", bookingId)
       .single();
 
@@ -231,8 +233,53 @@ export async function acceptTrainerBooking(bookingId: string, meetingUrl: string
       return { success: false, error: "Booking not found or access denied" };
     }
 
+    let finalMeetingUrl = meetingUrl;
+
+    // Check if Google Calendar is connected
+    const accessToken = await getValidTrainerToken(trainer.id);
+
+    if (accessToken) {
+      let learnerEmail = "learner@example.com";
+      let learnerName = "Learner";
+
+      if (booking.learner_id) {
+        try {
+          const { data: userData } = await adminDb.auth.admin.getUserById(booking.learner_id);
+          if (userData?.user) {
+            learnerName = userData.user.user_metadata?.full_name || userData.user.email?.split("@")[0] || "Learner";
+            learnerEmail = userData.user.email || "learner@example.com";
+          }
+        } catch (err) {
+          console.error("[acceptTrainerBooking] Failed to fetch learner profile details:", err);
+        }
+      }
+
+      const originalTopic = booking.session_topic?.split(" || ")[0] || booking.session_topic || "1-on-1 Session";
+      const sessionDate = booking.session_date || new Date().toISOString();
+      const durationHrs = booking.session_duration_hrs || 1;
+
+      try {
+        finalMeetingUrl = await createGoogleMeetEvent({
+          accessToken,
+          learnerEmail,
+          learnerName,
+          topic: originalTopic,
+          sessionDate,
+          durationHrs,
+          bookingId
+        });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (googleErr: any) {
+        console.error("[acceptTrainerBooking] Google Meet event generation failed, falling back to Jitsi/manual:", googleErr);
+        // Fallback to Jitsi link if Google Meet generation fails
+        if (!finalMeetingUrl) {
+          finalMeetingUrl = `https://meet.jit.si/ATA-Session-${bookingId}`;
+        }
+      }
+    }
+
     const originalTopic = booking.session_topic?.split(" || ")[0] || booking.session_topic || "";
-    const updatedTopic = `${originalTopic} || ${meetingUrl.trim()}`;
+    const updatedTopic = `${originalTopic} || ${finalMeetingUrl.trim()}`;
 
     const { error } = await adminDb
       .from("bookings")
@@ -248,7 +295,8 @@ export async function acceptTrainerBooking(bookingId: string, meetingUrl: string
 
     revalidatePath("/trainer/bookings");
     revalidatePath("/dashboard/sessions");
-    return { success: true };
+    return { success: true, meetingUrl: finalMeetingUrl };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to accept booking" };
   }
@@ -294,6 +342,7 @@ export async function declineTrainerBooking(bookingId: string): Promise<{ succes
     revalidatePath("/trainer/bookings");
     revalidatePath("/dashboard/sessions");
     return { success: true };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to decline booking" };
   }

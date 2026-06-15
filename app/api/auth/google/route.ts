@@ -14,7 +14,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${siteUrl}/login?error=unauthorized`);
     }
 
-    const origin = request.nextUrl.origin;
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    const host = forwardedHost ? forwardedHost.split(",")[0].trim() : request.headers.get("host");
+    const forwardedProto = request.headers.get("x-forwarded-proto");
+    const proto = forwardedProto ? forwardedProto.split(",")[0].trim() : "http";
+    const origin = host ? `${proto}://${host}` : request.nextUrl.origin;
     // Pass the user ID as state to verify and link on callback
     const authUrl = getGoogleAuthUrl(user.id, origin);
     return NextResponse.redirect(authUrl);

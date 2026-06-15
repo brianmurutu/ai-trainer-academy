@@ -3,7 +3,12 @@ import { exchangeCodeForTokens } from "@/lib/google";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost ? forwardedHost.split(",")[0].trim() : request.headers.get("host");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const proto = forwardedProto ? forwardedProto.split(",")[0].trim() : "http";
+  const origin = host ? `${proto}://${host}` : request.nextUrl.origin;
   const code = searchParams.get("code");
   const state = searchParams.get("state"); // This is the user's ID passed from the redirect
   const error = searchParams.get("error");

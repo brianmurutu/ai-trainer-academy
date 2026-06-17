@@ -109,6 +109,7 @@ export default function NotificationsPanel() {
             .from("bookings")
             .select("id, status, session_date, session_topic, created_at, trainers(full_name)")
             .eq("learner_id", user.id)
+            .not("trainer_id", "is", null)
             .order("created_at", { ascending: false })
             .limit(5);
 

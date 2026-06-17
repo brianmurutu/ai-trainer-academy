@@ -66,6 +66,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
         )
       `)
       .eq("learner_id", user.id)
+      .not("trainer_id", "is", null)
       .order("session_date", { ascending: true });
 
     if (error || !bookings) {
@@ -77,6 +78,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
     return bookings.map((b: any) => {
       const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
       const topicStr = topic || "";
+      const validMeetingUrl = (meetingUrl && (meetingUrl.startsWith("http://") || meetingUrl.startsWith("https://"))) ? meetingUrl : null;
 
       const trainerName = b.trainers?.full_name || "Trainer";
       const initials = trainerName.split(" ").map((n: string) => n[0]).slice(0, 2).join("");
@@ -100,7 +102,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
       return {
         id: b.id,
         topic: topicStr.split(" — ")[0] || "1-on-1 Consultation",
-        meetingUrl: meetingUrl || null,
+        meetingUrl: validMeetingUrl,
         trainerName,
         trainerTitle: b.trainers?.tagline || "Consultant",
         trainerInitials: initials,

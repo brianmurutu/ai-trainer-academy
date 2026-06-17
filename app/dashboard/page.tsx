@@ -215,6 +215,7 @@ export default async function DashboardPage() {
     const trainerName = b.trainers?.full_name || "Trainer";
     const initials = trainerName.split(" ").map((n: string) => n[0]).slice(0, 2).join("");
     const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
+    const validMeetingUrl = (meetingUrl && (meetingUrl.startsWith("http://") || meetingUrl.startsWith("https://"))) ? meetingUrl : null;
 
     return {
       id: b.id,
@@ -229,7 +230,7 @@ export default async function DashboardPage() {
         ? new Date(b.session_date).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) + " EAT"
         : "",
       status: b.status,
-      meetingUrl: meetingUrl || null,
+      meetingUrl: validMeetingUrl,
     };
   });
 

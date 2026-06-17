@@ -123,6 +123,68 @@ export default function CertificationsPage() {
           </div>
         </section>
 
+        {/* General Exam Certification Feature */}
+        <section style={{
+          maxWidth: 900,
+          margin: "0 auto 60px",
+          background: "linear-gradient(135deg, var(--navy) 0%, #1A2E42 100%)",
+          color: "white",
+          borderRadius: 16,
+          padding: "48px 40px",
+          boxShadow: "0 10px 30px rgba(13,27,42,0.1)",
+          display: "grid",
+          gridTemplateColumns: "1fr 220px",
+          gap: 32,
+          alignItems: "center"
+        }} className="features-mobile">
+          <div>
+            <span style={{
+              background: "rgba(255,255,255,0.15)",
+              color: "white",
+              padding: "4px 10px",
+              borderRadius: 12,
+              fontSize: 10,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              display: "inline-block",
+              marginBottom: 12
+            }}>
+              Now Live
+            </span>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: "white", marginBottom: 12 }}>
+              Certified AI Training Fundamentals
+            </h2>
+            <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.8)", lineHeight: 1.6, marginBottom: 20 }}>
+              Interested in a general, portable credential that validates your understanding of RLHF, instruction following, safety policy, and annotation standards? Take our fundamentals exam to join our verified talent registry.
+            </p>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <Link href="/academy/modules" style={{
+                color: "white", fontSize: 13, fontWeight: 600, textDecoration: "underline"
+              }}>
+                Browse Free Modules
+              </Link>
+              <Link href="/academy/exam" style={{
+                color: "white", fontSize: 13, fontWeight: 600, textDecoration: "underline"
+              }}>
+                Learn about the Exam
+              </Link>
+            </div>
+          </div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <Link href="/academy/exam" style={{
+              background: "var(--accent)", color: "white", padding: "12px 20px",
+              borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background-color 0.15s"
+            }}
+              className="certify-now-btn"
+            >
+              Get Certified <Award size={15} />
+            </Link>
+          </div>
+        </section>
+
         {/* CTA */}
         <section style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <Link href="/courses" style={{
@@ -140,6 +202,9 @@ export default function CertificationsPage() {
       <style>{`
         .explore-btn:hover {
           background-color: var(--navy-800) !important;
+        }
+        .certify-now-btn:hover {
+          background-color: var(--accent-dark) !important;
         }
         @media(max-width: 768px) {
           .features-mobile { grid-template-columns: 1fr !important; }

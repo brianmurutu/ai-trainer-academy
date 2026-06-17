@@ -7,18 +7,15 @@ import Payments from "@/components/Payments";
 import Testimonials from "@/components/Testimonials";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
-import { getTrainers } from "@/lib/supabase/queries";
 
-export default async function Home() {
-  const dbTrainers = await getTrainers();
-
+export default function Home() {
   return (
     <>
       <Navbar />
       <main>
         <Hero />
         <HowItWorks />
-        <Trainers dbTrainers={dbTrainers} />
+        <Trainers />
         <Pricing />
         <Payments />
         <Testimonials />
@@ -28,4 +25,3 @@ export default async function Home() {
     </>
   );
 }
-

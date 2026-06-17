@@ -19,6 +19,7 @@ const modules = [
   {
     slug: "how-ai-training-jobs-work",
     title: "How AI Training Jobs Work",
+    image_url: "/images/course-foundation.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -54,6 +55,7 @@ const modules = [
   {
     slug: "passing-the-screening-process",
     title: "Passing the Screening Process",
+    image_url: "/images/course-foundation.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -89,6 +91,7 @@ const modules = [
   {
     slug: "your-first-annotation-task",
     title: "Your First Annotation Task",
+    image_url: "/images/course-foundation.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -124,6 +127,7 @@ const modules = [
   {
     slug: "foundations-of-rlhf",
     title: "Foundations of RLHF",
+    image_url: "/images/course-core.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -159,6 +163,7 @@ const modules = [
   {
     slug: "ground-truth-research-method",
     title: "Ground Truth Research Method",
+    image_url: "/images/course-core.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -194,6 +199,7 @@ const modules = [
   {
     slug: "advanced-instruction-following",
     title: "Advanced Instruction Following",
+    image_url: "/images/course-core.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -229,6 +235,7 @@ const modules = [
   {
     slug: "markdown-and-json-formatting-mastery",
     title: "Markdown & JSON Formatting Mastery",
+    image_url: "/images/course-core.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -264,6 +271,7 @@ const modules = [
   {
     slug: "safety-and-content-policy",
     title: "Safety & Content Policy Triage",
+    image_url: "/images/course-core.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -299,6 +307,7 @@ const modules = [
   {
     slug: "final-practice-simulation",
     title: "Final Practice: Full Task Simulation",
+    image_url: "/images/course-core.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -334,6 +343,7 @@ const modules = [
   {
     slug: "python-for-ai-training",
     title: "Python for AI Training",
+    image_url: "/images/course-technical.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -369,6 +379,7 @@ const modules = [
   {
     slug: "sql-and-data-handling",
     title: "SQL & Data Handling",
+    image_url: "/images/course-technical.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -404,6 +415,7 @@ const modules = [
   {
     slug: "creative-writing-and-style-guide-adherence",
     title: "Creative Writing & Style Guide Adherence",
+    image_url: "/images/course-domain.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -439,6 +451,7 @@ const modules = [
   {
     slug: "medical-scribing-and-hipaa-for-ai",
     title: "Medical Scribing & HIPAA for AI",
+    image_url: "/images/course-domain.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",
@@ -474,6 +487,7 @@ const modules = [
   {
     slug: "stem-and-latex-math-solving",
     title: "STEM & LaTeX (Math Solving)",
+    image_url: "/images/course-domain.png",
     trainer_name: "AI Trainer Academy",
     trainer_initials: "AA",
     trainer_title: "Official Academy Curriculum",

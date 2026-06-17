@@ -118,75 +118,232 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
         <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24, overflowY: "auto" }} className="responsive-container">
           
           {/* Mock Video Player container */}
-          <div style={{
-            aspectRatio: "16/9",
-            background: "black",
-            borderRadius: 12,
-            overflow: "hidden",
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-          }}>
-            {activeLesson?.isVideo ? (
-              <>
-                {/* Background visual styling to simulate a nice video player */}
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/api/placeholder/800/450') center/cover`,
-                  opacity: 0.6,
-                }} />
-                <div style={{ position: "relative", zIndex: 2, textAlign: "center", color: "white", padding: 20 }}>
-                  <div style={{
-                    width: 72, height: 72, borderRadius: "50%", background: "var(--accent)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 16px", cursor: "pointer", transition: "transform 0.2s",
-                    boxShadow: "0 0 20px rgba(26,111,191,0.5)"
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
-                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-                  >
-                    <Play size={32} fill="white" style={{ marginLeft: 4 }} />
-                  </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{activeLesson?.title}</h3>
-                  <span style={{ fontSize: 13, color: "var(--muted)" }}>Click to Play Video ({activeLesson?.duration})</span>
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: "center", color: "white", padding: 40 }}>
-                <FileText size={48} color="var(--accent)" style={{ marginBottom: 16 }} />
-                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Reading Assignment</h3>
-                <p style={{ fontSize: 14, color: "var(--muted)", maxWidth: 400, margin: "0 auto 20px" }}>
-                  {activeLesson?.title} is a text-based reading module.
-                </p>
+          {/* Mock Video Player container */}
+          {activeLesson?.content ? (
+            <div style={{
+              background: "white",
+              color: "#334155",
+              borderRadius: 12,
+              border: "1px solid var(--line)",
+              padding: "40px",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+              minHeight: "500px",
+              maxHeight: "700px",
+              overflowY: "auto",
+              lineHeight: "1.75",
+              fontSize: "15.5px"
+            }}>
+              <style>{`
+                .reading-content h1, .reading-content h2, .reading-content h3 {
+                  color: var(--navy);
+                  font-weight: 700;
+                  margin-top: 1.5em;
+                  margin-bottom: 0.5em;
+                }
+                .reading-content h2 {
+                  font-size: 1.35rem;
+                  border-bottom: 1px solid var(--line);
+                  padding-bottom: 8px;
+                }
+                .reading-content h3 {
+                  font-size: 1.15rem;
+                }
+                .reading-content p {
+                  margin-bottom: 1.25em;
+                }
+                .reading-content ul, .reading-content ol {
+                  margin-left: 24px;
+                  margin-bottom: 1.25em;
+                }
+                .reading-content li {
+                  margin-bottom: 0.5em;
+                }
+                .reading-content table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin: 24px 0;
+                  font-size: 14px;
+                }
+                .reading-content th, .reading-content td {
+                  border: 1px solid var(--line);
+                  padding: 10px 14px;
+                  text-align: left;
+                }
+                .reading-content th {
+                  background: var(--surface);
+                  font-weight: 600;
+                  color: var(--navy);
+                }
+                .reading-content blockquote {
+                  border-left: 4px solid var(--accent);
+                  padding-left: 16px;
+                  font-style: italic;
+                  color: var(--slate);
+                  margin: 20px 0;
+                }
+                .reading-content hr {
+                  border: 0;
+                  border-top: 1px solid var(--line);
+                  margin: 28px 0;
+                }
+                .reading-content .exercise-block {
+                  background: var(--surface);
+                  border: 1px solid var(--line);
+                  border-radius: 12px;
+                  padding: 24px;
+                  margin: 28px 0;
+                }
+                .reading-content .exercise-header {
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 16px;
+                  font-weight: 700;
+                  color: var(--navy);
+                }
+                .reading-content .exercise-icon {
+                  width: 24px;
+                  height: 24px;
+                }
+                .reading-content .response-container {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 16px;
+                  margin: 16px 0;
+                }
+                .reading-content .response-card {
+                  border: 1px solid var(--line);
+                  border-radius: 8px;
+                  padding: 16px;
+                  font-size: 13.5px;
+                  background: white;
+                }
+                .reading-content .response-card-celadon {
+                  border-left: 4px solid var(--green);
+                }
+                .reading-content .response-card-blue {
+                  border-left: 4px solid var(--accent);
+                }
+                .reading-content .academy-callout {
+                  display: flex;
+                  gap: 14px;
+                  background: #FDF0E4;
+                  border-left: 4px solid #B05C0E;
+                  padding: 16px;
+                  border-radius: 8px;
+                  margin: 20px 0;
+                }
+                .reading-content .academy-callout img {
+                  width: 20px;
+                  height: 20px;
+                  flex-shrink: 0;
+                }
+                .reading-content .quick-ref-card {
+                  background: var(--navy);
+                  color: white;
+                  padding: 24px;
+                  border-radius: 12px;
+                  margin: 28px 0;
+                }
+                .reading-content .quick-ref-card h2 {
+                  color: white;
+                  border: none;
+                  margin-top: 0;
+                  padding-bottom: 0;
+                }
+              `}</style>
+              <div 
+                className="reading-content" 
+                dangerouslySetInnerHTML={{ __html: activeLesson.content }} 
+              />
+              <div style={{ marginTop: "40px", paddingTop: "24px", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "13px", color: "var(--slate)" }}>Time to complete: {activeLesson.duration}</span>
                 <button
-                  onClick={(e) => toggleLessonCompletion(activeLesson?.id || "", e)}
+                  onClick={(e) => toggleLessonCompletion(activeLesson.id, e)}
                   style={{
-                    background: "white", color: "var(--navy)", border: "none", padding: "10px 20px",
-                    borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer"
+                    background: completedLessons[activeLesson.id] ? "var(--green-light)" : "var(--navy)", 
+                    color: completedLessons[activeLesson.id] ? "var(--green)" : "white", 
+                    border: completedLessons[activeLesson.id] ? "1px solid var(--green)" : "none",
+                    padding: "10px 20px",
+                    borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: "6px"
                   }}
                 >
-                  {completedLessons[activeLesson?.id || ""] ? "Mark as Incomplete" : "Mark as Completed"}
+                  {completedLessons[activeLesson.id] ? "Completed ✓" : "Mark as Completed"}
                 </button>
               </div>
-            )}
-
-            {/* Video Controls overlay mock */}
+            </div>
+          ) : (
             <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0,
-              background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
-              padding: "16px 20px", display: "flex", alignItems: "center",
-              justifyContent: "space-between", color: "white", fontSize: 12
+              aspectRatio: "16/9",
+              background: "black",
+              borderRadius: 12,
+              overflow: "hidden",
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
             }}>
-              <span>0:00 / {activeLesson?.duration}</span>
-              <div style={{ display: "flex", gap: 12 }}>
-                <span>CC</span>
-                <span>HD</span>
-                <span>Fullscreen</span>
+              {activeLesson?.isVideo ? (
+                <>
+                  {/* Background visual styling to simulate a nice video player */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/api/placeholder/800/450') center/cover`,
+                    opacity: 0.6,
+                  }} />
+                  <div style={{ position: "relative", zIndex: 2, textAlign: "center", color: "white", padding: 20 }}>
+                    <div style={{
+                      width: 72, height: 72, borderRadius: "50%", background: "var(--accent)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      margin: "0 auto 16px", cursor: "pointer", transition: "transform 0.2s",
+                      boxShadow: "0 0 20px rgba(26,111,191,0.5)"
+                    }}
+                      onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+                      onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      <Play size={32} fill="white" style={{ marginLeft: 4 }} />
+                    </div>
+                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{activeLesson?.title}</h3>
+                    <span style={{ fontSize: 13, color: "var(--muted)" }}>Click to Play Video ({activeLesson?.duration})</span>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: "center", color: "white", padding: 40 }}>
+                  <FileText size={48} color="var(--accent)" style={{ marginBottom: 16 }} />
+                  <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Reading Assignment</h3>
+                  <p style={{ fontSize: 14, color: "var(--muted)", maxWidth: 400, margin: "0 auto 20px" }}>
+                    {activeLesson?.title} is a text-based reading module.
+                  </p>
+                  <button
+                    onClick={(e) => toggleLessonCompletion(activeLesson?.id || "", e)}
+                    style={{
+                      background: "white", color: "var(--navy)", border: "none", padding: "10px 20px",
+                      borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer"
+                    }}
+                  >
+                    {completedLessons[activeLesson?.id || ""] ? "Mark as Incomplete" : "Mark as Completed"}
+                  </button>
+                </div>
+              )}
+
+              {/* Video Controls overlay mock */}
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0,
+                background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+                padding: "16px 20px", display: "flex", alignItems: "center",
+                justifyContent: "space-between", color: "white", fontSize: 12
+              }}>
+                <span>0:00 / {activeLesson?.duration}</span>
+                <div style={{ display: "flex", gap: 12 }}>
+                  <span>CC</span>
+                  <span>HD</span>
+                  <span>Fullscreen</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Active lesson title & summary details */}
           <div>

@@ -37,7 +37,7 @@ export default function Footer() {
             <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.65, maxWidth: 220, marginBottom: 16 }}>
               The leading platform for AI model training education. Learn from verified experts worldwide.
             </p>
-            <p style={{ fontSize: 12, color: "var(--muted)" }}>Nairobi, Kenya 🇰🇪</p>
+            <p style={{ fontSize: 12, color: "var(--muted)" }}>San Francisco · London · Tokyo · Global</p>
           </div>
 
           {/* Link columns */}

@@ -46,7 +46,7 @@ function getRelativeTime(date: Date): string {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-KE", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 // ---------------------------------------------------------------------------
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
         tag: e.course.tag ?? "",
         tagColor: e.course.tag_color ?? "#6366F1",
         tagBg: e.course.tag_bg ?? "#EEF2FF",
-        lastAccessed: new Date(e.created_at).toLocaleDateString("en-KE", { month: "short", day: "numeric" }),
+        lastAccessed: new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       };
     })
     .filter((c): c is CourseCardData => c !== null);
@@ -224,10 +224,10 @@ export default async function DashboardPage() {
       trainerInitials: initials,
       trainerColor: getTrainerColor(trainerName),
       date: b.session_date
-        ? new Date(b.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" })
+        ? new Date(b.session_date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
         : "TBD",
       time: b.session_date
-        ? new Date(b.session_date).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) + " EAT"
+        ? new Date(b.session_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" })
         : "",
       status: b.status,
       meetingUrl: validMeetingUrl,
@@ -239,7 +239,7 @@ export default async function DashboardPage() {
     id: c.id,
     title: c.course?.title ?? "Course Certificate",
     issuedDate: c.created_at
-      ? new Date(c.created_at).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })
+      ? new Date(c.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
       : "Recently",
     credentialId: `ATA-${c.course_id.slice(0, 6).toUpperCase()}`,
     color: c.course?.tag_color ?? "#6366F1",
@@ -364,7 +364,7 @@ export default async function DashboardPage() {
             {greeting}, {firstName}
           </h1>
           <p style={{ fontSize: 14, color: "var(--slate)" }}>
-            {now.toLocaleDateString("en-KE", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+            {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

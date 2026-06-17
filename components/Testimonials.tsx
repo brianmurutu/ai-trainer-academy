@@ -2,7 +2,7 @@ import { Quote } from "lucide-react";
 
 const testimonials = [
   {
-    text: "I went from zero to fine-tuning my first LLaMA model in three weeks. The trainer was patient, structured, and genuinely expert. Worth every shilling.",
+    text: "I went from zero to fine-tuning my first LLaMA model in three weeks. The trainer was patient, structured, and genuinely expert. Worth every penny.",
     author: "Amina Hassan",
     role: "ML Engineer, Nairobi",
     initials: "AH", bg: "#1A6FBF",

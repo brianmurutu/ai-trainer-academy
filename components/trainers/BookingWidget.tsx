@@ -100,10 +100,7 @@ export default function BookingWidget({
     if (payMethod === "crypto") {
       return `$${amountUsd.toFixed(2)} USDT`;
     }
-    if (currency === "KES") {
-      return `KSH ${amountKsh.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    }
-    return `$${amountUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return formatPrice(amountKsh, amountUsd);
   };
 
   // Card payment via Paystack
@@ -265,7 +262,7 @@ export default function BookingWidget({
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--slate)", marginBottom: 8 }}>Payment method</div>
         <div style={{ display: "flex", background: "#F5F7FA", borderRadius: 10, padding: 3, gap: 3 }}>
           {([
-            { id: "card" as PaymentMethod, label: "Card / M-Pesa", Icon: CreditCard },
+            { id: "card" as PaymentMethod, label: "Credit/Debit Card", Icon: CreditCard },
             { id: "crypto" as PaymentMethod, label: "Crypto (USDT)", Icon: Bitcoin },
           ] as const).map(({ id, label, Icon }) => (
             <button key={id} type="button" onClick={() => setPayMethod(id)} style={{

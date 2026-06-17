@@ -411,7 +411,7 @@ export default async function TrainerPage() {
             {greeting}, {firstName}
           </h1>
           <p style={{ fontSize: 14, color: "var(--slate)" }}>
-            {now.toLocaleDateString("en-KE", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+            {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

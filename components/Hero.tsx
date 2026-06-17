@@ -1,7 +1,10 @@
+"use client";
 import Link from "next/link";
 import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { useCurrency } from "@/components/CurrencyProvider";
 
 export default function Hero() {
+  const { formatPrice } = useCurrency();
   return (
     <section style={{
       maxWidth: 1180, margin: "0 auto",
@@ -68,7 +71,7 @@ export default function Hero() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[
             "Vetted & approved trainers only",
-            "Pay in KSH, USD, or crypto",
+            "Pay in USD, EUR, GBP, KES, or crypto",
             "Get certified — recognised by employers",
           ].map(point => (
             <div key={point} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -140,7 +143,7 @@ export default function Hero() {
               borderTop: "1px solid var(--line)",
             }}>
               <span style={{ fontSize: 13, color: "var(--muted)" }}>128 sessions · 4.9 ★</span>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>KSH 2,500/hr</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--accent)" }}>{formatPrice(2500, 20)}/hr</span>
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ export default async function LearnerCoursesPage() {
         progress: e.progress_pct,
         completed: e.completed_lessons.length,
         total: totalLessons,
-        lastAccessed: new Date(e.created_at).toLocaleDateString("en-KE", { month: "short", day: "numeric" }),
+        lastAccessed: new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       };
     })
     .filter((c): c is NonNullable<typeof c> => c !== null);

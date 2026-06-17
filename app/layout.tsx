@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
+import { LanguageProvider } from "@/components/LanguageProvider";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -66,7 +67,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
         <CurrencyProvider>
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
         </CurrencyProvider>
         <Analytics />
       </body>

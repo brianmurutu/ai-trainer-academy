@@ -88,8 +88,8 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
       let timeLabel = "TBD";
       if (b.session_date) {
         const d = new Date(b.session_date);
-        dateLabel = d.toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" });
-        timeLabel = d.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" });
+        dateLabel = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        timeLabel = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
       } else if (topicStr.includes(" — ")) {
         // Fallback from topic string: Topic — Date Time
         const parts = topicStr.split(" — ")[1]?.split(" ");
@@ -177,8 +177,8 @@ export async function getTrainerBookings(): Promise<TrainerBookingMapped[]> {
       let timeLabel = "TBD";
       if (b.session_date) {
         const d = new Date(b.session_date);
-        dateLabel = d.toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" });
-        timeLabel = d.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" });
+        dateLabel = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        timeLabel = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
       } else if (topicStr.includes(" — ")) {
         const parts = topicStr.split(" — ")[1]?.split(" ");
         if (parts) {
@@ -472,10 +472,10 @@ export async function generateMeetingLinkAndNotify(bookingId: string): Promise<{
     // 8. Deliver meeting links to learners and trainers via email
     try {
       const formattedDate = booking.session_date
-        ? new Date(booking.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+        ? new Date(booking.session_date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
         : "TBD";
       const formattedTime = booking.session_date
-        ? new Date(booking.session_date).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) + " EAT"
+        ? new Date(booking.session_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" })
         : "TBD";
 
       // Send confirmation to Learner

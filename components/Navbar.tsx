@@ -3,19 +3,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Brain } from "lucide-react";
 import { useCurrency, Currency } from "@/components/CurrencyProvider";
-import { useLanguage, Language } from "@/components/LanguageProvider";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { currency, setCurrency } = useCurrency();
-  const { language, setLanguage, t } = useLanguage();
 
   const navLinks = [
-    [t("find_trainers"), "/trainers"],
-    [t("courses"), "/courses"],
-    [t("academy"), "/academy/modules"],
-    [t("business"), "/business"],
-    [t("become_trainer"), "/apply"]
+    ["Find Trainers", "/trainers"],
+    ["Courses", "/courses"],
+    ["Academy", "/academy/modules"],
+    ["For Business", "/business"],
+    ["Become a Trainer", "/apply"]
   ] as const;
 
   return (
@@ -91,47 +89,14 @@ export default function Navbar() {
             </svg>
           </div>
 
-          {/* Language Selector */}
-          <div style={{ position: "relative" }}>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
-              style={{
-                appearance: "none",
-                WebkitAppearance: "none",
-                background: "var(--surface)",
-                border: "1px solid var(--line)",
-                borderRadius: 8,
-                padding: "6px 28px 6px 10px",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--navy)",
-                cursor: "pointer",
-                outline: "none",
-              }}
-            >
-              <option value="EN">EN (English)</option>
-              <option value="SW">SW (Kiswahili)</option>
-              <option value="ES">ES (Español)</option>
-              <option value="FR">FR (Français)</option>
-              <option value="DE">DE (Deutsch)</option>
-            </select>
-            <svg
-              style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-              width="10" height="6" viewBox="0 0 10 6" fill="none"
-            >
-              <path d="M1 1l4 4 4-4" stroke="var(--slate)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-
           <Link href="/login" style={{
             fontSize: 14, color: "var(--slate)", textDecoration: "none",
             padding: "8px 16px", borderRadius: 8, fontWeight: 400,
-          }}>{t("log_in")}</Link>
+          }}>Log in</Link>
           <Link href="/signup" style={{
             fontSize: 14, background: "var(--navy)", color: "white",
             textDecoration: "none", padding: "9px 20px", borderRadius: 8, fontWeight: 500,
-          }}>{t("get_started")}</Link>
+          }}>Get started</Link>
         </div>
 
         {/* Mobile menu toggle */}
@@ -190,40 +155,6 @@ export default function Navbar() {
                   <path d="M1 1l4 4 4-4" stroke="var(--slate)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-
-              {/* Mobile Language Selector */}
-              <div style={{ position: "relative", flex: 1 }}>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as Language)}
-                  style={{
-                    appearance: "none",
-                    WebkitAppearance: "none",
-                    background: "var(--surface)",
-                    border: "1px solid var(--line)",
-                    borderRadius: 8,
-                    padding: "10px 28px 10px 10px",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: "var(--navy)",
-                    cursor: "pointer",
-                    outline: "none",
-                    width: "100%",
-                  }}
-                >
-                  <option value="EN">EN</option>
-                  <option value="SW">SW</option>
-                  <option value="ES">ES</option>
-                  <option value="FR">FR</option>
-                  <option value="DE">DE</option>
-                </select>
-                <svg
-                  style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-                  width="10" height="6" viewBox="0 0 10 6" fill="none"
-                >
-                  <path d="M1 1l4 4 4-4" stroke="var(--slate)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
@@ -231,12 +162,12 @@ export default function Navbar() {
                 flex: 1, textAlign: "center", padding: "10px",
                 border: "1px solid var(--line)", borderRadius: 8,
                 fontSize: 14, color: "var(--ink)", textDecoration: "none",
-              }}>{t("log_in")}</Link>
+              }}>Log in</Link>
               <Link href="/signup" onClick={() => setOpen(false)} style={{
                 flex: 1, textAlign: "center", padding: "10px",
                 background: "var(--navy)", borderRadius: 8,
                 fontSize: 14, color: "white", textDecoration: "none", fontWeight: 500,
-              }}>{t("get_started")}</Link>
+              }}>Get started</Link>
             </div>
           </div>
         </div>

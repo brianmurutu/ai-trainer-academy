@@ -66,7 +66,11 @@ export default function ExamPage() {
     { 
       step: "2", 
       title: "Practice (free)", 
-      desc: "Take the free practice exam. Same format, no timer pressure, no commitment, with detailed explanations." 
+      desc: (
+        <>
+          Take the <Link href="/academy/mock-exam" style={{ color: "var(--accent)", textDecoration: "underline" }}>free practice exam</Link>. Same format, no timer pressure, no commitment, with detailed explanations.
+        </>
+      )
     },
     { 
       step: "3", 

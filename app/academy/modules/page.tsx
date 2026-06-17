@@ -28,6 +28,7 @@ export default function ModulesPage() {
       modules: [
         {
           id: "F1",
+          slug: "how-ai-training-jobs-work",
           level: "Foundation",
           title: "How AI Training Jobs Work",
           description: "Find out what AI annotation is, what the work looks like day-to-day, what separates people who get consistent work from people who don't, and how to figure out which income tier you can target.",
@@ -38,6 +39,7 @@ export default function ModulesPage() {
         },
         {
           id: "F2",
+          slug: "passing-the-screening-process",
           level: "Foundation",
           title: "Passing the Screening Process",
           description: "Most candidates fail screening not because they lack the skills, but because they don't know what is being tested. This module breaks down every stage, the most common failure modes at each, and how to prepare for the real thing.",
@@ -47,6 +49,7 @@ export default function ModulesPage() {
         },
         {
           id: "F3",
+          slug: "your-first-annotation-task",
           level: "Foundation",
           title: "Your First Annotation Task",
           description: "Walk through a complete pairwise comparison task step by step. By the end you've made a real annotation decision, written a rationale, and know what quality means in practice.",
@@ -64,6 +67,7 @@ export default function ModulesPage() {
       modules: [
         {
           id: "F4",
+          slug: "foundations-of-rlhf",
           level: "Beginner",
           title: "Foundations of RLHF",
           description: "Understand the full RLHF pipeline — from pretraining to PPO — and learn exactly what annotators do, why quality signals matter, and how your feedback shapes model behavior.",
@@ -74,6 +78,7 @@ export default function ModulesPage() {
         },
         {
           id: "F5",
+          slug: "ground-truth-research-method",
           level: "Intermediate",
           title: "Ground Truth Research Method",
           description: "Learn how to research claims rigorously, build verifiable rationales with primary sources, and meet the evidence standards required for high-paying expert reviewer roles.",
@@ -84,6 +89,7 @@ export default function ModulesPage() {
         },
         {
           id: "F6",
+          slug: "advanced-instruction-following",
           level: "Intermediate",
           title: "Advanced Instruction Following",
           description: "Master the skill of parsing complex, multi-part instructions, handling constraint conflicts, and evaluating whether AI responses genuinely follow instructions or only appear to.",
@@ -94,6 +100,7 @@ export default function ModulesPage() {
         },
         {
           id: "F7",
+          slug: "markdown-and-json-formatting-mastery",
           level: "Intermediate",
           title: "Markdown & JSON Formatting Mastery",
           description: "Learn the formatting standards that AI training platforms enforce: proper Markdown, valid JSON, structured outputs for tool use. Discover how formatting errors degrade model training.",
@@ -103,6 +110,7 @@ export default function ModulesPage() {
         },
         {
           id: "C4",
+          slug: "safety-and-content-policy",
           level: "Beginner",
           title: "Safety & Content Policy Triage",
           description: "Learn when an AI must refuse, when it must help, and how to catch the error no annotator can afford to miss — the over-flag. Master the triage judgment that separates trusted reviewers from suspended accounts.",
@@ -113,6 +121,7 @@ export default function ModulesPage() {
         },
         {
           id: "C6",
+          slug: "final-practice-simulation",
           level: "Intermediate",
           title: "Final Practice: Full Task Simulation",
           description: "Zero theory. Ten unguided, high-fidelity tasks covering every skill in the Core curriculum — hallucination hunting, constraint parsing, safety triage, ground truth verification, JSON auditing, tone evaluation, and multi-constraint judgment.",
@@ -131,6 +140,7 @@ export default function ModulesPage() {
       modules: [
         {
           id: "T1",
+          slug: "python-for-ai-training",
           level: "Intermediate",
           title: "Python for AI Training",
           description: "Learn what coding interview tasks and code review sessions test: correctness, complexity, edge cases, and style. Discover how to evaluate AI-generated Python as a professional annotator.",
@@ -140,6 +150,7 @@ export default function ModulesPage() {
         },
         {
           id: "T2",
+          slug: "sql-and-data-handling",
           level: "Intermediate",
           title: "SQL & Data Handling",
           description: "Build the SQL and data reasoning skills needed to evaluate AI-generated queries, spot logic errors in data analysis, and succeed in data science interview tasks.",
@@ -157,6 +168,7 @@ export default function ModulesPage() {
       modules: [
         {
           id: "CW1",
+          slug: "creative-writing-and-style-guide-adherence",
           level: "Intermediate",
           title: "Creative Writing & Style Guide Adherence",
           description: "Learn what creative writing tasks in AI training require: style guide adherence, prompt engineering, brainstorming quality, red teaming for creative content, and what writing interviewers look for.",
@@ -166,6 +178,7 @@ export default function ModulesPage() {
         },
         {
           id: "MED1",
+          slug: "medical-scribing-and-hipaa-for-ai",
           level: "Advanced",
           title: "Medical Scribing & HIPAA for AI",
           description: "Understand clinical case study format, core medical terminology, HIPAA's implications for AI training data, and how to evaluate AI medical responses against provided sources — even without a clinical background.",
@@ -175,6 +188,7 @@ export default function ModulesPage() {
         },
         {
           id: "STEM1",
+          slug: "stem-and-latex-math-solving",
           level: "Advanced",
           title: "STEM & LaTeX (Math Solving)",
           description: "Learn to write and evaluate mathematical reasoning with LaTeX, verify AI-generated STEM solutions step by step, and understand what olympiad-level and quantitative reasoning tasks require.",
@@ -328,19 +342,28 @@ export default function ModulesPage() {
                       </p>
 
                       {/* Card Action */}
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        color: "var(--accent)",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        borderTop: "1px solid var(--line)",
-                        paddingTop: 16
-                      }}>
-                        <Icon size={16} color="var(--accent)" />
-                        <span>Available in course player</span>
-                      </div>
+                      <Link 
+                        href={`/courses/${m.slug}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          color: "var(--accent)",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          borderTop: "1px solid var(--line)",
+                          paddingTop: 16,
+                          textDecoration: "none"
+                        }}
+                        className="module-link"
+                      >
+                        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <Icon size={16} color="var(--accent)" />
+                          <span>Start Free Module</span>
+                        </span>
+                        <ArrowRight size={14} className="arrow-icon" />
+                      </Link>
                     </div>
                   );
                 })}
@@ -396,7 +419,7 @@ export default function ModulesPage() {
                     20 questions in the same format as the real exam. No time pressure, no payment required, and full answer explanations are provided. Retake as many times as you like.
                   </p>
                 </div>
-                <Link href="/courses" style={{
+                <Link href="/academy/mock-exam" style={{
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -511,6 +534,10 @@ export default function ModulesPage() {
           transform: translateY(-2px);
           box-shadow: 0 8px 20px rgba(0,0,0,0.03);
           border-color: var(--accent) !important;
+        }
+        .module-link:hover .arrow-icon {
+          transform: translateX(4px);
+          transition: transform 0.2s;
         }
         .practice-btn:hover {
           background-color: var(--line) !important;

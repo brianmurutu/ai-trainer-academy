@@ -5,8 +5,21 @@ import { Award, Brain, Users, Globe, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | AI Trainer Academy",
-  description: "Learn about the mission, values, and founders of AI Trainer Academy.",
+  title: "About Us",
+  description: "Learn about the mission, values, and team behind AI Trainer Academy. Connecting AI learners with verified model training experts worldwide.",
+  alternates: {
+    canonical: "https://ai-trainer-academy.top/about",
+  },
+  openGraph: {
+    title: "About Us | AI Trainer Academy",
+    description: "Learn about the mission, values, and team behind AI Trainer Academy.",
+    url: "https://ai-trainer-academy.top/about",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function AboutPage() {
@@ -60,7 +73,7 @@ export default function AboutPage() {
               Why AI Trainer Academy?
             </h2>
             <p>
-              In the fast-paced world of generative AI, textbook training is obsolete by the time it is published. The real expertise lies in the minds of the engineering practitioners who spend their days curating datasets, adjusting learning rates, debugging loss spikes, and fine-tuning weights.
+              In the fast-paced world of generative AI, textbook training is obsolete by the time it is published. The real expertise lives in the minds of engineering practitioners who spend their days curating datasets, adjusting learning rates, debugging loss spikes, and fine-tuning weights.
             </p>
             <p>
               Our platform was born to solve two critical problems:

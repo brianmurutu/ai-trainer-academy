@@ -4,14 +4,14 @@ const learnerSteps = [
   { icon: UserPlus, title: "Create an account", desc: "Sign up free in under 2 minutes. No credit card required." },
   { icon: Search, title: "Find your trainer", desc: "Browse verified experts by speciality, rating, price, or availability." },
   { icon: CreditCard, title: "Pay your way", desc: "M-Pesa, card (KSH/USD), or crypto via Binance. Instant confirmation." },
-  { icon: Award, title: "Learn & certify", desc: "Complete your training and earn a shareable, employer-recognised certificate." },
+  { icon: Award, title: "Learn and certify", desc: "Complete your training and earn a shareable, employer-recognised certificate." },
 ];
 
 const trainerSteps = [
   { icon: BookOpen, title: "Apply to teach", desc: "Submit your credentials and expertise. No upfront cost." },
   { icon: CheckSquare, title: "Get approved", desc: "Our team reviews your application within 48 hours." },
   { icon: Users, title: "List your services", desc: "Set your own rates, availability, and course catalogue." },
-  { icon: DollarSign, title: "Earn & grow", desc: "Keep 80% of every session. Weekly payouts to M-Pesa or bank." },
+  { icon: DollarSign, title: "Earn and grow", desc: "Keep 80% of every session. Weekly payouts to M-Pesa or bank." },
 ];
 
 export default function HowItWorks() {

@@ -4,26 +4,30 @@ import { BLOG_POSTS } from "@/lib/blog-data";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://ai-trainer-academy.top";
+  const now = new Date();
 
   // Static routes
   const staticRoutes = [
-    "",
-    "/about",
-    "/pricing",
-    "/courses",
-    "/trainers",
-    "/blog",
-    "/business",
-    "/contact",
-    "/faq/trainers",
-  ].map((route) => ({
+    { route: "", priority: 1.0, freq: "weekly" },
+    { route: "/about", priority: 0.8, freq: "monthly" },
+    { route: "/pricing", priority: 0.8, freq: "weekly" },
+    { route: "/courses", priority: 0.9, freq: "weekly" },
+    { route: "/trainers", priority: 0.9, freq: "weekly" },
+    { route: "/blog", priority: 0.8, freq: "weekly" },
+    { route: "/business", priority: 0.7, freq: "monthly" },
+    { route: "/contact", priority: 0.6, freq: "monthly" },
+    { route: "/faq/trainers", priority: 0.6, freq: "monthly" },
+    { route: "/certifications", priority: 0.7, freq: "monthly" },
+    { route: "/academy/modules", priority: 0.7, freq: "weekly" },
+    { route: "/careers", priority: 0.5, freq: "monthly" },
+  ].map(({ route, priority, freq }) => ({
     url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: route === "" ? 1.0 : 0.8,
+    lastModified: now,
+    changeFrequency: freq as MetadataRoute.Sitemap[number]["changeFrequency"],
+    priority,
   }));
 
-  // Dynamic courses routes
+  // Dynamic course routes from database
   let dbCourses: CourseRow[] = [];
   try {
     dbCourses = await getCourseRows();
@@ -33,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const courseRoutes = dbCourses.map((course) => ({
     url: `${baseUrl}/courses/${course.slug}`,
-    lastModified: new Date(),
+    lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
@@ -41,19 +45,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic blog routes
   const blogRoutes = BLOG_POSTS.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(),
+    lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
 
-  // Dynamic trainers routes (mock list)
-  const trainerSlugs = ["dr-amara-osei", "naledi-dlamini"];
-  const trainerRoutes = trainerSlugs.map((slug) => ({
-    url: `${baseUrl}/trainers/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  return [...staticRoutes, ...courseRoutes, ...blogRoutes, ...trainerRoutes];
+  return [...staticRoutes, ...courseRoutes, ...blogRoutes];
 }

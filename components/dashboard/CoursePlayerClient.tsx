@@ -69,13 +69,13 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
     <div style={{ background: "var(--surface)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <header style={{
-        background: "var(--navy)",
+        background: "var(--gradient-dark)",
         color: "white",
         padding: "16px 24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        borderBottom: "1px solid var(--navy-700)",
         position: "sticky",
         top: 0,
         zIndex: 10,
@@ -98,14 +98,14 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ textAlign: "right" }}>
             <span style={{ fontSize: 11, color: "var(--muted)", display: "block" }}>Your Progress</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: progressPercent === 100 ? "#4ADE80" : "var(--accent)" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: progressPercent === 100 ? "var(--green)" : "var(--accent)" }}>
               {completedCount} / {totalLessons} lessons ({progressPercent}%)
             </span>
           </div>
           <div style={{ width: 80, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${progressPercent}%`,
-              background: progressPercent === 100 ? "#4ADE80" : "var(--accent)", transition: "width 0.3s ease"
+              background: progressPercent === 100 ? "var(--green)" : "var(--accent)", transition: "width 0.3s ease"
             }} />
           </div>
         </div>
@@ -118,24 +118,23 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
         <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24, overflowY: "auto" }} className="responsive-container">
           
           {/* Mock Video Player container */}
-          {/* Mock Video Player container */}
           {activeLesson?.content ? (
             <div style={{
               background: "white",
-              color: "#334155",
-              borderRadius: 12,
+              color: "var(--ink)",
+              borderRadius: "var(--border-radius-premium)",
               border: "1px solid var(--line)",
               padding: "40px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+              boxShadow: "var(--shadow-premium)",
               minHeight: "500px",
-              maxHeight: "700px",
+              maxHeight: "750px",
               overflowY: "auto",
-              lineHeight: "1.75",
+              lineHeight: "1.8",
               fontSize: "15.5px"
             }}>
               <style>{`
                 .reading-content h1, .reading-content h2, .reading-content h3 {
-                  color: var(--navy);
+                  color: var(--navy-900);
                   font-weight: 700;
                   margin-top: 1.5em;
                   margin-bottom: 0.5em;
@@ -158,6 +157,15 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
                 .reading-content li {
                   margin-bottom: 0.5em;
                 }
+                .reading-content code {
+                  background: rgba(37, 99, 235, 0.05);
+                  color: var(--accent);
+                  font-family: var(--font-mono);
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  font-size: 0.9em;
+                  border: 1px solid rgba(37, 99, 235, 0.1);
+                }
                 .reading-content table {
                   width: 100%;
                   border-collapse: collapse;
@@ -172,7 +180,7 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
                 .reading-content th {
                   background: var(--surface);
                   font-weight: 600;
-                  color: var(--navy);
+                  color: var(--navy-900);
                 }
                 .reading-content blockquote {
                   border-left: 4px solid var(--accent);
@@ -187,11 +195,12 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
                   margin: 28px 0;
                 }
                 .reading-content .exercise-block {
-                  background: var(--surface);
-                  border: 1px solid var(--line);
-                  border-radius: 12px;
+                  background: linear-gradient(135deg, var(--surface) 0%, rgba(255,255,255,0.8) 100%);
+                  border: 1px solid rgba(226, 232, 240, 0.8);
+                  border-radius: 14px;
                   padding: 24px;
                   margin: 28px 0;
+                  box-shadow: var(--shadow-sm);
                 }
                 .reading-content .exercise-header {
                   display: flex;
@@ -199,7 +208,7 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
                   gap: 10px;
                   margin-bottom: 16px;
                   font-weight: 700;
-                  color: var(--navy);
+                  color: var(--navy-900);
                 }
                 .reading-content .exercise-icon {
                   width: 24px;
@@ -227,11 +236,12 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
                 .reading-content .academy-callout {
                   display: flex;
                   gap: 14px;
-                  background: #FDF0E4;
-                  border-left: 4px solid #B05C0E;
-                  padding: 16px;
+                  background: rgba(245, 158, 11, 0.06);
+                  border-left: 4px solid var(--amber);
+                  padding: 16px 20px;
                   border-radius: 8px;
                   margin: 20px 0;
+                  color: var(--ink);
                 }
                 .reading-content .academy-callout img {
                   width: 20px;
@@ -239,11 +249,13 @@ export default function CoursePlayerClient({ course, userEmail, initialCompleted
                   flex-shrink: 0;
                 }
                 .reading-content .quick-ref-card {
-                  background: var(--navy);
+                  background: var(--gradient-dark);
                   color: white;
-                  padding: 24px;
-                  border-radius: 12px;
+                  padding: 28px;
+                  border-radius: 16px;
                   margin: 28px 0;
+                  box-shadow: var(--shadow-lg);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
                 }
                 .reading-content .quick-ref-card h2 {
                   color: white;

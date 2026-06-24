@@ -131,8 +131,19 @@ export default function Hero() {
 
       <style>{`
         .hero-section {
-          border-bottom: 1px solid var(--line);
-          background: linear-gradient(180deg, #fff 0%, var(--surface) 100%);
+          border-bottom: 1px solid var(--navy-700);
+          background: var(--navy);
+          position: relative;
+          overflow: hidden;
+        }
+        .hero-section::before {
+          content: '';
+          position: absolute;
+          top: -20%; left: -10%;
+          width: 70%; height: 90%;
+          background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 60%);
+          pointer-events: none;
+          z-index: 1;
         }
         .hero-container {
           max-width: 1180px;
@@ -142,41 +153,44 @@ export default function Hero() {
           grid-template-columns: 1fr 1fr;
           gap: 72px;
           align-items: center;
+          position: relative;
+          z-index: 2;
         }
         .hero-badge {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: var(--accent-light);
-          border: 1px solid #C5DEFA;
+          background: rgba(37, 99, 235, 0.08);
+          border: 1px solid rgba(37, 99, 235, 0.25);
           border-radius: 20px;
           padding: 5px 14px 5px 10px;
           font-size: 13px;
-          color: var(--accent);
-          font-weight: 500;
+          color: #60A5FA;
+          font-weight: 600;
           margin-bottom: 28px;
         }
         .hero-badge-dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: var(--accent);
+          background: #3B82F6;
           display: inline-block;
           flex-shrink: 0;
+          box-shadow: 0 0 8px #2563EB;
         }
         .hero-heading {
           font-size: clamp(34px, 5vw, 54px);
-          font-weight: 700;
+          font-weight: 800;
           line-height: 1.1;
           letter-spacing: -1.5px;
-          color: var(--navy);
+          color: white;
           margin-bottom: 22px;
         }
         .hero-sub {
           font-size: 17px;
-          color: var(--slate);
+          color: #94A3B8;
           line-height: 1.75;
-          max-width: 420px;
+          max-width: 450px;
           margin-bottom: 36px;
         }
         .hero-actions {
@@ -190,32 +204,39 @@ export default function Hero() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: var(--navy);
+          background: var(--gradient-accent);
           color: white;
           text-decoration: none;
           padding: 14px 28px;
           border-radius: 10px;
           font-size: 15px;
           font-weight: 600;
-          transition: background 0.15s, transform 0.1s;
+          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+          transition: all 0.2s ease;
           letter-spacing: -0.2px;
         }
-        .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+        .btn-primary:hover { 
+          transform: translateY(-1px); 
+          box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); 
+        }
         .btn-secondary {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: white;
-          color: var(--ink);
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
           text-decoration: none;
           padding: 14px 24px;
           border-radius: 10px;
           font-size: 15px;
-          font-weight: 500;
-          border: 1px solid var(--line);
-          transition: border-color 0.15s;
+          font-weight: 600;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          transition: all 0.15s ease;
         }
-        .btn-secondary:hover { border-color: #b5cfe8; }
+        .btn-secondary:hover { 
+          background: rgba(255, 255, 255, 0.1); 
+          border-color: rgba(255, 255, 255, 0.35); 
+        }
         .hero-trust {
           display: flex;
           flex-direction: column;
@@ -226,7 +247,7 @@ export default function Hero() {
           align-items: center;
           gap: 9px;
           font-size: 13.5px;
-          color: var(--slate);
+          color: #94A3B8;
         }
         .hero-visual {
           display: flex;
@@ -237,11 +258,13 @@ export default function Hero() {
           display: flex;
           align-items: center;
           gap: 18px;
-          background: white;
-          border: 1px solid var(--line);
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border-radius: 16px;
           padding: 20px 24px;
-          box-shadow: 0 2px 12px rgba(13,27,42,0.04);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .hero-stats-grid {
           display: grid;
@@ -249,19 +272,23 @@ export default function Hero() {
           gap: 12px;
         }
         .hero-stat-card {
-          background: white;
-          border: 1px solid var(--line);
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border-radius: 14px;
           padding: 18px 20px;
-          transition: box-shadow 0.15s;
+          transition: all 0.2s ease;
         }
         .hero-stat-card:hover {
-          box-shadow: 0 4px 16px rgba(26,111,191,0.07);
+          background: rgba(255, 255, 255, 0.04);
+          border-color: rgba(37, 99, 235, 0.3);
+          transform: translateY(-2px);
         }
         .hero-stat-num {
           font-size: 26px;
-          font-weight: 700;
-          color: var(--navy);
+          font-weight: 800;
+          color: white;
           letter-spacing: -0.5px;
           line-height: 1;
           margin-bottom: 4px;
@@ -269,25 +296,27 @@ export default function Hero() {
         .hero-stat-label {
           font-size: 13px;
           font-weight: 600;
-          color: var(--ink);
+          color: #E2E8F0;
           margin-bottom: 2px;
         }
         .hero-stat-sub {
           font-size: 11px;
-          color: var(--muted);
+          color: #94A3B8;
         }
         .hero-trainer-card {
-          background: white;
-          border: 1px solid var(--line);
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border-radius: 14px;
           padding: 18px;
-          box-shadow: 0 2px 12px rgba(13,27,42,0.04);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .trainer-avatar {
           width: 44px;
           height: 44px;
           border-radius: 50%;
-          background: var(--navy);
+          background: var(--gradient-accent);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -295,10 +324,11 @@ export default function Hero() {
           font-weight: 700;
           color: white;
           flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
         }
         .trainer-badge-available {
-          background: var(--green-light);
-          color: var(--green);
+          background: rgba(16, 185, 129, 0.12);
+          color: #34D399;
           font-size: 11px;
           font-weight: 600;
           padding: 3px 10px;
@@ -308,10 +338,10 @@ export default function Hero() {
         .tag-chip {
           font-size: 11px;
           padding: 3px 10px;
-          background: var(--surface);
+          background: rgba(255, 255, 255, 0.05);
           border-radius: 20px;
-          color: var(--slate);
-          border: 1px solid var(--line);
+          color: #E2E8F0;
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
         @media (max-width: 900px) {
           .hero-container { grid-template-columns: 1fr; gap: 48px; padding: 56px 20px 48px; }

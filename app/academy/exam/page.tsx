@@ -25,14 +25,14 @@ export default function ExamPage() {
   const { formatPrice, currency } = useCurrency();
 
   const examModules = [
-    { title: "How AI training works", desc: "The business model behind the work, who pays, what for, and why it exists." },
-    { title: "Passing the screening process", desc: "What recruiters check on a trial task, what predicts success, what gets you cut." },
-    { title: "Annotation tasks", desc: "Labelling, classification, ranking, and the small formatting habits that separate good work from rejected work." },
-    { title: "RLHF foundations", desc: "Preference judgements, ranking outputs, writing the tie-break rationale that reviewers trust." },
-    { title: "Ground-truth research", desc: "Verifying claims, citing sources, reasoning about answers nobody can fully verify." },
-    { title: "Instruction following", desc: "Reading long prompts without missing the constraint buried on line 14." },
-    { title: "Markdown and JSON formatting", desc: "The format rules that quietly reject more candidates than any other single skill." },
-    { title: "Safety and content policy", desc: "Refusals, edge cases, calibrating between over-blocking and under-blocking." }
+    { title: "AI Model Alignment Principles", desc: "How reinforcement learning from human feedback (RLHF) and fine-tuning shape model behavior." },
+    { title: "Platform Assessments & Screening", desc: "Auditing patterns, quality guidelines, and avoiding screening traps during platform evaluations." },
+    { title: "Factual Claim Auditing", desc: "Verifying facts, sourcing primary documentation, checking links, and proving hallucinations." },
+    { title: "Prompt Constraint Parsing", desc: "Auditing multi-constraint prompts, checking nested rules, and grading instruction following." },
+    { title: "Markup & Syntax Verification", desc: "Validating GFM Markdown syntax, nested JSON structures, escaping rules, and tool outputs." },
+    { title: "Safety Policies & Refusal Triage", desc: "Calibrating safe vs. unsafe prompts, refusal rules, and avoiding the over-flagging penalty." },
+    { title: "Code Correctness Auditing", desc: "Evaluating pythonic correctness, algorithmic complexity (Big O), edge-case testing, and formatting." },
+    { title: "Database Query Validation", desc: "Auditing SQL joins, aggregates, subqueries, schema compatibility, and query performance." }
   ];
 
   const outcomes = [

@@ -9,13 +9,16 @@ const BASE_URL = "https://ai-trainer-academy.top";
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "AI Trainer Academy | Learn to Train AI Models",
+    default: "AI Trainer Academy | Learn to Train AI Models with Verified Experts",
     template: "%s | AI Trainer Academy",
   },
   description:
-    "Connect with verified AI training experts. Learn fine-tuning, prompt engineering, RLHF, and dataset curation from real practitioners. Pay in KES, USD, or crypto.",
+    "AI Trainer Academy is the leading platform for AI training, data annotation, and AI model training education. Connect with verified AI trainers to learn RLHF, fine-tuning, prompt engineering, and dataset curation. Pay in KES, USD, or crypto.",
   keywords:
-    "AI model training, fine-tuning, prompt engineering, RLHF, AI courses, machine learning training, AI education Kenya, LLM training",
+    "AI Trainer, AI Training, AI Training Academy, AI Academy, AI Models Training, Data Annotation, AI trainer certification, RLHF training, fine-tune LLM, prompt engineering course, AI data labeling, machine learning training, become AI trainer, AI annotation course, AI education Kenya, AI courses Africa, AI trainer jobs",
+  authors: [{ name: "AI Trainer Academy", url: BASE_URL }],
+  creator: "AI Trainer Academy",
+  publisher: "AI Trainer Academy",
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png", sizes: "512x512" },
@@ -25,12 +28,13 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
   },
   openGraph: {
-    title: "AI Trainer Academy",
+    title: "AI Trainer Academy | AI Training, Data Annotation & AI Model Training",
     description:
-      "The go-to platform for AI model training education. Learn from verified experts.",
+      "The specialist platform for AI training and data annotation education. Find verified AI trainers, earn certifications, and train AI models from real practitioners.",
     type: "website",
     siteName: "AI Trainer Academy",
     url: BASE_URL,
+    locale: "en_US",
     images: [
       {
         url: "/og-image.png",
@@ -44,9 +48,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@AITrainerAcad",
     creator: "@AITrainerAcad",
-    title: "AI Trainer Academy",
+    title: "AI Trainer Academy | AI Training & Data Annotation Platform",
     description:
-      "Learn to train AI models from verified experts. KES, USD and crypto payments.",
+      "Learn AI training, data annotation, RLHF, and AI model fine-tuning from verified experts. KES, USD and crypto payments accepted.",
     images: ["/og-image.png"],
   },
   alternates: {
@@ -63,6 +67,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  category: "Education",
 };
 
 export default function RootLayout({
@@ -72,9 +77,10 @@ export default function RootLayout({
 }) {
   const organizationJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "EducationalOrganization"],
     "@id": `${BASE_URL}/#organization`,
     name: "AI Trainer Academy",
+    alternateName: ["AI Trainer Academy", "ATA", "AI Training Academy"],
     url: BASE_URL,
     logo: {
       "@type": "ImageObject",
@@ -84,15 +90,51 @@ export default function RootLayout({
       caption: "AI Trainer Academy Logo",
     },
     description:
-      "Connect with verified AI training experts. Learn fine-tuning, prompt engineering, RLHF, and dataset curation from real practitioners.",
+      "AI Trainer Academy is the leading platform for AI training, data annotation, and AI model training education. Connect with verified AI trainers worldwide to learn RLHF, fine-tuning, prompt engineering, and dataset curation.",
+    foundingDate: "2024",
+    areaServed: "Worldwide",
+    knowsAbout: [
+      "AI Training",
+      "Data Annotation",
+      "AI Model Training",
+      "RLHF",
+      "Fine-tuning",
+      "Prompt Engineering",
+      "Dataset Curation",
+      "Machine Learning",
+      "Large Language Models",
+    ],
     sameAs: [
       "https://twitter.com/AITrainerAcad",
       "https://linkedin.com/company/ai-trainer-academy",
+      "https://github.com/brianmurutu/ai-trainer-academy",
     ],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
       url: `${BASE_URL}/contact`,
+    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "AI Training Programs",
+      itemListElement: [
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Course",
+            name: "AI Training & Data Annotation Courses",
+            url: `${BASE_URL}/courses`,
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "1-on-1 AI Trainer Sessions",
+            url: `${BASE_URL}/trainers`,
+          },
+        },
+      ],
     },
   };
 
@@ -102,6 +144,7 @@ export default function RootLayout({
     "@id": `${BASE_URL}/#website`,
     url: BASE_URL,
     name: "AI Trainer Academy",
+    description: "AI Training, Data Annotation, and AI Model Training platform",
     publisher: {
       "@id": `${BASE_URL}/#organization`,
     },

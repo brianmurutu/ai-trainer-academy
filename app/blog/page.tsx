@@ -4,27 +4,27 @@ import Footer from "@/components/Footer";
 import BlogFilters from "./BlogFilters";
 
 export const metadata: Metadata = {
-  title: "Academy Insights and Engineering Blog",
+  title: "AI Training Blog | Tutorials on RLHF, Data Annotation, Fine-Tuning & AI Models",
   description:
-    "Technical tutorials, NLP research summaries, and engineering perspectives on training LLMs, fine-tuning configurations, and custom agent deployment.",
+    "The AI Trainer Academy blog: in-depth tutorials on data annotation, RLHF, LLM fine-tuning, prompt engineering, and AI model training best practices. Written by verified AI trainers.",
   keywords:
-    "NLP tutorials, LLM fine-tuning, prompt design, AI engineering blog, AI safety research",
+    "AI training blog, data annotation tutorials, RLHF guide, LLM fine-tuning, prompt engineering, AI model training blog, AI academy insights",
   alternates: {
     canonical: "https://ai-trainer-academy.top/blog",
   },
   openGraph: {
-    title: "Academy Insights and Engineering Blog | AI Trainer Academy",
+    title: "AI Training Blog | AI Trainer Academy",
     description:
-      "Technical tutorials, NLP research summaries, and engineering perspectives on training LLMs, fine-tuning configurations, and custom agent deployment.",
+      "Tutorials on data annotation, RLHF, LLM fine-tuning, prompt engineering, and AI model training from verified practitioners.",
     type: "website",
     url: "https://ai-trainer-academy.top/blog",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Academy Insights and Engineering Blog",
+    title: "AI Training Blog | AI Trainer Academy",
     description:
-      "Technical tutorials and perspectives on training LLMs, fine-tuning, and AI agents.",
+      "Data annotation, RLHF, fine-tuning, and AI model training tutorials from verified AI trainers.",
     images: ["/og-image.png"],
   },
 };

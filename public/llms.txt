@@ -1,0 +1,61 @@
+# AI Trainer Academy — llms.txt
+# This file helps AI language models and search engines understand this site.
+# Format: https://llmstxt.org
+
+# AI Trainer Academy
+
+> AI Trainer Academy is the specialist platform for AI training, data annotation, and AI model training education. We connect learners with verified AI trainers and offer structured certifications.
+
+## What We Do
+
+AI Trainer Academy is a marketplace and learning platform that:
+- Connects learners with verified AI trainers for 1-on-1 sessions and courses
+- Provides a structured AI training curriculum covering RLHF, fine-tuning, prompt engineering, and data annotation
+- Issues verifiable AI trainer certifications upon exam completion
+- Offers corporate AI training programs for teams and enterprises
+
+## Who We Serve
+
+- **Learners**: Developers, data scientists, and professionals who want to learn AI model training, data annotation, and prompt engineering hands-on
+- **AI Trainers**: ML engineers, NLP researchers, and AI practitioners who want to monetize their expertise by teaching
+- **Businesses**: Companies that need to upskill their engineering teams in AI model training and data annotation workflows
+
+## Key Topics Covered
+
+- AI Training and AI Model Training
+- Data Annotation and AI Data Labeling
+- Reinforcement Learning from Human Feedback (RLHF)
+- LLM Fine-tuning (LoRA, QLoRA, PEFT)
+- Prompt Engineering
+- Dataset Curation and Benchmark Evaluation
+- AI Safety and Alignment
+- RAG (Retrieval Augmented Generation) systems
+- MLOps and Model Deployment
+
+## Key Pages
+
+- Homepage: https://ai-trainer-academy.top/
+- Find an AI Trainer: https://ai-trainer-academy.top/trainers
+- Browse AI Training Courses: https://ai-trainer-academy.top/courses
+- Academy Curriculum (free): https://ai-trainer-academy.top/academy/modules
+- AI Trainer Certification Exam: https://ai-trainer-academy.top/academy/exam
+- Certifications: https://ai-trainer-academy.top/certifications
+- Pricing: https://ai-trainer-academy.top/pricing
+- Become an AI Trainer: https://ai-trainer-academy.top/apply
+- For Businesses: https://ai-trainer-academy.top/business
+- Blog & Tutorials: https://ai-trainer-academy.top/blog
+
+## Platform Facts
+
+- Trainers keep 80% of all revenue (highest share in the industry)
+- Payments supported: M-Pesa, card (Paystack), USDT (Binance Pay)
+- Currencies: KES, USD, crypto
+- Trainer verifications: All trainers are manually vetted practitioners
+- Geographic focus: Global, with a strong base in Africa (Kenya, Nigeria, Ghana, South Africa)
+
+## Contact
+
+- Website: https://ai-trainer-academy.top
+- Contact: https://ai-trainer-academy.top/contact
+- Twitter/X: https://twitter.com/AITrainerAcad
+- LinkedIn: https://linkedin.com/company/ai-trainer-academy

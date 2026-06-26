@@ -1,7 +1,7 @@
 "use client";
 import { useState, useActionState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, TrendingUp, DollarSign } from "lucide-react";
 import AuthShell from "@/components/AuthShell";
 import { submitApplicationAction } from "@/app/actions/apply";
 import TurnstileWidget from "@/components/TurnstileWidget";
@@ -14,7 +14,229 @@ const SPECIALITIES = [
   "MLOps & Deployment", "Computer Vision", "NLP & Text Models", "Other",
 ];
 
-const sidePanelContent = (
+// --- Earnings Calculator Panel ---
+const CURRENCIES = [
+  { code: "KES", label: "KES — Kenyan Shilling", symbol: "KSH", rateFromUsd: 129 },
+  { code: "USD", label: "USD — US Dollar",        symbol: "$",   rateFromUsd: 1 },
+  { code: "GBP", label: "GBP — British Pound",    symbol: "£",   rateFromUsd: 0.79 },
+  { code: "EUR", label: "EUR — Euro",              symbol: "€",   rateFromUsd: 0.92 },
+  { code: "NGN", label: "NGN — Nigerian Naira",    symbol: "₦",   rateFromUsd: 1600 },
+  { code: "GHS", label: "GHS — Ghanaian Cedi",    symbol: "₵",   rateFromUsd: 15.5 },
+  { code: "ZAR", label: "ZAR — South African Rand",symbol: "R",  rateFromUsd: 18.5 },
+  { code: "USDT",label: "USDT — Tether Crypto",   symbol: "USDT",rateFromUsd: 1 },
+];
+
+function EarningsCalculator() {
+  const [currency, setCurrency] = useState("KES");
+  const [sessionsPerMonth, setSessionsPerMonth] = useState(8);
+  const [sessionDuration, setSessionDuration] = useState(1);
+  const [hourlyRateUsd, setHourlyRateUsd] = useState(20);
+
+  const cur = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
+
+  const grossUsd = sessionsPerMonth * sessionDuration * hourlyRateUsd;
+  const netUsd   = grossUsd * 0.8;
+  const gross    = Math.round(grossUsd * cur.rateFromUsd);
+  const net      = Math.round(netUsd  * cur.rateFromUsd);
+
+  const fmt = (n: number) =>
+    n >= 1000 ? n.toLocaleString() : n.toString();
+
+  return (
+    <div className="calc-root">
+      {/* Header */}
+      <div className="calc-header">
+        <TrendingUp size={18} color="#60A5FA" />
+        <span className="calc-title">Earnings calculator</span>
+      </div>
+
+      {/* Currency selector */}
+      <div className="calc-row">
+        <label className="calc-label">Currency</label>
+        <div className="calc-select-wrap">
+          <DollarSign size={13} className="calc-select-icon" />
+          <select
+            value={currency}
+            onChange={e => setCurrency(e.target.value)}
+            className="calc-select"
+          >
+            {CURRENCIES.map(c => (
+              <option key={c.code} value={c.code}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Sliders */}
+      <div className="calc-row">
+        <label className="calc-label">
+          Sessions per month <span className="calc-val">{sessionsPerMonth}</span>
+        </label>
+        <input type="range" min={1} max={30} value={sessionsPerMonth}
+          onChange={e => setSessionsPerMonth(Number(e.target.value))}
+          className="calc-slider" />
+        <div className="calc-range-labels"><span>1</span><span>30</span></div>
+      </div>
+
+      <div className="calc-row">
+        <label className="calc-label">
+          Session length (hrs) <span className="calc-val">{sessionDuration}h</span>
+        </label>
+        <input type="range" min={0.5} max={4} step={0.5} value={sessionDuration}
+          onChange={e => setSessionDuration(Number(e.target.value))}
+          className="calc-slider" />
+        <div className="calc-range-labels"><span>0.5h</span><span>4h</span></div>
+      </div>
+
+      <div className="calc-row">
+        <label className="calc-label">
+          Your rate (USD/hr) <span className="calc-val">${hourlyRateUsd}</span>
+        </label>
+        <input type="range" min={10} max={200} step={5} value={hourlyRateUsd}
+          onChange={e => setHourlyRateUsd(Number(e.target.value))}
+          className="calc-slider" />
+        <div className="calc-range-labels"><span>$10</span><span>$200</span></div>
+      </div>
+
+      {/* Result */}
+      <div className="calc-result">
+        <div className="calc-result-row">
+          <span className="calc-result-label">Gross monthly</span>
+          <span className="calc-result-gross">{cur.symbol} {fmt(gross)}</span>
+        </div>
+        <div className="calc-divider" />
+        <div className="calc-result-row">
+          <span className="calc-result-label">Your take (80%)</span>
+          <span className="calc-result-net">{cur.symbol} {fmt(net)}</span>
+        </div>
+        <p className="calc-note">
+          Based on {sessionsPerMonth} × {sessionDuration}h × ${hourlyRateUsd}/hr &mdash; 20% platform fee deducted.
+        </p>
+      </div>
+
+      <style>{`
+        .calc-root {
+          margin-top: 32px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 20px;
+        }
+        .calc-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 18px;
+        }
+        .calc-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.75);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .calc-row {
+          margin-bottom: 14px;
+        }
+        .calc-label {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 12px;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 6px;
+        }
+        .calc-val {
+          color: #93C5FD;
+          font-weight: 600;
+        }
+        .calc-select-wrap {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .calc-select-icon {
+          position: absolute;
+          left: 10px;
+          color: rgba(255,255,255,0.4);
+          pointer-events: none;
+        }
+        .calc-select {
+          width: 100%;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: white;
+          font-size: 13px;
+          padding: 8px 10px 8px 30px;
+          border-radius: 8px;
+          outline: none;
+          cursor: pointer;
+          appearance: none;
+          -webkit-appearance: none;
+        }
+        .calc-select option {
+          background: #1A2744;
+          color: white;
+        }
+        .calc-slider {
+          width: 100%;
+          accent-color: #3B82F6;
+          height: 4px;
+          cursor: pointer;
+        }
+        .calc-range-labels {
+          display: flex;
+          justify-content: space-between;
+          font-size: 10px;
+          color: rgba(255,255,255,0.25);
+          margin-top: 2px;
+        }
+        .calc-result {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-top: 6px;
+        }
+        .calc-result-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 4px 0;
+        }
+        .calc-result-label {
+          font-size: 12px;
+          color: rgba(255,255,255,0.4);
+        }
+        .calc-result-gross {
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.65);
+        }
+        .calc-result-net {
+          font-size: 20px;
+          font-weight: 700;
+          color: #34D399;
+          letter-spacing: -0.5px;
+        }
+        .calc-divider {
+          height: 1px;
+          background: rgba(255,255,255,0.07);
+          margin: 8px 0;
+        }
+        .calc-note {
+          font-size: 10px;
+          color: rgba(255,255,255,0.25);
+          margin-top: 8px;
+          line-height: 1.5;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// --- Side Panel Content ---
+const SidePanel = () => (
   <div>
     <div style={{
       fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)",
@@ -23,9 +245,9 @@ const sidePanelContent = (
 
     {[
       { num: "80%", label: "You keep 80% of every session. Highest trainer share in the industry." },
-      { num: "KSH", label: "Get paid weekly via M-Pesa, bank transfer, or crypto" },
-      { num: "0", label: "Zero setup cost. One-time KSH 1,000 activation after approval" },
-      { num: "∞", label: "Set your own rates, hours, and specialities. Full control." },
+      { num: "KSH",  label: "Get paid weekly via M-Pesa, bank transfer, or crypto" },
+      { num: "0",    label: "Zero setup cost. One-time KSH 1,000 activation after approval" },
+      { num: "∞",    label: "Set your own rates, hours, and specialities. Full control." },
     ].map(({ num, label }) => (
       <div key={num} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 24 }}>
         <div style={{ fontSize: 22, fontWeight: 600, color: "white", minWidth: 52, letterSpacing: "-0.5px" }}>{num}</div>
@@ -33,15 +255,8 @@ const sidePanelContent = (
       </div>
     ))}
 
-    <div style={{
-      marginTop: 32, padding: "16px 18px",
-      background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-      borderRadius: 12,
-    }}>
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Avg. trainer monthly earnings</div>
-      <div style={{ fontSize: 28, fontWeight: 600, color: "white", letterSpacing: "-0.5px" }}>KSH 68,000</div>
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>Based on 8 sessions/month at KSH 2,500/hr</div>
-    </div>
+    {/* Interactive Earnings Calculator */}
+    <EarningsCalculator />
   </div>
 );
 
@@ -69,15 +284,12 @@ export default function ApplyPage() {
 
   const [state, action, pending] = useActionState(submitApplicationAction, undefined);
 
-  // Tokens are single-use — reset the widget after every submission so the
-  // user always has a fresh token ready for retries.
   const handleSubmit = (formData: FormData) => {
     action(formData);
     turnstileRef.current?.reset();
     setCaptchaToken("");
   };
 
-  // Also reset if an error comes back (catches any edge cases).
   useEffect(() => {
     if (state?.error) {
       turnstileRef.current?.reset();
@@ -116,7 +328,7 @@ export default function ApplyPage() {
   // Success state
   if (state?.success) {
     return (
-      <AuthShell side={sidePanelContent}>
+      <AuthShell side={<SidePanel />}>
         <div style={{ textAlign: "center" }}>
           <div style={{
             width: 64, height: 64, borderRadius: "50%",
@@ -158,7 +370,7 @@ export default function ApplyPage() {
   }
 
   return (
-    <AuthShell side={sidePanelContent}>
+    <AuthShell side={<SidePanel />}>
       <div>
         {/* Header */}
         <div style={{ marginBottom: 28 }}>
@@ -180,7 +392,7 @@ export default function ApplyPage() {
           }} />
         </div>
 
-        {/* Server error banner (shown on step 3 / submit) */}
+        {/* Server error banner */}
         {state?.error && step === 3 && (
           <div style={{
             display: "flex", alignItems: "flex-start", gap: 10,
@@ -192,13 +404,8 @@ export default function ApplyPage() {
           </div>
         )}
 
-        {/*
-          Single <form> wraps everything so all hidden inputs persist across steps.
-          The native action points to the server action — only fires when the user
-          clicks "Submit application" on the last step.
-        */}
         <form ref={formRef} action={handleSubmit}>
-          {/* Hidden fields for all form data — always rendered */}
+          {/* Hidden fields */}
           <input type="hidden" name="fullName" value={form.fullName} />
           <input type="hidden" name="email" value={form.email} />
           <input type="hidden" name="password" value={form.password} />
@@ -213,7 +420,6 @@ export default function ApplyPage() {
           <input type="hidden" name="hourlyRateKsh" value={form.hourlyRateKsh} />
           <input type="hidden" name="hourlyRateUsd" value={form.hourlyRateUsd} />
           <input type="hidden" name="sampleWork" value={form.sampleWork} />
-          {/* Turnstile token — required by Supabase CAPTCHA protection on signUp */}
           <input type="hidden" name="cf-turnstile-response" value={captchaToken} />
 
           {/* Step 0: Account */}
@@ -373,7 +579,6 @@ export default function ApplyPage() {
                 </span>
               </label>
 
-              {/* Cloudflare Turnstile — required by Supabase CAPTCHA protection */}
               <div>
                 <TurnstileWidget
                   ref={turnstileRef}

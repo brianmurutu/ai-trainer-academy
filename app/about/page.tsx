@@ -5,14 +5,16 @@ import { Award, Brain, Users, Globe, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us",
-  description: "Learn about the mission, values, and team behind AI Trainer Academy. Connecting AI learners with verified model training experts worldwide.",
+  title: "About AI Trainer Academy | AI Training Platform & AI Academy",
+  description:
+    "AI Trainer Academy is the specialist AI training platform connecting learners with verified AI trainers worldwide. Learn our mission to democratize AI model training, data annotation, and RLHF education.",
+  keywords: "about AI Trainer Academy, AI training platform, AI academy mission, AI training education",
   alternates: {
     canonical: "https://ai-trainer-academy.top/about",
   },
   openGraph: {
-    title: "About Us | AI Trainer Academy",
-    description: "Learn about the mission, values, and team behind AI Trainer Academy.",
+    title: "About AI Trainer Academy | AI Training Platform",
+    description: "Learn about AI Trainer Academy — the specialist platform for AI training, data annotation, and AI model training education.",
     url: "https://ai-trainer-academy.top/about",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },

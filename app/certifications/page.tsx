@@ -5,8 +5,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Certifications | AI Trainer Academy",
-  description: "Learn about the verified certification framework of AI Trainer Academy.",
+  title: "AI Trainer Certification | Verified AI Training Credentials & Data Annotation Certificate",
+  description:
+    "Earn your AI Trainer certification from AI Trainer Academy. Our verified credentials cover AI model training, data annotation, RLHF, and prompt engineering. Recognised by employers and verifiable by hash.",
+  keywords: "AI trainer certification, AI training certificate, data annotation certification, RLHF certification, AI academy certification, AI model training credential",
+  alternates: { canonical: "https://ai-trainer-academy.top/certifications" },
+  openGraph: {
+    title: "AI Trainer Certification | AI Trainer Academy",
+    description: "Earn verified AI trainer certifications covering AI model training, data annotation, and RLHF. Recognised credentials for developers and researchers.",
+    url: "https://ai-trainer-academy.top/certifications",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function CertificationsPage() {

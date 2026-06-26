@@ -88,9 +88,6 @@ export default function Footer() {
               The specialist platform for AI model training education. Learn from
               verified experts worldwide.
             </p>
-            <p className="footer-geo">
-              Nairobi &middot; London &middot; San Francisco &middot; Global
-            </p>
 
             {/* Social icons */}
             <div className="footer-socials">

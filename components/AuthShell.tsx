@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Brain } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { ReactNode } from "react";
 
 interface AuthShellProps {
@@ -23,7 +23,7 @@ export default function AuthShell({ children, side }: AuthShellProps) {
               width: 32, height: 32, background: "var(--navy)",
               borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Brain size={16} color="white" />
+              <GraduationCap size={16} color="white" />
             </div>
             <span style={{ fontWeight: 600, fontSize: 15, color: "var(--navy)" }}>
               AI Trainer <span style={{ color: "var(--accent)" }}>Academy</span>

@@ -10,17 +10,17 @@ import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "AI Trainer Academy | AI Training, Data Annotation & AI Model Training",
+  title: "Trainer Academy | Learn Machine Learning from Practitioners",
   description:
-    "AI Trainer Academy is the #1 platform for AI training and data annotation education. Connect with verified AI trainers to learn RLHF, LLM fine-tuning, prompt engineering, and AI model training. Earn certified credentials. Pay in KES, USD, or crypto.",
+    "Connect with trainers who work in machine learning every day. Structured courses, 1-on-1 sessions, and credentials employers recognise. Pay in KES, USD, EUR, or crypto.",
   keywords:
-    "AI Trainer, AI Training, AI Training Academy, AI Academy, AI Models Training, Data Annotation, RLHF, fine-tuning, prompt engineering, AI trainer certification, AI data labeling, machine learning training, AI education Kenya",
+    "machine learning training, data annotation, RLHF training, fine-tuning course, prompt engineering, practitioner training, Kenyan tech education, LLM fine-tuning",
   alternates: {
     canonical: "https://ai-trainer-academy.top",
   },
   openGraph: {
-    title: "AI Trainer Academy | AI Training & Data Annotation Platform",
-    description: "The specialist platform for AI training, data annotation, and AI model training education. Find verified AI trainers worldwide.",
+    title: "Trainer Academy | Practitioner-Led Machine Learning Training",
+    description: "Book 1-on-1 sessions or take structured courses with practitioners who work in ML every day. Real credentials, honest pricing.",
     url: "https://ai-trainer-academy.top",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },

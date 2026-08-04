@@ -85,8 +85,8 @@ export default function Footer() {
               </span>
             </Link>
             <p className="footer-tagline">
-              The specialist platform for AI model training education. Learn from
-              verified experts worldwide.
+              Practitioner-led training for machine learning professionals,
+              taught by people who do this work every day.
             </p>
 
             {/* Social icons */}

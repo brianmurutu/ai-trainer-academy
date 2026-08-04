@@ -34,15 +34,25 @@ const sidePanelContent = (
     ))}
 
     <div style={{ marginTop: 40, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 2, marginBottom: 16 }}>Trusted by</div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {["Safaricom", "Andela", "Microsoft Africa", "Google Dev Groups", "Moringa School"].map(org => (
-          <span key={org} style={{
-            fontSize: 11, padding: "4px 10px",
-            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 20, color: "rgba(255,255,255,0.45)",
-          }}>{org}</span>
-        ))}
+      <div style={{
+        background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: 14, padding: "20px",
+      }}>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, marginBottom: 16 }}>
+          &ldquo;Took me a couple of sessions to find my footing, but by week three I&apos;d fine-tuned my first LLaMA model. The trainer didn&apos;t dumb it down &mdash; he just made it approachable.&rdquo;
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: "50%",
+            background: "linear-gradient(135deg, #1A6FBF 0%, #0E3D7A 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, fontWeight: 600, color: "white",
+          }}>AH</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "white" }}>Amina Hassan</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>ML Engineer, Nairobi</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

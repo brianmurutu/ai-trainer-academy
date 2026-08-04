@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Brain } from "lucide-react";
+import { Menu, X, GraduationCap } from "lucide-react";
 import { useCurrency, Currency } from "@/components/CurrencyProvider";
 
 export default function Navbar() {
@@ -39,7 +39,7 @@ export default function Navbar() {
             borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 2px 8px rgba(37, 99, 235, 0.2)"
           }}>
-            <Brain size={18} color="white" />
+            <GraduationCap size={18} color="white" />
           </div>
           <span style={{ fontWeight: 700, fontSize: 16, color: "var(--navy)", letterSpacing: "-0.4px" }}>
             AI Trainer <span style={{ color: "var(--accent)" }}>Academy</span>

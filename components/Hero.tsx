@@ -5,16 +5,16 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useCurrency } from "@/components/CurrencyProvider";
 
 const stats = [
-  { num: "340+", label: "Verified trainers", sub: "active on the platform" },
+  { num: "340+", label: "Vetted trainers", sub: "active on the platform" },
   { num: "12K+", label: "Learners enrolled", sub: "across 40+ countries" },
   { num: "4.9★", label: "Avg. trainer rating", sub: "from verified reviews" },
   { num: "98%",  label: "Satisfaction rate",  sub: "post-session surveys" },
 ];
 
 const trustPoints = [
-  "Vetted and approved trainers only",
+  "Every trainer is personally vetted by our team",
   "Pay in USD, EUR, GBP, KES, or crypto",
-  "Certificates recognised by employers",
+  "Credentials that employers actually ask for",
 ];
 
 export default function Hero() {
@@ -29,22 +29,22 @@ export default function Hero() {
       <div className="hero-container">
         {/* ── Left copy ─────────────────────────────────────── */}
         <div className="hero-copy">
-          {/* Live badge */}
+          {/* Badge */}
           <div className="hero-badge">
             <span className="pulse-dot" />
-            Now accepting trainer applications
+            Trainer applications now open
           </div>
 
           <h1 className="hero-heading">
-            Learn to train<br />
-            AI models from<br />
-            <span className="gradient-text">real experts</span>
+            Learn machine learning<br />
+            skills from<br />
+            <span className="gradient-text">real practitioners</span>
           </h1>
 
           <p className="hero-sub">
-            Connect with verified AI trainers, access structured courses on
-            fine-tuning, RLHF, and prompt engineering, and earn recognised
-            certifications.
+            Connect with trainers who work in the field every day. Get
+            structured guidance on fine-tuning, RLHF, and prompt engineering —
+            then leave with a certificate your employer will recognise.
           </p>
 
           <div className="hero-actions">

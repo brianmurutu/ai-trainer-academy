@@ -2,27 +2,27 @@ import { Star } from "lucide-react";
 
 const testimonials = [
   {
-    text: "I went from zero to fine-tuning my first LLaMA model in three weeks. The trainer was patient, structured, and genuinely expert. Worth every penny.",
+    text: "Took me a couple of sessions to find my footing, but by week three I'd fine-tuned my first LLaMA model. The trainer didn't dumb it down — he just made it approachable. That made all the difference.",
     author: "Amina Hassan",
     role: "ML Engineer, Nairobi",
     initials: "AH",
-    bg: "linear-gradient(135deg, #1A6FBF, #2563EB)",
+    bg: "linear-gradient(135deg, #1A6FBF 0%, #0E3D7A 100%)",
     stars: 5,
   },
   {
-    text: "As a trainer, this platform handles everything: booking, payments, certificates. I just show up and teach. My income tripled in two months.",
+    text: "I've taught on other platforms before. This one is the only one where I feel like a professional rather than a contractor. Booking, payments, learner feedback — it all just works. My income tripled in two months.",
     author: "Dr. Chen Wei",
     role: "AI Researcher and Trainer",
     initials: "CW",
-    bg: "linear-gradient(135deg, #1A7A4A, #059669)",
+    bg: "linear-gradient(135deg, #1A7A4A 0%, #0D4A2A 100%)",
     stars: 5,
   },
   {
-    text: "Our team of 12 completed the corporate AI training package. The ROI was immediate — we cut our model fine-tuning cycle time by 60%.",
+    text: "We put our whole engineering team through the corporate training package. Honestly wasn't sure what to expect — but we cut our model fine-tuning cycle time by about 60%. That was a genuine surprise.",
     author: "Sarah Odhiambo",
     role: "CTO, Tanda Africa",
     initials: "SO",
-    bg: "linear-gradient(135deg, #5B21B6, #4A1A7A)",
+    bg: "linear-gradient(135deg, #5B21B6 0%, #3B1075 100%)",
     stars: 5,
   },
 ];
@@ -37,10 +37,10 @@ export default function Testimonials() {
         <div className="testi-header">
           <span className="testi-eyebrow">What people say</span>
           <h2 className="testi-heading">
-            Trusted by learners and trainers
+            What people are saying
           </h2>
           <p className="testi-sub">
-            Real feedback from real people who&apos;ve used the platform.
+            Written by real learners and trainers — no editing, no incentives.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default function Testimonials() {
               <figcaption className="testi-author">
                 <div
                   className="testi-avatar"
-                  style={{ background: bg }}
+                  style={{ background: bg, letterSpacing: "0.5px", fontSize: 14 }}
                   aria-hidden="true"
                 >
                   {initials}

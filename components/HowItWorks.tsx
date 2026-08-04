@@ -22,8 +22,8 @@ export default function HowItWorks() {
         <div className="hiw-header">
           <span className="hiw-eyebrow">How it works</span>
           <h2 className="hiw-heading">
-            Simple for learners.<br />
-            <span style={{ color: "var(--accent)" }}>Rewarding for trainers.</span>
+            Built around people,<br />
+            <span style={{ color: "var(--accent)" }}>not algorithms.</span>
           </h2>
         </div>
 

@@ -25,7 +25,7 @@ function getRelativeTime(date: Date): string {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-KE", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function NotificationsPanel() {
@@ -35,7 +35,7 @@ export default function NotificationsPanel() {
       id: "n-1",
       type: "session",
       title: "Session Approved",
-      message: "Dr. Amara Osei has approved your LoRA fine-tuning session for tomorrow at 4:00 PM EAT.",
+      message: "Dr. Amara Osei has approved your LoRA fine-tuning session for tomorrow at 4:00 PM (UTC+3).",
       time: "2 hours ago",
       read: false,
     },
@@ -80,7 +80,7 @@ export default function NotificationsPanel() {
 
           if (bookings) {
             bookings.forEach((b: any) => {
-              const dateStr = b.session_date ? new Date(b.session_date).toLocaleDateString("en-KE", { month: "short", day: "numeric" }) : "";
+              const dateStr = b.session_date ? new Date(b.session_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
               const topic = b.session_topic?.split(" || ")[0] || "Consultation Call";
               const createdDate = new Date(b.created_at);
               if (b.status === "pending") {
@@ -109,12 +109,13 @@ export default function NotificationsPanel() {
             .from("bookings")
             .select("id, status, session_date, session_topic, created_at, trainers(full_name)")
             .eq("learner_id", user.id)
+            .not("trainer_id", "is", null)
             .order("created_at", { ascending: false })
             .limit(5);
 
           if (bookings) {
             bookings.forEach((b: any) => {
-              const dateStr = b.session_date ? new Date(b.session_date).toLocaleDateString("en-KE", { month: "short", day: "numeric" }) : "";
+              const dateStr = b.session_date ? new Date(b.session_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
               const trainerName = b.trainers?.full_name || "Trainer";
               const topic = b.session_topic?.split(" || ")[0] || "Consultation Call";
               const createdDate = new Date(b.created_at);

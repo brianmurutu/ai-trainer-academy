@@ -10,7 +10,7 @@ const STATUS_CONFIG = {
 } as const;
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 type Row = {

@@ -389,6 +389,7 @@ export async function getDashboardData(userId: string): Promise<{
         )
       `)
       .eq("learner_id", userId)
+      .not("trainer_id", "is", null)
       .order("session_date", { ascending: true });
 
     if (bookErr) {

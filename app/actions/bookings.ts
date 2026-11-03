@@ -66,6 +66,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
         )
       `)
       .eq("learner_id", user.id)
+      .not("trainer_id", "is", null)
       .order("session_date", { ascending: true });
 
     if (error || !bookings) {
@@ -77,6 +78,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
     return bookings.map((b: any) => {
       const [topic, meetingUrl] = b.session_topic?.split(" || ") ?? [b.session_topic, null];
       const topicStr = topic || "";
+      const validMeetingUrl = (meetingUrl && (meetingUrl.startsWith("http://") || meetingUrl.startsWith("https://"))) ? meetingUrl : null;
 
       const trainerName = b.trainers?.full_name || "Trainer";
       const initials = trainerName.split(" ").map((n: string) => n[0]).slice(0, 2).join("");
@@ -86,8 +88,8 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
       let timeLabel = "TBD";
       if (b.session_date) {
         const d = new Date(b.session_date);
-        dateLabel = d.toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" });
-        timeLabel = d.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" });
+        dateLabel = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        timeLabel = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
       } else if (topicStr.includes(" — ")) {
         // Fallback from topic string: Topic — Date Time
         const parts = topicStr.split(" — ")[1]?.split(" ");
@@ -100,7 +102,7 @@ export async function getLearnerSessions(): Promise<SessionWithTrainer[]> {
       return {
         id: b.id,
         topic: topicStr.split(" — ")[0] || "1-on-1 Consultation",
-        meetingUrl: meetingUrl || null,
+        meetingUrl: validMeetingUrl,
         trainerName,
         trainerTitle: b.trainers?.tagline || "Consultant",
         trainerInitials: initials,
@@ -175,8 +177,8 @@ export async function getTrainerBookings(): Promise<TrainerBookingMapped[]> {
       let timeLabel = "TBD";
       if (b.session_date) {
         const d = new Date(b.session_date);
-        dateLabel = d.toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric" });
-        timeLabel = d.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" });
+        dateLabel = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        timeLabel = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
       } else if (topicStr.includes(" — ")) {
         const parts = topicStr.split(" — ")[1]?.split(" ");
         if (parts) {
@@ -470,10 +472,10 @@ export async function generateMeetingLinkAndNotify(bookingId: string): Promise<{
     // 8. Deliver meeting links to learners and trainers via email
     try {
       const formattedDate = booking.session_date
-        ? new Date(booking.session_date).toLocaleDateString("en-KE", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+        ? new Date(booking.session_date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
         : "TBD";
       const formattedTime = booking.session_date
-        ? new Date(booking.session_date).toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit" }) + " EAT"
+        ? new Date(booking.session_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" })
         : "TBD";
 
       // Send confirmation to Learner

@@ -191,7 +191,11 @@ export default function MockExamPage() {
                 width: 56, height: 56, borderRadius: "50%",
                 background: passed ? "var(--green-light)" : "rgba(225,29,72,0.1)",
                 color: passed ? "var(--green)" : "#E11D48",
+<<<<<<< HEAD
                 display: "flex", alignItems: "center", justifyOrigin: "center",
+=======
+                display: "flex", alignItems: "center",
+>>>>>>> d950e182d713accc40d6b00347024f8418854729
                 justifyContent: "center", margin: "0 auto 16px"
               }}>
                 {passed ? <CheckCircle size={32} /> : <XCircle size={32} />}

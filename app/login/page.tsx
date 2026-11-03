@@ -14,12 +14,12 @@ const sidePanelContent = (
       <div style={{
         fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)",
         textTransform: "uppercase", letterSpacing: 2, marginBottom: 24,
-      }}>Why members love us</div>
+      }}>Why our members stay</div>
       {[
-        { stat: "340+", label: "Verified AI trainers across 40 countries" },
-        { stat: "12K+", label: "Learners who've earned certifications" },
-        { stat: "80%", label: "Trainer earnings kept. Highest in the industry." },
-        { stat: "4.9", label: "Average trainer rating from verified reviews" },
+        { stat: "340+", label: "Practitioners teaching on the platform" },
+        { stat: "80%", label: "Revenue kept by trainers — the highest in the industry" },
+        { stat: "48h", label: "Typical application review time for new trainers" },
+        { stat: "4.9", label: "Average session rating from verified learner reviews" },
       ].map(({ stat, label }) => (
         <div key={stat} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 24 }}>
           <div style={{ fontSize: 22, fontWeight: 600, color: "white", minWidth: 52, letterSpacing: "-0.5px" }}>{stat}</div>
@@ -33,17 +33,18 @@ const sidePanelContent = (
       borderRadius: 14, padding: "20px",
     }}>
       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, marginBottom: 16 }}>
-        "I went from zero to fine-tuning LLaMA 3 in three weeks. The structured path made all the difference."
+        &ldquo;I tried two other platforms before this one. The difference is that here I actually feel like a professional. The learners come prepared, the payments arrive on time, and the support team actually responds.&rdquo;
       </p>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{
           width: 34, height: 34, borderRadius: "50%",
-          background: "#1A6FBF", display: "flex", alignItems: "center",
+          background: "linear-gradient(135deg, #1A7A4A 0%, #0D4A2A 100%)",
+          display: "flex", alignItems: "center",
           justifyContent: "center", fontSize: 12, fontWeight: 600, color: "white",
-        }}>AH</div>
+        }}>CW</div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: "white" }}>Amina Hassan</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>ML Engineer, Nairobi</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "white" }}>Dr. Chen Wei</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>AI Researcher and Trainer</div>
         </div>
       </div>
     </div>

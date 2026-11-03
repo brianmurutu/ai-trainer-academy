@@ -5,6 +5,7 @@ export type Lesson = {
   title: string;
   duration: string;
   isVideo?: boolean;
+  content?: string;
 };
 
 export type Section = {

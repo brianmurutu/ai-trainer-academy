@@ -15,7 +15,7 @@ const STATUS_CONFIG = {
 } as const;
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 }
 
 function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {

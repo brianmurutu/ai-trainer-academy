@@ -68,16 +68,16 @@ const TRAINERS: Record<string, {
       { title: "QLoRA Masterclass: VRAM-efficient Fine-tuning", enrolled: 31, rating: 4.8 },
     ],
     reviews: [
-      { name: "Brian Mwangi", initials: "BM", rating: 5, date: "Jun 1, 2025", text: "Absolutely exceptional. Dr. Osei's ability to simplify LoRA configuration is unmatched. I went from zero to running a fine-tuned model in two sessions. Worth every shilling." },
+      { name: "Brian Mwangi", initials: "BM", rating: 5, date: "Jun 1, 2025", text: "Absolutely exceptional. Dr. Osei's ability to simplify LoRA configuration is unmatched. I went from zero to running a fine-tuned model in two sessions. Worth every penny." },
       { name: "Priya Nair", initials: "PN", rating: 5, date: "May 22, 2025", text: "Very patient and thorough. He reviews your code in real time and catches bugs I'd been staring at for days. Highly recommend for anyone serious about fine-tuning." },
       { name: "Kofi Asante", initials: "KA", rating: 5, date: "May 10, 2025", text: "Best investment I've made in my ML career. The post-session code review is a unique touch you won't find anywhere else." },
       { name: "Zawadi Kamau", initials: "ZK", rating: 4, date: "Apr 28, 2025", text: "Great content and very knowledgeable. Sometimes goes a bit fast but always happy to slow down when asked." },
     ],
     availableSlots: [
-      { id: "s1", date: "Thu Jun 5", dayLabel: "Tomorrow, Thu Jun 5", time: "4:00 PM to 5:30 PM EAT", duration: "1.5 hrs", durationHrs: 1.5 },
-      { id: "s2", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "10:00 AM to 11:00 AM EAT", duration: "1 hr", durationHrs: 1 },
-      { id: "s3", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "2:00 PM to 4:00 PM EAT", duration: "2 hrs", durationHrs: 2 },
-      { id: "s4", date: "Mon Jun 9", dayLabel: "Monday, Jun 9", time: "6:00 PM to 7:00 PM EAT", duration: "1 hr", durationHrs: 1 },
+      { id: "s1", date: "Thu Jun 5", dayLabel: "Tomorrow, Thu Jun 5", time: "4:00 PM to 5:30 PM (UTC+3)", duration: "1.5 hrs", durationHrs: 1.5 },
+      { id: "s2", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "10:00 AM to 11:00 AM (UTC+3)", duration: "1 hr", durationHrs: 1 },
+      { id: "s3", date: "Sat Jun 7", dayLabel: "Saturday, Jun 7", time: "2:00 PM to 4:00 PM (UTC+3)", duration: "2 hrs", durationHrs: 2 },
+      { id: "s4", date: "Mon Jun 9", dayLabel: "Monday, Jun 9", time: "6:00 PM to 7:00 PM (UTC+3)", duration: "1 hr", durationHrs: 1 },
     ],
   },
   "naledi-dlamini": {
@@ -103,8 +103,8 @@ const TRAINERS: Record<string, {
       { name: "Amira Hassan", initials: "AH", rating: 5, date: "May 15, 2025", text: "Life-changing session. The way she connects abstract safety concepts to practical engineering is exactly what I needed." },
     ],
     availableSlots: [
-      { id: "s1", date: "Fri Jun 6", dayLabel: "Friday, Jun 6", time: "10:00 AM to 11:00 AM EAT", duration: "1 hr", durationHrs: 1 },
-      { id: "s2", date: "Tue Jun 10", dayLabel: "Tuesday, Jun 10", time: "3:00 PM to 5:00 PM EAT", duration: "2 hrs", durationHrs: 2 },
+      { id: "s1", date: "Fri Jun 6", dayLabel: "Friday, Jun 6", time: "10:00 AM to 11:00 AM (UTC+3)", duration: "1 hr", durationHrs: 1 },
+      { id: "s2", date: "Tue Jun 10", dayLabel: "Tuesday, Jun 10", time: "3:00 PM to 5:00 PM (UTC+3)", duration: "2 hrs", durationHrs: 2 },
     ],
   },
 };
@@ -222,7 +222,7 @@ export default async function TrainerProfilePage({
           id: `s-${offset}-${slotCount++}`,
           date: dateStr,
           dayLabel: dayLabel,
-          time: "4:00 PM to 5:00 PM EAT",
+          time: "4:00 PM to 5:00 PM (UTC+3)",
           duration: "1 hr",
           durationHrs: 1
         });

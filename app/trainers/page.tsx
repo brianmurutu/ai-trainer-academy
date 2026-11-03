@@ -3,9 +3,17 @@ import TrainersClientPage from "./TrainersClientPage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Find a Trainer | AI Trainer Academy",
+  title: "Find an AI Trainer | Verified AI Training Experts & Data Annotation Specialists",
   description:
-    "Browse verified AI trainers specialising in LLM fine-tuning, RLHF, RAG systems, prompt engineering, and more.",
+    "Browse verified AI trainers specialising in AI model training, data annotation, RLHF, LLM fine-tuning, prompt engineering, RAG systems, and AI safety. Book 1-on-1 sessions and pay via M-Pesa, card, or crypto.",
+  keywords: "AI trainer, AI training expert, find AI trainer, data annotation trainer, RLHF trainer, fine-tuning expert, AI model training specialist",
+  alternates: { canonical: "https://ai-trainer-academy.top/trainers" },
+  openGraph: {
+    title: "Find an AI Trainer | AI Trainer Academy",
+    description: "Browse verified AI trainers for data annotation, RLHF, fine-tuning, and AI model training. Book sessions online.",
+    url: "https://ai-trainer-academy.top/trainers",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 // Fallback hardcoded list so the page always shows content

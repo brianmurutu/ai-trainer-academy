@@ -86,6 +86,26 @@ export type EnrollmentRow = {
   course: CourseRow | null;
 };
 
+export type JobRow = {
+  id: string;
+  platform_name: string;
+  platform_slug: string;
+  platform_url: string | null;
+  typical_pay_min: number | null;
+  typical_pay_max: number | null;
+  currency: string;
+  domain: string | null;
+  job_type: string | null;
+  roles_count: number;
+  open_roles_count: number;
+  chance_accepted_pct: number | null;
+  description: string | null;
+  image_url: string | null;
+  apply_url: string | null;
+  is_featured: boolean;
+  created_at: string;
+};
+
 // ============================================================
 // getTrainers
 // ============================================================
@@ -421,6 +441,46 @@ export async function getCourseById(id: string): Promise<CourseRow | null> {
   } catch (err) {
     console.error("[getCourseById] Unexpected error:", err);
     return null;
+  }
+}
+
+export async function getTopJobs(platformSlug?: string, limit = 12): Promise<JobRow[]> {
+  try {
+    const supabase = await createClient();
+    let query = supabase
+      .from('platform_jobs')
+      .select('*')
+      .order('open_roles_count', { ascending: false })
+      .limit(limit);
+    if (platformSlug) query = query.eq('platform_slug', platformSlug);
+    const { data, error } = await query;
+    if (error) {
+      console.error('[getTopJobs] Supabase error:', error.message);
+      return [];
+    }
+    return (data as JobRow[]) ?? [];
+  } catch (err) {
+    console.error('[getTopJobs] Unexpected error:', err);
+    return [];
+  }
+}
+
+export async function getPlatforms(limit = 20): Promise<JobRow[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('platform_jobs')
+      .select('*')
+      .order('roles_count', { ascending: false })
+      .limit(limit);
+    if (error) {
+      console.error('[getPlatforms] Supabase error:', error.message);
+      return [];
+    }
+    return (data as JobRow[]) ?? [];
+  } catch (err) {
+    console.error('[getPlatforms] Unexpected error:', err);
+    return [];
   }
 }
 

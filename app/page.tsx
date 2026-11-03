@@ -8,9 +8,26 @@ import Payments from "@/components/Payments";
 import Testimonials from "@/components/Testimonials";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
-<<<<<<< HEAD
 import Link from "next/link";
 import { ArrowRight, Briefcase } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "AI Trainer Academy — Learn to Train AI Models",
+  description: "Connect with verified AI training experts. Learn fine-tuning, prompt engineering, RLHF, and dataset curation from real practitioners. Pay in KSH, USD, or crypto.",
+  keywords: "AI model training, fine-tuning, prompt engineering, RLHF, AI courses, machine learning training, AI education Kenya",
+  openGraph: {
+    title: "AI Trainer Academy",
+    description: "The #1 platform for AI model training education. Learn from verified experts.",
+    type: "website",
+    siteName: "AI Trainer Academy",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Trainer Academy",
+    description: "Learn to train AI models from verified experts. KSH, USD & crypto payments.",
+  },
+  robots: "index, follow",
+};
 
 function JobPlatformsTeaser() {
   return (
@@ -85,26 +102,6 @@ function JobPlatformsTeaser() {
   );
 }
 
-=======
-
-export const metadata: Metadata = {
-  title: "Trainer Academy | Learn Machine Learning from Practitioners",
-  description:
-    "Connect with trainers who work in machine learning every day. Structured courses, 1-on-1 sessions, and credentials employers recognise. Pay in KES, USD, EUR, or crypto.",
-  keywords:
-    "machine learning training, data annotation, RLHF training, fine-tuning course, prompt engineering, practitioner training, Kenyan tech education, LLM fine-tuning",
-  alternates: {
-    canonical: "https://ai-trainer-academy.top",
-  },
-  openGraph: {
-    title: "Trainer Academy | Practitioner-Led Machine Learning Training",
-    description: "Book 1-on-1 sessions or take structured courses with practitioners who work in ML every day. Real credentials, honest pricing.",
-    url: "https://ai-trainer-academy.top",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
-  },
-};
-
->>>>>>> d950e182d713accc40d6b00347024f8418854729
 export default function Home() {
   return (
     <>
@@ -113,10 +110,7 @@ export default function Home() {
         <Hero />
         <HowItWorks />
         <Trainers />
-<<<<<<< HEAD
         <JobPlatformsTeaser />
-=======
->>>>>>> d950e182d713accc40d6b00347024f8418854729
         <Pricing />
         <Payments />
         <Testimonials />
